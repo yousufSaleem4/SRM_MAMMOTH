@@ -11,6 +11,7 @@ namespace PlusCP.Controllers
         // GET: Tool
         public ActionResult Index()
         {
+            string rptname = "tool";
             return View();
         }
     }
