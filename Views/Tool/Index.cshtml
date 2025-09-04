@@ -566,9 +566,15 @@
                 if (!isSingleRow) {
                     var columnDef = [
                         { "data": "Username", "title": "User Name", "className": "text-center" },
-                        { "data": "UserId", "title": "User ID", "className": "text-center" },
-                        { "data": "FirstName", "title": "First Name", "className": "text-center" },
-                        { "data": "LastName", "title": "Last Name", "className": "text-center" },
+
+                        {
+                            "data": "UserId", "title": "User ID", "className": "text-center",
+                            "render": function (data, type, row) {
+                                return formatDecimal(data);
+                            }
+                        },
+                        { "data": "FirstName", "title": "First Name", "className": "text-center", "visible":false },
+                        { "data": "LastName", "title": "Last Name", "className": "text-center", "visible": false },
                         { "data": "Email", "title": "Supplier Email", "className": "text-center" },
                         { "data": "Status", "title": "Status", "className": "text-center" },
                     ]
@@ -887,4 +893,23 @@
 
 
     }
+    function formatDecimal(data) {
+        if (!data) return '';
+
+        data = data.toString().trim();
+
+        // If it's a whole number with .0 (e.g. "123.0") → "123"
+        if (/^\d+\.0+$/.test(data)) {
+            return data.replace(/\.0+$/, '');
+        }
+
+        // If it's numeric with decimals (e.g. "456.50") → "456.5"
+        if (/^\d+\.\d+$/.test(data)) {
+            return parseFloat(data).toString();
+        }
+
+        // Otherwise (alphanumeric or plain int), leave as-is
+        return data;
+    }
+
 </script>
