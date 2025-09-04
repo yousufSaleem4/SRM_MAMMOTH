@@ -47,7 +47,7 @@ namespace PlusCP
         {
             // Read Connection string from file
             string fileName = ConfigurationManager.AppSettings["Key"];
-            string dbPassword = BasicEncrypt.Instance.Encrypt(@"Server=MX0114\SQLEXPRESS;Database=SRMDBPILOT;User Id=admin;Password=manager;");
+            string dbPassword = BasicEncrypt.Instance.Encrypt(@"Server=localhost\SQLEXPRESS;Database=SRMDBPILOT;User Id=sa;Password=admin;");
             Session["CONN_INIT"] = System.IO.File.ReadAllLines(fileName)[0].ToString();
             Session["CONN_PLUS_EXT"] = System.IO.File.ReadAllLines(fileName)[1].ToString();
             if (Request.QueryString["IsExternal"] != null)
