@@ -369,7 +369,9 @@ namespace PlusCP.Controllers
                 ViewBag.UserName = Session["FirstName"].ToString().Replace(Session["FirstName"].ToString().Substring(0, 1), Session["FirstName"].ToString().Substring(0, 1).ToUpper());
                 ViewBag.IsTempKey = oAuth.IsTempKey;
                 ViewBag.isAdmin = Session["isAdmin"].ToString();
-                
+                ViewBag.UserType = Session["UserType"].ToString();
+
+
                 if (Session["isAdmin"].ToString() == "True")
                 {
 

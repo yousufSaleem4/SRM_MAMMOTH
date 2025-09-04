@@ -36,7 +36,15 @@ namespace PlusCP.Controllers
             return View(oDB);
         }
 
+        public ActionResult ToolCribIndex()
+        {
+            if (cCommon.IsSessionExpired())
+            {
 
+                return RedirectToAction("Logout", "Home");
+            }
+            return View();
+        }
         public void LoadBuyerInfo()
         {
             cLog oLog;

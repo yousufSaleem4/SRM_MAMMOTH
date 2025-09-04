@@ -1,0 +1,24 @@
+﻿@model PlusCP.Models.DashboardModel
+@{
+    ViewBag.Title = "Tool Crib Dashboard Index";
+    Layout = null;
+}
+
+
+<div class="panel panel-default" style="border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.1); border: none;">
+    <div class="panel-body text-center" style="padding:25px; background: linear-gradient(135deg, #d4edda, #c3e6cb); border-radius:12px;">
+        <h3 style="margin:0; color:#003B59; font-weight:bold;">
+            Welcome, @Session["Username"]! <br />
+            <span style="font-size:16px; color:#555;">(ID: @Session["SigninId"])</span>
+        </h3>
+        <h4 style="margin-top:10px; color:#003B59; font-weight:bold;">
+            Tool Crib <span style="color: #2AAA82; font-size: 25px; font-weight: bold">|</span>
+            <span style="color: #2AAA82; font-size: 20px; font-weight: bold">Portal</span>
+        </h4>
+    </div>
+</div>
+
+
+
+
+

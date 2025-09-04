@@ -219,6 +219,7 @@
     <Compile Include="Controllers\NewPOController.cs" />
     <Compile Include="Controllers\POSchedulerController.cs" />
     <Compile Include="Controllers\SettingController.cs" />
+    <Compile Include="Controllers\ToolController.cs" />
     <Compile Include="Controllers\UserRoleXController.cs" />
     <Compile Include="Externals\ChangePassword.aspx.cs">
       <DependentUpon>ChangePassword.aspx</DependentUpon>
@@ -286,6 +287,7 @@
     <Compile Include="Models\POScheduler.cs" />
     <Compile Include="Models\Setting.cs" />
     <Compile Include="Models\SignupViewModel.cs" />
+    <Compile Include="Models\Tool.cs" />
     <Compile Include="Models\UserRoleX.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -491,6 +493,8 @@
     <Content Include="Views\Setting\Index.cshtml" />
     <Content Include="Views\POScheduler\Index.cshtml" />
     <Content Include="Views\NewPO\GetPO.cshtml" />
+    <Content Include="Views\Tool\Index.cshtml" />
+    <Content Include="Views\Dashboard\ToolCribIndex.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />

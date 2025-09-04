@@ -8,8 +8,8 @@
 
     <title>SRM</title>
     @System.Web.Optimization.Styles.Render("~/Content/css")
-   
-    
+
+
     <style>
         .label {
             padding-left: 20px;
@@ -290,27 +290,37 @@
             .hover-effect:hover {
                 background-color: #f0f0f0;
             }
+
         .logo-img {
             max-width: 100%;
             height: auto;
             width: 200px; /* Adjust size as needed */
-            margin-left:10px;
-            margin-top:10px;
+            margin-left: 10px;
+            margin-top: 10px;
         }
-
     </style>
 </head>
 
-<body class="hold-transition skin-blue layout-top-nav"  onresize="resize_grid_height()" style=" background: linear-gradient(to top, white, #D6EFE8);" onload="get_initial_attributes()">
+<body class="hold-transition skin-blue layout-top-nav" onresize="resize_grid_height()" style=" background: linear-gradient(to top, white, #D6EFE8);" onload="get_initial_attributes()">
     <div class="wrapper">
         <header class="main-header">
             <nav class="navbar navbar-static-top">
                 <div class="row">
                     <div class="col-xs-12 col-md-3">
                         <div class="navbar-header d-flex align-items-center">
-                            <a onclick="Navigate('Index','/Dashboard/Index', 'Dashboard', 'Dashboard', '', '')">
-                                <img src="~/Content/Images/Collablly.gif" class="img-fluid logo-img" />
-                            </a>
+                            @if (ViewBag.isAdmin == "True" || ViewBag.UserType != "Tool Crib")
+                            {
+                                <a onclick="Navigate('Index','/Dashboard/Index', 'Dashboard', 'Dashboard', '', '')">
+                                    <img src="~/Content/Images/Collablly.gif" class="img-fluid logo-img" />
+                                </a>
+
+                            }
+                            else
+                            {
+                                <a onclick="Navigate('Index','/Dashboard/ToolCribIndex', 'Dashboard', 'Dashboard', '', '')">
+                                    <img src="~/Content/Images/Collablly.gif" class="img-fluid logo-img" />
+                                </a>
+                            }
                         </div>
 
                     </div>
@@ -319,17 +329,24 @@
 
                     <div class="stroke">
                         <ul>
-                            <li class="list"><a onclick="Navigate('Index','/Dashboard/Index', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-home green"></i>Home</a></li>
-                            @*<li class="list"><a onclick="Navigate('Index','/Dashboard/Index', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-list-alt green"></i>About</a></li>*@
-                            <li class="list"><a onclick="Navigate('Index','/NewPO/GetPO?POStatus=All', 'Index', 'Index', '', '')"><i class="fa fa-folder-open green"></i>Purchase Order</a></li>
-                            <li class="list"><a onclick="Navigate('Index','/PDFReport/Index', 'Index', 'Index', '', '')"><i class="fa fa-file-alt green"></i>Report</a></li>
+                            @if (ViewBag.isAdmin == "True" || ViewBag.UserType != "Tool Crib")
+                            {
+                                <li class="list"><a onclick="Navigate('Index','/Dashboard/Index', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-home green"></i>Home</a></li>
+                                @*<li class="list"><a onclick="Navigate('Index','/Dashboard/Index', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-list-alt green"></i>About</a></li>*@
+                                <li class="list"><a onclick="Navigate('Index','/NewPO/GetPO?POStatus=All', 'Index', 'Index', '', '')"><i class="fa fa-folder-open green"></i>Purchase Order</a></li>
+                                <li class="list"><a onclick="Navigate('Index','/PDFReport/Index', 'Index', 'Index', '', '')"><i class="fa fa-file-alt green"></i>Report</a></li>
 
-                            @*<li class="list"><a onclick="Navigate('Index','/POScheduler/Index', 'Index', 'Index', '', '')"><i class="fa fa-file-alt green"></i>PO Scheduler</a></li>*@
-                            <li class="list"><a onclick="Navigate('Index','/LateChart/Index', 'Index', 'Index', '', '')"><i class="fa fa-line-chart green"></i>visualization</a></li>
-                            <li style="display:none">
-                                @Html.DropDownList("Connections", null, new { id = "ddlConnection", @name = "ddlConnection", @class = "dropdown-list" })
+                                @*<li class="list"><a onclick="Navigate('Index','/POScheduler/Index', 'Index', 'Index', '', '')"><i class="fa fa-file-alt green"></i>PO Scheduler</a></li>*@
+                                <li class="list"><a onclick="Navigate('Index','/LateChart/Index', 'Index', 'Index', '', '')"><i class="fa fa-line-chart green"></i>visualization</a></li>
+                                <li style="display:none">
+                                    @Html.DropDownList("Connections", null, new { id = "ddlConnection", @name = "ddlConnection", @class = "dropdown-list" })
 
-                            </li>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="list"><a onclick="Navigate('Index','/Dashboard/ToolCribIndex', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-home green"></i>Home</a></li>
+                            }
 
 
                             <li class="dropdown user user-menu" style="float:right; padding-right:40px">
@@ -349,6 +366,13 @@
                                             </div>
                                             <hr style="border-color: #ccc; margin-top: 5px; margin-bottom: 5px;">
                                             <div>
+                                                <a id="btnTool" style="color: #003B59;" class="navbar-user-container hover-effect" onclick="Navigate('Index','/Tool/Index', '', '', '', '')">
+                                                    <i class="fa fa-toolbox green" style="color: #003B59; "></i>
+                                                    Tools
+                                                </a>
+                                            </div>
+                                            <hr style="border-color: #ccc; margin-top: 5px; margin-bottom: 5px;">
+                                            <div>
                                                 <a id="btnSetting" style="color: #003B59;" class="navbar-user-container hover-effect" onclick="Navigate('Index','/Setting/Index', '', '', '', '')">
                                                     <i class="fa fa-flag-checkered green" style="color: #003B59;"></i>
                                                     Settings
@@ -356,6 +380,16 @@
                                             </div>
                                             <hr style="border-color: #ccc; margin-top: 5px; margin-bottom: 5px;">
                                         }
+                                        else if (ViewBag.UserType == "Tool Crib")
+                                        {
+                                            <div>
+                                                <a id="btnTool" style="color: #003B59;" class="navbar-user-container hover-effect" onclick="Navigate('Index','/Tool/Index', '', '', '', '')">
+                                                    <i class="fa fa-toolbox green" style="color: #003B59; "></i>
+                                                    Tools
+                                                </a>
+                                            </div>
+                                        }
+
                                         <div>
                                             <a href="~/Home/ChangePassword" style="color: #003B59;" class="navbar-user-container hover-effect"><i class="fa fa-key" style="color: #003B59;"></i> Change Password</a>
                                         </div>
@@ -514,6 +548,7 @@
         </div>
     </div>
 
+    <input type="hidden" id="hdnUserType" value="@Session["UserType"]" />
 
     <script>
 
@@ -554,7 +589,7 @@
         var mnId = '';
         LoadMenus();
 
-        function LoadMenus() {debugger
+        function LoadMenus() {
             var ProgramId = $('#ddlVendor').val();
             var Program = $("#ddlVendor :selected").text();
         $.ajax({
@@ -572,7 +607,16 @@
                 else
                     $('#renderBody').html(data);
 
-                OpenPage('\\Dashboard\\Index');
+                var userType = $('#hdnUserType').val().toLowerCase();
+
+                if (userType === 'buyer' || userType === 'supplier' || userType === 'admin') {
+
+                    OpenPage('\\Dashboard\\Index');
+                }
+                else {
+                    OpenPage('\\Dashboard\\ToolCribIndex');
+
+                }
             }
         });
     }
