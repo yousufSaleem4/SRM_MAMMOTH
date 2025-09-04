@@ -447,6 +447,56 @@
             -webkit-box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* More pronounced shadow on hover */
             box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* More pronounced shadow on hover */
         }
+
+
+
+    .status-active,
+    .status-pending,
+    .status-received {
+        color: white;
+        padding: 5px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        cursor: pointer;
+    }
+
+    .status-active {
+        background-color: #007bff; /* Bootstrap primary blue */
+    }
+
+        .status-active:hover {
+            background-color: #0056b3; /* darker blue */
+            color: #fff;
+        }
+
+    .status-pending {
+        background-color: #fd7e14; /* Bootstrap orange */
+    }
+
+        .status-pending:hover {
+            background-color: #e8590c; /* darker orange */
+            color: #fff;
+        }
+
+    .status-received {
+        background-color: #28a745; /* Bootstrap green */
+    }
+
+        .status-received:hover {
+            background-color: #1e7e34; /* darker green */
+            color: #fff;
+        }
+
+    .status-rejected {
+        background-color: red; /* Bootstrap green */
+    }
+
+        .status-rejected:hover {
+            background-color: red; /* darker green */
+            color: red;
+        }
+
 </style>
 
 <div id="parent" class="container-fluid">
@@ -566,11 +616,33 @@
                 if (!isSingleRow) {
                     var columnDef = [
                         { "data": "Username", "title": "User Name", "className": "text-center" },
-                        { "data": "UserId", "title": "User ID", "className": "text-center" },
-                        { "data": "FirstName", "title": "First Name", "className": "text-center" },
-                        { "data": "LastName", "title": "Last Name", "className": "text-center" },
-                        { "data": "Email", "title": "Supplier Email", "className": "text-center" },
-                        { "data": "Status", "title": "Status", "className": "text-center" },
+                        { "data": "UserId", "title": "User ID", "className": "text-center", "width": "70px" },
+                        { "data": "FirstName", "title": "First Name", "className": "text-center", "width": "100px" },
+                        { "data": "LastName", "title": "Last Name", "className": "text-center", "width": "100px" },
+                        { "data": "Email", "title": "Supplier Email", "className": "text-center", "width": "100px" },
+                        {
+                            data: "Status",
+                            title: "Status",
+                            width: "80px",
+                            className: "text-center",
+                            render: function (data, type, row) {
+                                let colorClass = "";
+                                if (data === "Active") {
+                                    colorClass = "status-active";
+                                } else if (data === "Pending") {
+                                    colorClass = "status-pending";
+                                } else if (data === "Received") {
+                                    colorClass = "status-received";
+                                }
+                                else if (data === "Rejected") {
+                                    colorClass = "status-rejected";
+                                }
+                                return `<span class="${colorClass}">${data}</span>`;
+                            }
+                        },
+
+
+
                     ]
 
 
