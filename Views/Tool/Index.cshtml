@@ -624,7 +624,27 @@
                         { "data": "FirstName", "title": "First Name", "className": "text-center","visible": false},
                         { "data": "LastName", "title": "Last Name", "className": "text-center", "visible": false },
                         { "data": "Email", "title": "Supplier Email", "className": "text-center" },
-                        { "data": "Status", "title": "Status", "className": "text-center" },
+                        {
+                            data: "Status",
+                            title: "Status",
+                            width: "130px",
+                            className: "text-center",
+                            render: function (data, type, row) {
+                                let colorClass = "";
+                                if (data === "Active") {
+                                    colorClass = "status-active";
+                                } else if (data === "Pending") {
+                                    colorClass = "status-pending";
+                                } else if (data === "Received") {
+                                    colorClass = "status-received";
+                                }
+                                else if (data === "Rejected") {
+                                    colorClass = "status-rejected";
+                                }
+                                return `<span class="${colorClass}">${data}</span>`;
+                            }
+                        }
+
                     ]
 
 
