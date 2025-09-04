@@ -14,7 +14,7 @@ namespace PlusCP.Models
         public string ErrorMessage { get; set; }
         public string ErrorMessageUpdate { get; set; }
         public List<Hashtable> lstTool { get; set; }
-
+        public List<Hashtable> lstGetTool { get; set; }
         public string Email { get; set; }
         public string Message { get; set; }
         cDAL oDAL;
@@ -188,6 +188,59 @@ ORDER BY Id DESC  ";
                 return Message;
             }
 
+        }
+
+
+
+        public DataTable GetToolDropdown()
+        {
+            DataTable dt = new DataTable();
+            cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
+            string sql = "SELECT distinct ToolId AS ID, ToolName AS [NAME] FROM dbo.Tools";
+            dt = oDAL.GetData(sql);
+
+            // Add "Select from List" row at the top
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                DataRow newRow = dt.NewRow();
+                newRow["ID"] = 0;   // 0 = Dummy "Select" value
+                newRow["NAME"] = "Select from List";
+                dt.Rows.InsertAt(newRow, 0);
+
+            }
+
+            return dt;
+        }
+        public bool GetToolList()
+        {
+            oDAL = new cDAL(cDAL.ConnectionType.INIT);
+            string query = string.Empty;
+            query = @"SELECT [ToolId]
+      ,[ToolName]
+      ,[PartNum]
+      ,[Quantity]
+      ,[PurchaseDate]
+      ,[PurchaseCost]
+      ,[CurrentStatus]
+      ,[CalibrationDueDate]
+      ,[LastMaintenanceDate]
+      ,[IsConsumable]
+  FROM [dbo].[Tools]
+  ";
+
+            DataTable dt = oDAL.GetData(query);
+
+            if (oDAL.HasErrors)
+            {
+                ErrorMessage = oDAL.ErrMessage;
+                return false;
+            }
+            else
+            {
+                if (dt.Rows.Count > 0)
+                    lstGetTool = cCommon.ConvertDtToHashTable(dt);
+                return true;
+            }
         }
     }
 }

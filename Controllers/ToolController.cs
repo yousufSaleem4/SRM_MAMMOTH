@@ -69,5 +69,47 @@ namespace PlusCP.Controllers
             jsonResult.MaxJsonLength = int.MaxValue;
             return jsonResult;
         }
+
+
+        public ActionResult GetTool(string RptCode, string menuTitle)
+        {
+            oTool = new Tool();
+            TempData["ReportTitle"] = menuTitle;
+            TempData["RptCode"] = RptCode;
+            ViewBag.ReportTitle = "Tools";
+            ViewBag.ddlTool = cCommon.ToDropDownList(oTool.GetToolDropdown(), "ID", "NAME", Session["ProgramId"].ToString(), "ID");
+            //if (Session["isAdmin"].ToString() == "True")
+            //{
+
+            //    ViewBag.ddlUsers = cCommon.ToDropDownList(oTool.GetToolUsers(), "ID", "NAME", Session["ProgramId"].ToString(), "ID");
+            //}
+            //else
+            //{
+            //    ViewBag.ddlUsers = cCommon.ToDropDownList(oTool.GetToolUsers(), "ID", "NAME", Session["ProgramId"].ToString(), "ID");
+            //}
+            return View(oTool);
+        }
+
+        public JsonResult GetToolList()
+        {
+            string menuTitle = string.Empty;
+            string RptCode;
+            DataTable dt = new DataTable();
+
+            oTool.GetToolList();
+
+            var jsonResult = Json(oTool, JsonRequestBehavior.AllowGet);
+            jsonResult.MaxJsonLength = int.MaxValue;
+            //LOAD MRU & LOG QUERY
+            if (TempData["ReportTitle"] != null && TempData["RptCode"] != null)
+            {
+                menuTitle = TempData["ReportTitle"] as string;
+                RptCode = TempData["RptCode"].ToString();
+                TempData.Keep();
+                cLog oLog = new cLog();
+                oLog.SaveLog(menuTitle, Request.Url.PathAndQuery, RptCode);
+            }
+            return jsonResult;
+        }
     }
 }
