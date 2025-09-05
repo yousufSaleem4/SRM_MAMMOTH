@@ -329,7 +329,7 @@
 
                     <div class="stroke">
                         <ul>
-                            @if (ViewBag.isAdmin == "True" || ViewBag.UserType != "Tool Crib")
+                            @if (ViewBag.isAdmin == "True")
                             {
                                 <li class="list"><a onclick="Navigate('Index','/Dashboard/Index', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-home green"></i>Home</a></li>
                                 @*<li class="list"><a onclick="Navigate('Index','/Dashboard/Index', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-list-alt green"></i>About</a></li>*@
@@ -338,17 +338,23 @@
 
                                 @*<li class="list"><a onclick="Navigate('Index','/POScheduler/Index', 'Index', 'Index', '', '')"><i class="fa fa-file-alt green"></i>PO Scheduler</a></li>*@
                                 <li class="list"><a onclick="Navigate('Index','/LateChart/Index', 'Index', 'Index', '', '')"><i class="fa fa-line-chart green"></i>visualization</a></li>
-                                <li style="display:none">
-                                    @Html.DropDownList("Connections", null, new { id = "ddlConnection", @name = "ddlConnection", @class = "dropdown-list" })
-
-                                </li>
+                                <li class="list"><a onclick="Navigate('GetTool','/Tool/GetTool', 'Tool', 'Tool', '', '')"><i class="fa fa-toolbox green"></i>Tool</a></li>
                             }
-                            else
+                            else if (ViewBag.UserType == "Tool Crib")
                             {
                                 <li class="list"><a onclick="Navigate('Index','/Dashboard/ToolCribIndex', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-home green"></i>Home</a></li>
                                 <li class="list"><a onclick="Navigate('GetTool','/Tool/GetTool', 'Tool', 'Tool', '', '')"><i class="fa fa-toolbox green"></i>Tool</a></li>
                             }
+                            else
+                            {
+                                <li class="list"><a onclick="Navigate('Index','/Dashboard/Index', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-home green"></i>Home</a></li>
+                                @*<li class="list"><a onclick="Navigate('Index','/Dashboard/Index', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-list-alt green"></i>About</a></li>*@
+                                <li class="list"><a onclick="Navigate('Index','/NewPO/GetPO?POStatus=All', 'Index', 'Index', '', '')"><i class="fa fa-folder-open green"></i>Purchase Order</a></li>
+                                <li class="list"><a onclick="Navigate('Index','/PDFReport/Index', 'Index', 'Index', '', '')"><i class="fa fa-file-alt green"></i>Report</a></li>
 
+                                @*<li class="list"><a onclick="Navigate('Index','/POScheduler/Index', 'Index', 'Index', '', '')"><i class="fa fa-file-alt green"></i>PO Scheduler</a></li>*@
+                                <li class="list"><a onclick="Navigate('Index','/LateChart/Index', 'Index', 'Index', '', '')"><i class="fa fa-line-chart green"></i>visualization</a></li>
+                            }
 
                             <li class="dropdown user user-menu" style="float:right; padding-right:40px">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
