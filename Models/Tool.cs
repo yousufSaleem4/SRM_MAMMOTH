@@ -13,10 +13,16 @@ namespace PlusCP.Models
         public string filterString { get; set; }
         public string ErrorMessage { get; set; }
         public string ErrorMessageUpdate { get; set; }
+
+
+        public int TotalTools { get; set; }
+        public int Available { get; set; }
+        public int CheckedOut { get; set; }
+        public int CheckedIn { get; set; }
+
+
         public List<Hashtable> lstTool { get; set; }
         public List<Hashtable> lstGetTool { get; set; }
-        public List<Hashtable> lstToolTransaction { get; set; }
-
         public string Email { get; set; }
         public string Message { get; set; }
         cDAL oDAL;
@@ -191,6 +197,9 @@ ORDER BY Id DESC  ";
             }
 
         }
+
+
+
         public DataTable GetToolDropdown()
         {
             DataTable dt = new DataTable();
@@ -213,45 +222,20 @@ ORDER BY Id DESC  ";
         public bool GetToolList()
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
-            var userId = HttpContext.Current.Session["SigninId"].ToString();
             string query = string.Empty;
-            query = @"SELECT 
-    t.ToolId,
-    t.ToolName,
-    t.PartNum,
-    t.Quantity AS TotalQty,
-    ISNULL(t.Quantity - SUM(a.AllocatedQty - a.ReturnedQty), t.Quantity) AS AvailableQty,
-    CASE 
-        WHEN SUM(a.AllocatedQty - a.ReturnedQty) >= t.Quantity THEN 'Issued'
-        ELSE 'Available'
-    END AS CurrentStatus,
-    t.IsConsumable,
-    CASE 
-        WHEN ISNULL(t.Quantity - SUM(a.AllocatedQty - a.ReturnedQty), t.Quantity) > 0 THEN CAST(1 AS BIT)
-        ELSE CAST(0 AS BIT)
-    END AS CanCheckOut,
-    CASE 
-        WHEN EXISTS (
-            SELECT 1 
-            FROM ToolAllocation 
-            WHERE ToolId = t.ToolId AND UserId = @UserId AND IsReturned = 0
-        ) THEN CAST(1 AS BIT)
-        ELSE CAST(0 AS BIT)
-    END AS CanCheckIn,
-Allocations = STUFF((
-        SELECT ',' + CAST(a.AllocationId AS VARCHAR)
-        FROM ToolAllocation a
-        WHERE a.ToolId = t.ToolId 
-          AND a.UserId = @UserId
-          AND a.IsReturned = 0
-        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '')
-FROM Tools t
-LEFT JOIN ToolAllocation a 
-    ON t.ToolId = a.ToolId AND a.IsReturned = 0
-GROUP BY t.ToolId, t.ToolName, t.PartNum, t.Quantity, t.IsConsumable;
-
+            query = @"SELECT [ToolId]
+      ,[ToolName]
+      ,[PartNum]
+      ,[Quantity]
+      ,[PurchaseDate]
+      ,[PurchaseCost]
+      ,[CurrentStatus]
+      ,[CalibrationDueDate]
+      ,[LastMaintenanceDate]
+      ,[IsConsumable]
+  FROM [dbo].[Tools]
   ";
-            query = query.Replace("@UserId", userId);
+
             DataTable dt = oDAL.GetData(query);
 
             if (oDAL.HasErrors)
@@ -267,115 +251,33 @@ GROUP BY t.ToolId, t.ToolName, t.PartNum, t.Quantity, t.IsConsumable;
             }
         }
 
-        public int GetAvailableQty(int toolId)
+
+        public DataTable GetToolStats()
         {
-            oDAL = new cDAL(cDAL.ConnectionType.INIT);
+            cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
-            string sql = $@"
-        SELECT t.Quantity - ISNULL(SUM(a.AllocatedQty), 0) AS AvailableStock
-        FROM Tools t
-        LEFT JOIN ToolAllocation a 
-            ON t.ToolId = a.ToolId AND a.IsReturned = 0
-        WHERE t.ToolId = {toolId}
-        GROUP BY t.Quantity";
+            string sql = @"
+        SELECT 
+            (SELECT COUNT(ToolName) FROM dbo.Tools) AS TotalTools,
 
-            object result = oDAL.GetObject(sql);
-            return result == null ? 0 : Convert.ToInt32(result);
+            (SELECT 
+                SUM(t.Quantity) - ISNULL(SUM(a.AllocatedQty), 0)
+             FROM dbo.Tools t
+             LEFT JOIN dbo.ToolAllocation a 
+                ON t.ToolId = a.ToolId
+               AND a.UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
+               AND a.IsReturned = 0
+            ) AS Available,
+
+            (SELECT ISNULL(SUM(AllocatedQty),0) 
+             FROM [SRMDBPILOT].[dbo].[ToolAllocation] 
+             WHERE UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
+            ) AS CheckedOut
+    ";
+
+            return oDAL.GetData(sql);
         }
 
-        public bool UserHasTool(int toolId, int userId)
-        {
-            oDAL = new cDAL(cDAL.ConnectionType.INIT);
-
-            string sql = $@"
-        SELECT COUNT(*) 
-        FROM ToolAllocation 
-        WHERE ToolId = {toolId} AND UserId = {userId} AND IsReturned = 0";
-
-            int count = Convert.ToInt32(oDAL.GetObject(sql));
-            return count > 0;
-        }
-        public bool GetToolTransaction(string toolId)
-        {
-            cDAL oDAL = new cDAL(cDAL.ConnectionType.ACTIVE);
-            string query = @"SELECT 
-    tt.TranId,
-    t.ToolName,
-    tt.ToolId,
-    tt.UserId,
-    ta.AllocationId,
-    ta.CheckoutDate,
-    ta.ReturnDate,
-CAST(DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) / 1440 AS VARCHAR(10)) + 'd ' +
-CAST((DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) % 1440) / 60 AS VARCHAR(10)) + 'h ' +
-CAST(DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) % 60 AS VARCHAR(10)) + 'm'
-AS Duration,
-tt.TranType,
-    tt.TranDate,
-    tt.TranQty,
-    --tt.Notes AS TransactionNotes,
-    ta.CheckOutConditionNotes,
-    ta.CheckInConditionNotes
-
-FROM dbo.ToolTran tt
-INNER JOIN dbo.Tools t 
-    ON tt.ToolId = t.ToolId
-LEFT JOIN dbo.ToolAllocation ta 
-    ON tt.ToolId = ta.ToolId 
-   AND tt.UserId = ta.UserId
-
-where t.ToolId = <toolId>
---ORDER BY tt.TranDate DESC;";
-
-            query = query.Replace("<toolId>", toolId);
-            DataTable dt = oDAL.GetData(query);
-
-            if (!oDAL.HasErrors)
-            {
-                lstToolTransaction = new List<Hashtable>();
-                lstToolTransaction = cCommon.ConvertDtToHashTable(dt);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
 
     }
-    public class ToolTracking
-    {
-        public int ToolId { get; set; }
-        public string ToolName { get; set; }
-        public string PartNum { get; set; }
-        public int TotalQty { get; set; }
-        public int AvailableQty { get; set; }
-        public bool CanCheckOut { get; set; }
-        public bool CanCheckIn { get; set; }
-    }
-
-    public class ToolTransaction
-    {
-        public int TranId { get; set; }
-        public int ToolId { get; set; }
-        public int UserId { get; set; }
-        public int TranQty { get; set; }
-        public string TranType { get; set; }  // "OUT" or "IN"
-        public DateTime TranDate { get; set; }
-        public string Notes { get; set; }
-    }
-
-    public class ToolAllocation
-    {
-        public int AllocationId { get; set; }
-        public int ToolId { get; set; }
-        public int UserId { get; set; }
-        public int AllocatedQty { get; set; }
-        public DateTime CheckoutDate { get; set; }
-        public DateTime? ExpectedReturnDate { get; set; }
-        public bool IsReturned { get; set; }
-        public DateTime? ReturnDate { get; set; }
-        public string ConditionNotes { get; set; }
-    }
-
 }
