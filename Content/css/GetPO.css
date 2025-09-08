@@ -1,0 +1,1146 @@
+﻿
+/* Transaction Modal */
+#TransactionModal .modal-content {
+    border: 0;
+    border-radius: 16px; /* curved sides */
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+    overflow: hidden; /* ensures header/body follow the curve */
+    background: #ffffff;
+}
+
+#TransactionModal .custom-modal-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    height: auto !important;
+    padding: 14px 18px;
+}
+
+#TransactionModal .custom-modal-title {
+    font-weight: 700;
+    letter-spacing: .2px;
+    color: #0f172a;
+}
+
+#TransactionModal .modal-body {
+    padding: 18px 22px;
+}
+
+/* Optional: table container styling */
+#TransactionModal .table-container {
+    border-radius: 12px;
+    border: 1px solid #eef2f7;
+    background: #f9fafb;
+    padding: 10px;
+}
+
+/* Table headers */
+#TransactionModal .table thead th {
+    background: #f1f5f9;
+    font-weight: 600;
+    font-size: 13px;
+    color: white;
+    text-align: center;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+/* Table cells */
+#TransactionModal .table tbody td {
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+/* Sticky header */
+#TransactionModal .sticky-header th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+/* Modal footer */
+#TransactionModal .modal-footer {
+    border: 0;
+    padding: 16px 22px 22px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+/* Buttons */
+#TransactionModal .btn {
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 700;
+    min-width: 130px;
+}
+
+/* Brand primary */
+#TransactionModal .btn-hover-save {
+    background: #003B59;
+    color: #fff;
+    border: 1px solid #003B59;
+}
+
+    #TransactionModal .btn-hover-save:hover {
+        background: #fff;
+        border-color: #003B59;
+        color: #003B59;
+    }
+
+/* Outline close button */
+#TransactionModal .btnClose {
+    border: 1px solid #003B59;
+    color: #003B59;
+    background: #fff;
+}
+
+    #TransactionModal .btnClose:hover {
+        background: rgba(14,165,233,.08);
+        color: #003B59;
+        border-color: #0284c7;
+    }
+
+
+/* Confirmation Modal */
+#confirmationModal .modal-content {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+    background: #fff;
+    overflow: hidden;
+}
+
+/* Header */
+#confirmationModal .custom-modal-header {
+    background: #003B59;
+    color: #fff;
+    border-bottom: none;
+    padding: 14px 18px;
+}
+
+#confirmationModal .custom-modal-title {
+    font-weight: 700;
+}
+
+/* Body */
+#confirmationModal .modal-body {
+    padding: 20px;
+    background-color: #f9fafb;
+}
+
+#confirmationModal .ModalLabelColor {
+    font-size: 15px;
+    color: #374151;
+    line-height: 1.6;
+}
+
+/* Footer */
+#confirmationModal .modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 16px 22px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Buttons */
+#confirmationModal .btn {
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 700;
+    min-width: 110px;
+}
+
+/* Yes button (Primary) */
+#confirmationModal .btn-hover-save {
+    background: #198754;
+    color: #fff;
+    border: 1px solid #198754;
+}
+
+    #confirmationModal .btn-hover-save:hover {
+        background: #fff;
+        color: #198754;
+    }
+
+/* No button (Cancel) */
+#confirmationModal .btnClose {
+    background: #dc3545;
+    color: #fff;
+    border: 1px solid #dc3545;
+}
+
+    #confirmationModal .btnClose:hover {
+        background: #fff;
+        color: #dc3545;
+    }
+
+/* Transaction Modal */
+#TransactionModal .modal-content {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+    background: #fff;
+    overflow: hidden;
+}
+
+/* Header */
+#TransactionModal .modal-header {
+    background: #003B59;
+    color: #fff;
+    border-bottom: none;
+    padding: 14px 18px;
+}
+
+#TransactionModal .modal-title {
+    font-weight: 700;
+}
+
+#TransactionModal .close {
+    color: #fff;
+    opacity: 0.8;
+    font-size: 1.6rem;
+}
+
+    #TransactionModal .close:hover {
+        opacity: 1;
+    }
+
+/* Body */
+#TransactionModal .modal-body {
+    padding: 20px;
+    background-color: #f9fafb;
+}
+
+#TransactionModal strong {
+    color: #0f172a;
+}
+
+#TransactionModal .status-badge {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* Table inside modal */
+#TransactionModal table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+#TransactionModal th {
+    background: #003B59;
+    color: #fff; /* white table header text */
+    padding: 8px;
+    text-align: left;
+}
+
+#TransactionModal td {
+    padding: 8px;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Footer */
+#TransactionModal .modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 16px 22px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Buttons */
+#TransactionModal .btn {
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 700;
+    min-width: 110px;
+}
+
+/* Specific button styles */
+#TransactionModal .received-btn {
+    background: #198754;
+    color: #fff;
+    border: 1px solid #198754;
+}
+
+    #TransactionModal .received-btn:hover {
+        background: #fff;
+        color: #198754;
+    }
+
+#TransactionModal .reset-btn {
+    background: #dc3545;
+    color: #fff;
+    border: 1px solid #dc3545;
+}
+
+    #TransactionModal .reset-btn:hover {
+        background: #fff;
+        color: #dc3545;
+    }
+
+#TransactionModal .ok-btn {
+    background: #003B59;
+    color: #fff;
+    border: 1px solid #003B59;
+}
+
+    #TransactionModal .ok-btn:hover {
+        background: #fff;
+        color: #003B59;
+    }
+
+/* Multi Email Modal */
+#MultiEmail .modal-content {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+    background: #fff;
+    overflow: hidden;
+}
+
+/* Header */
+#MultiEmail .custom-modal-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 14px 18px;
+}
+
+#MultiEmail .custom-modal-title {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* Body */
+#MultiEmail .modal-body {
+    padding: 20px;
+    background-color: #f9fafb;
+}
+
+/* Table styles */
+#MultiEmail .table {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 14px;
+}
+
+#MultiEmail .t-head {
+    font-weight: 600;
+    background-color: #f3f4f6;
+    color: white;
+    text-align: center;
+}
+
+#MultiEmail tbody tr:hover {
+    background-color: #f0f9ff;
+}
+
+/* Footer */
+#MultiEmail .modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 16px 22px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Buttons */
+#MultiEmail .btn {
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 700;
+    min-width: 110px;
+}
+
+/* Send button */
+#MultiEmail .btn-hover-save {
+    background: #003B59;
+    color: #fff;
+    border: 1px solid #003B59;
+}
+
+    #MultiEmail .btn-hover-save:hover {
+        background: #fff;
+        border-color: #003B59;
+        color: #003B59;
+    }
+
+/* Close button */
+#MultiEmail .btnClose {
+    border: 1px solid #003B59;
+    color: #003B59;
+    background: #fff;
+}
+
+    #MultiEmail .btnClose:hover {
+        background: rgba(14,165,233,.08);
+        color: #003B59;
+        border-color: #0284c7;
+    }
+
+/* Option Filter Modal */
+#OptionFilter .modal-content {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+    background: #fff;
+    overflow: hidden;
+}
+
+/* Header */
+#OptionFilter .custom-modal-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 14px 18px;
+}
+
+#OptionFilter .custom-modal-title {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* Body */
+#OptionFilter .modal-body {
+    padding: 20px;
+    background-color: #f9fafb;
+}
+
+#OptionFilter .ModalLabelColor {
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Inputs */
+#OptionFilter .form-control {
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    padding: 6px 10px;
+    font-size: 14px;
+}
+
+/* Footer */
+#OptionFilter .modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 16px 22px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Buttons */
+#OptionFilter .btn {
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 700;
+    min-width: 110px;
+}
+
+/* Send button */
+#OptionFilter .btn-hover-save {
+    background: #003B59;
+    color: #fff;
+    border: 1px solid #003B59;
+}
+
+    #OptionFilter .btn-hover-save:hover {
+        background: #fff;
+        border-color: #003B59;
+        color: #003B59;
+    }
+
+/* Reset button */
+#OptionFilter .btn-danger {
+    background: #dc2626;
+    border: 1px solid #dc2626;
+    color: #fff;
+}
+
+    #OptionFilter .btn-danger:hover {
+        background: #fff;
+        color: #dc2626;
+        border-color: #dc2626;
+    }
+
+/* Close button */
+#OptionFilter .btnClose {
+    border: 1px solid #003B59;
+    color: #003B59;
+    background: #fff;
+}
+
+    #OptionFilter .btnClose:hover {
+        background: rgba(14,165,233,.08);
+        color: #003B59;
+        border-color: #0284c7;
+    }
+
+.invite-btn {
+    background-color: #28a745; /* Bootstrap success green */
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.1s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+    .invite-btn i {
+        transition: transform 0.2s ease;
+    }
+
+    .invite-btn:hover {
+        background-color: #218838; /* Darker green on hover */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transform: translateY(-1px);
+    }
+
+        .invite-btn:hover i {
+            transform: translateX(3px);
+        }
+/* Scoped styles for TransactionModal only */
+/* Additional styling for perfect alignment */
+.text-dark {
+    color: #003B59 !important;
+}
+
+#TransactionModal .modal-header {
+    border-bottom: none;
+    background-color: #1f3b8d;
+    color: white;
+}
+
+#TransactionModal .status-badge {
+    padding: 0.35rem 0.75rem;
+    font-size: 1.2rem;
+}
+
+#TransactionModal .close {
+    font-size: 1.8rem; /* Slightly larger close button */
+    padding: 0.5rem; /* Better click area */
+}
+
+    #TransactionModal .close:hover {
+        color: #fff;
+        opacity: 0.8;
+    }
+
+/*#TransactionModal .modal-header {
+            background-color: #1f3b8d;
+            border-bottom: none;
+        }*/
+
+/*    #TransactionModal .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+        }
+    */
+/* Status colors */
+#TransactionModal .status-new {
+    background-color: #007bff;
+    color: white;
+}
+
+#TransactionModal .status-sent {
+    background-color: #fd7e14;
+    color: white;
+}
+
+#TransactionModal .status-received {
+    background-color: #28a745;
+    color: white;
+}
+#TransactionModal .status-rejected {
+    background-color: crimson;
+    color: white;
+}
+#TransactionModal .ok-btn {
+    min-width: 80px;
+    background-color: #003B59;
+    color: white;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+    #TransactionModal .ok-btn:hover {
+        background-color: white !important;
+        color: #003B59 !important;
+        border: 2px solid #003B59 !important;
+    }
+.status-rejected,
+.status-new,
+.status-sent,
+.status-received {
+    color: white;
+    padding: 5px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+}
+
+.status-new {
+    background-color: #007bff; /* Bootstrap primary blue */
+}
+
+    .status-new:hover {
+        background-color: #0056b3; /* darker blue */
+        color: #fff;
+    }
+
+.status-sent {
+    background-color: #fd7e14; /* Bootstrap orange */
+}
+
+    .status-sent:hover {
+        background-color: #e8590c; /* darker orange */
+        color: #fff;
+    }
+
+.status-received {
+    background-color: #28a745; /* Bootstrap green */
+}
+
+    .status-received:hover {
+        background-color: #1e7e34; /* darker green */
+        color: #fff;
+    }
+
+.status-rejected {
+    background-color: crimson;
+}
+
+    .status-rejected:hover {
+        background-color: firebrick;
+        color: #fff;
+    }
+
+
+
+.custom-modal-width {
+    max-width: 90%; /* Adjust width as needed */
+    width: 90%;
+}
+
+.table.dataTable {
+    font-family: "Segoe UI", "Roboto";
+    clear: both;
+    /* border-collapse: separate;*/
+    border-spacing: 0;
+    font-size: 16px;
+    margin-top: 1px;
+}
+
+.dataTables_wrapper,
+.dataTables_length,
+.dataTables_filter,
+.dataTables_info,
+.dataTables_paginate,
+table.dataTable thead th,
+table.dataTable tbody td {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif !important;
+}
+
+    .dataTables_wrapper .dataTables_paginate {
+        text-align: left !important;
+        float: none !important;
+        display: flex;
+        justify-content: left;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif !important;
+    }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            font-size: 15px !important; /* Increase font size */
+            padding: 8px 12px; /* Increase button padding */
+            color: #003B59 !important;
+        }
+
+    .dataTables_wrapper .dataTables_paginate {
+        margin-left: 60px !important; /* Adjust this value as needed */
+    }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button i {
+            font-size: 15px !important; /* Increase icon size */
+            color: #003B59 !important;
+        }
+
+    .dataTables_wrapper .dataTables_info {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif !important;
+        font-size: 16px !important; /* Adjust size */
+        color: #333 !important; /* Darker text */
+        margin-left: 5px;
+    }
+/* Change odd row background color */
+table.dataTable tbody tr:nth-child(odd) {
+    background-color: #ECEDEF; /* Change to your desired color */
+}
+
+/* Change even row background color */
+table.dataTable tbody tr:nth-child(even) {
+    background-color: #ffffff; /* Change to your desired color */
+}
+
+table.dataTable tbody tr.selected {
+    background-color: #D6EFE8; /* Orange color */
+    /*color: white;*/ /* Change text color if needed */
+}
+/* Search icon inside input */
+.search-icon {
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    transform: translateY(-50%);
+    color: darkgrey;
+    font-size: 14px;
+    pointer-events: none; /* Prevents clicking on the icon */
+}
+
+.search-container {
+    position: relative;
+    display: inline-block;
+}
+
+.txtSearch-frame {
+    margin-top: 5px;
+    height: 28px;
+    width: 150px;
+    border: none;
+    color: #003B59;
+    border: 2px solid #003B59 !important;
+    width: 200px;
+    padding-left: 30px; /* Space for the icon */
+}
+
+table.table thead th {
+    background-color: #003B59 !important; /* Change to your desired color */
+    color: white; /* Change to desired text color */
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
+    height: 40px;
+}
+
+table.table tbody td, lbl_ {
+    /*background-color: white !important; /* Change to your desired color */
+    font-size: 15px;
+    color: #003B59 !important;
+}
+
+table.table tbody tr {
+    height: 50px; /* Adjust height as needed */
+}
+
+    /* Hover effect */
+    table.table tbody tr:hover {
+        background-color: #f5f5f5 !important; /* Light gray background on hover */
+        transition: background-color 0.8s ease-in-out;
+        cursor: pointer;
+    }
+
+
+
+
+table th {
+    /*padding: 1rem 0.5rem !important;*/
+    border: 1px solid white;
+    border-bottom: 1px solid white;
+    /*padding: 8px;*/
+    text-align: left;
+}
+
+table td {
+    padding: 1rem 0.5rem !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    vertical-align: middle;
+}
+
+table {
+    /* border-collapse: separate;*/
+    border-spacing: 0 10px; /* Adjust the second value to increase/decrease the vertical gap */
+    width: 100%;
+}
+
+    table.table-bordered.dataTable tbody th, table.table-bordered.dataTable tbody td {
+        border-bottom-width: 1px;
+    }
+
+
+.lblHeading {
+    font-size: 19px;
+    color: #003B59 !important;
+}
+
+
+.po-icon {
+    color: #007bff;
+    margin-right: 5px;
+}
+
+.po-hover {
+    text-decoration: none;
+    font-weight: bold;
+    color: #007bff;
+    transition: all 0.3s ease-in-out;
+}
+
+    .po-hover:hover {
+        text-shadow: 0 0 8px #007bff;
+        transform: scale(1.05);
+    }
+
+.po-preview {
+    display: none;
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    width: 220px;
+    font-size: 12px;
+    transition: opacity 0.3s ease-in-out;
+}
+
+    .po-preview strong {
+        color: #333;
+    }
+
+    .po-preview i {
+        color: #007bff;
+        margin-right: 5px;
+    }
+
+
+
+#SecondemailInputContainer {
+    border: 1px solid #ccc;
+    background-color: #fff;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 5px;
+    border-radius: 4px;
+    min-height: 40px;
+    cursor: text;
+}
+
+#FirstemailInputContainer {
+    border: 1px solid #ccc;
+    background-color: #fff;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 5px;
+    border-radius: 4px;
+    min-height: 40px;
+    cursor: text;
+}
+
+#emailInputContainer {
+    border: 1px solid #ccc;
+    background-color: #fff;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 5px;
+    border-radius: 4px;
+    min-height: 40px;
+    cursor: text;
+}
+
+.tag {
+    background-color: #003B59;
+    color: #fff;
+    padding: 5px 10px;
+    margin: 3px;
+    border-radius: 15px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+}
+
+    .tag .remove {
+        margin-left: 8px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+.tempinput {
+    border: none;
+    outline: none;
+    padding: 5px;
+    font-size: 12px;
+    min-width: 100px;
+    flex-grow: 1;
+}
+
+
+
+
+
+.required:after {
+    content: " *";
+    color: red;
+}
+
+.datepicker td, th {
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.Message {
+    height: 200px;
+    width: 500px
+}
+
+.custom-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #ccc;
+}
+
+.custom-modal-title {
+    margin: 0;
+}
+
+/*   .custom-modal-header .close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            font-size: 1.5rem;
+            line-height: 1;
+        }*/
+
+
+
+.pad {
+    padding-bottom: 15px;
+    padding: 2px;
+    padding-top: 10px;
+}
+
+
+
+.table-container {
+    height: 200px; /* Set the desired fixed height */
+    overflow-y: auto;
+}
+
+
+.sticky-header th {
+    position: sticky;
+    top: 0;
+    background-color: #f2f2f2;
+}
+
+
+
+.t-head {
+    color: #023160;
+}
+
+
+
+
+
+
+.btn-box-tool {
+    color: #003B59 !important;
+}
+
+
+.table-container {
+    height: 500px; /* Set the desired fixed height */
+    overflow-y: auto;
+}
+/* Set a fixed height for the scrollable table body */
+.fixed-table-container {
+    max-height: 500px; /* Adjust the height as needed */
+    overflow-y: auto; /* Enable vertical scrolling */
+    border: 1px solid #ddd; /* Optional: Add a border */
+}
+
+/* Make the table header sticky */
+.fixed-header th {
+    position: sticky;
+    top: 0;
+    background: white; /* Ensures header stays visible */
+    z-index: 1000; /* Ensures it stays above content */
+    border-bottom: 2px solid #ddd; /* Optional: Adds a bottom border */
+}
+/* Center align table body */
+#dataTable td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.sticky-header th {
+    position: sticky;
+    top: 0;
+    background-color: #f2f2f2;
+}
+
+
+
+.t-head {
+    color: #023160;
+}
+
+
+
+.box-header {
+    background-color: #f8f9fc !important;
+    color: #003B59 !important;
+    border-bottom: 2px solid #f8f9fc;
+    box-shadow: 0px 5px #ededed;
+}
+
+
+
+
+
+
+/*/Badges/*/
+
+.btn-badges {
+    color: #003B59 !important;
+    border-radius: 25px !important;
+    margin-left: 5px !important;
+    height: 25px !important;
+    padding: 2px 12px !important;
+}
+
+    .btn-badges:hover {
+        background-color: #003B59 !important;
+        color: white !important;
+    }
+
+        .btn-badges:hover .badge_light {
+            background-color: white !important;
+            color: #003B59 !important;
+        }
+
+.badge_light {
+    background-color: #003B59 !important;
+    color: white !important;
+}
+
+.btn-badges-Sent {
+    border-radius: 25px !important;
+    height: 25px !important;
+    width: 60px;
+}
+/* Refresh Button */
+.btn-refresh {
+    background-color: #003B59 !important; /* Distinct orange color */
+    color: white !important;
+    border-radius: 30px !important;
+    margin-left: 5px !important;
+    height: 25px !important;
+    padding: 0px 12px !important;
+    border: 2px solid #003B59 !important;
+    transition: all 0.3s ease-in-out;
+}
+
+    .btn-refresh:hover {
+        background-color: white !important;
+        color: #003B59 !important;
+        border: 2px solid #003B59 !important;
+    }
+
+.selected {
+    background-color: deepskyblue;
+    color: black;
+}
+/* Modal Styling */
+.modal-dialog {
+    margin: 30px auto;
+}
+
+    .modal-dialog.centered {
+        display: flex;
+        min-height: calc(100vh - 60px);
+        align-content: stretch;
+        flex-wrap: wrap;
+        align-items: stretch;
+        flex-direction: column;
+        justify-content: center;
+        width: 32%;
+    }
+
+.ModalHeaderColor {
+    background-color: #D6EFE8;
+    color: #003B59
+}
+
+.ModalLabelColor {
+    color: #003B59;
+}
+
+.btn-hover-save {
+    background-color: #003B59; /* Default background color */
+    border-color: #003B59; /* Default border color */
+    color: #fff; /* Default text color */
+}
+
+    .btn-hover-save:hover {
+        background-color: transparent; /* Make background transparent on hover */
+        border-color: #003B59; /* Dark border color on hover */
+        color: #003B59; /* Dark font color on hover */
+    }
+
+
+.btnClose {
+    background-color: whitesmoke; /* Make background transparent on hover */
+    color: #003B59; /* Dark font color on hover */
+    transform: scale(1.05); /* Slightly scale up the card on hover */
+}
+
+    .btnClose:hover {
+        border: 1px solid #003B59; /* Thicker border with dark color on hover */
+        color: #003B59; /* Dark font color on hover */
+        transform: scale(1.05); /* Slightly scale up the card on hover */
+        -webkit-box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* More pronounced shadow on hover */
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* More pronounced shadow on hover */
+    }
+
+.btnReset {
+    background-color: crimson; /* Make background transparent on hover */
+    color: white; /* Dark font color on hover */
+    transform: scale(1.05); /* Slightly scale up the card on hover */
+}
+
+    .btnReset:hover {
+        border: 1px solid #003B59; /* Thicker border with dark color on hover */
+        color: white; /* Dark font color on hover */
+        transform: scale(1.05); /* Slightly scale up the card on hover */
+        -webkit-box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* More pronounced shadow on hover */
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* More pronounced shadow on hover */
+        background-color: #d44646;
+    }
+
+.RedColor {
+    color: red;
+}
+
+.GreenColor {
+    color: green;
+}
+
+#txtTranMessage {
+    resize: vertical;
+}

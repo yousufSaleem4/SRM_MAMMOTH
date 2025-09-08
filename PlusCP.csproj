@@ -319,6 +319,7 @@
     <Content Include="Content\css\DataTableStyle.css" />
     <Content Include="Content\css\EmptyLayout.css" />
     <Content Include="Content\css\font-awesome.min.css" />
+    <Content Include="Content\css\GetPO.css" />
     <Content Include="Content\css\ionicons.min.css" />
     <Content Include="Content\css\jquery.dataTables.colResize.css" />
     <Content Include="Content\css\jquery.gridster.css" />
@@ -495,6 +496,7 @@
     <Content Include="Views\NewPO\GetPO.cshtml" />
     <Content Include="Views\Tool\Index.cshtml" />
     <Content Include="Views\Dashboard\ToolCribIndex.cshtml" />
+    <Content Include="Views\Tool\GetTool.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
