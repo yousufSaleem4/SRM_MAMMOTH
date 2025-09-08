@@ -334,6 +334,10 @@
         text-align: center;
         font-weight: bold;
     }
+
+    textarea {
+        resize: none;
+    }
 </style>
 
 <div id="parent" class="container-fluid">
@@ -365,8 +369,8 @@
                         <th></th>
                         <th></th>
                         <th></th>
-                        @*<th></th>
-                            <th></th>
+                        <th></th>
+                        @*    <th></th>
                             <th></th>*@
                     </tr>
                 </thead>
@@ -404,27 +408,25 @@
                     </div>
 
                     <!-- Quantity -->
-                    <div class="form-group">
-                        <label>Quantity</label>
-                        <input type="number" class="form-control" id="checkOutQuantity" name="Quantity" min="1" required>
+                    <div class="form-group row">
+                        <div class="col-md-6 pr-2">
+                            <label>Quantity</label>
+                            <input type="number" class="form-control" id="checkOutQuantity" name="Quantity" min="1" required step="1" oninput="this.value = this.value.replace(/[^0-9]/g,'');">
+                        </div>
+                        <div class="col-md-6 pl-2">
+                            <label>Expected Return Date</label>
+                            <input type="date" class="form-control" id="expectedReturnDate" name="ExpectedReturnDate">
+                        </div>
                     </div>
-
                     <!-- Date & Time -->
-                    <div class="form-group">
+                    <div class="form-group hidden">
                         <label>Date & Time of Check-Out</label>
                         <input type="datetime-local" class="form-control" id="checkOutDateTime" name="CheckOutDateTime">
                     </div>
-
-                    <!-- Expected Return Date -->
-                    <div class="form-group">
-                        <label>Expected Return Date</label>
-                        <input type="date" class="form-control" id="expectedReturnDate" name="ExpectedReturnDate">
-                    </div>
-
                     <!-- Condition Notes -->
                     <div class="form-group">
                         <label>Condition Notes</label>
-                        <textarea class="form-control" id="checkOutCondition" name="Condition" rows="3" placeholder="Enter condition details..."></textarea>
+                        <textarea class="form-control" id="checkOutCondition" name="Condition" rows="5" placeholder="Enter condition details..."></textarea>
                     </div>
 
                 </form>
@@ -463,11 +465,11 @@
                     <!-- Quantity Returned -->
                     <div class="form-group">
                         <label>Quantity Returned</label>
-                        <input type="number" class="form-control" id="checkInQuantity" name="QuantityReturned" min="1" required>
+                        <input type="number" class="form-control" id="checkInQuantity" name="QuantityReturned" min="1" step="1" required oninput="this.value = this.value.replace(/[^0-9]/g,'');">
                     </div>
 
                     <!-- Date & Time -->
-                    <div class="form-group">
+                    <div class="form-group hidden">
                         <label>Date & Time of Check-In</label>
                         <input type="datetime-local" class="form-control" id="checkInDateTime" name="CheckInDateTime">
                     </div>
@@ -475,7 +477,7 @@
                     <!-- Condition Notes -->
                     <div class="form-group">
                         <label>Condition Notes</label>
-                        <textarea class="form-control" id="checkInCondition" name="Condition" rows="3" placeholder="Enter condition details..."></textarea>
+                        <textarea class="form-control" id="checkInCondition" name="Condition" rows="5" placeholder="Enter condition details..."></textarea>
                     </div>
                 </form>
             </div>
@@ -505,17 +507,19 @@
                             <table id="transactionTable" class="table">
                                 <thead class="sticky-header">
                                     <tr>
+                                        <th class="t-head">Tran Date</th>
                                         <th hidden class="t-head">TranId</th>
                                         <th class="t-head">Tool</th>
-                                        <th class="t-head">User</th>
+                                        <th class="t-head">UserId</th>
+                                        <th class="t-head">Username</th>
                                         <th class="t-head">Tran Type</th>
                                         <th class="t-head">Quantity</th>
                                         @*<th class="t-head">Checkout Date</th>
-                                        <th class="t-head">Return Date</th>*@
+                                            <th class="t-head">Return Date</th>*@
                                         <th class="t-head">Days In Possession</th>
+                                        <th class="t-head">Expected Return Date</th>
                                         <th class="t-head">CheckOut Notes</th>
                                         <th class="t-head">CheckIn Notes</th>
-                                        <th class="t-head">Tran Date</th>
                                     </tr>
                                 </thead>
                                 <tbody style="text-align:center"></tbody>
@@ -568,17 +572,23 @@
                         { "data": "ToolName", "title": "Tool Name", "className": "text-center" },
                         {
                             "data": "PartNum", "title": "Part Num", "className": "text-center",
-                            render: function (data, type, row) {
 
-                                return '<a href="#" onclick="TransactionDtl(\'' + row["ToolId"] + '\')">' + data + '</a>';
-                            }
                         },
 
                         // Use TotalQty from query
                         { "data": "TotalQty", "title": "Total Quantity", "className": "text-center" },
 
                         // New column for AvailableQty
-                        { "data": "AvailableQty", "title": "Available Qty", "className": "text-center" },
+                        {
+                            "data": "AvailableQty", "title": "Available Qty", "className": "text-center",
+                            "render": function (data, type, row) {
+                                var d = data.toString();
+                                if (d == "" || d == 0)
+                                    return "0";
+                                else
+                                    return d;
+                                }
+                        },
 
                         //{ "data": "PurchaseDate", "title": "Purchase Date", "className": "text-center" },
                         //{
@@ -624,6 +634,13 @@
                                                 ${checkinDisabled}>
                                             <i class="fa fa-sign-in-alt"></i>
                                         </button>`;
+                            }
+                        },
+                        {
+                            "data": null, "title": "Tool Transaction", "className": "text-center",
+                            render: function (data, type, row) {
+
+                                return '<a href="#" onclick="TransactionDtl(\'' + row["ToolId"] + '\')">' + "View" + '</a>';
                             }
                         }
                     ];
@@ -699,11 +716,14 @@
                 OpenPage('\\Tool\\GetTool');
 
             } else {
-                alert(response.message);
+                //alert(response.message);
+                MsgToast("Error!", response.message, "error");
             }
         },
         error: function () {
-            alert("Error while processing Check-Out.");
+            //alert("Error while processing Check-Out.");
+            MsgToast("Error!", "Error while processing Check-In.", "error");
+
         }
     });
 });
@@ -731,11 +751,15 @@
                 OpenPage('\\Tool\\GetTool');
 
             } else {
-                alert(response.message);
+                //alert(response.message);
+                MsgToast("Error!", response.message, "error");
             }
         },
         error: function () {
-            alert("Error while processing Check-In.");
+            //alert("Error while processing Check-In.");
+            MsgToast("Error!", "Error while processing Check-In.", "error");
+
+
         }
     });
 });
@@ -778,18 +802,20 @@
                     var row = lstToolTransaction[i];
 
                     var rowDataHtml = '<tr>' +
+                        '<td>' + row['TranDate'] + '</td>' +
                         '<td hidden>' + row['TranId'] + '</td>' +
                         '<td>' + row['ToolName'] + '</td>' +
                         '<td>' + row['UserId'] + '</td>' +
+                        '<td>' + row['Username'] + '</td>' +
                         '<td>' + row['TranType'] + '</td>' +
                         '<td>' + row['TranQty'] + '</td>' +
                         //'<td>' + row['CheckoutDate'] + '</td>' +
                         //'<td>' + (row['ReturnDate'] ? row['ReturnDate'] : '-') + '</td>' +
                         '<td>' + row['Duration'] + '</td>' +
+                        '<td>' + row['ExpectedReturnDate'] + '</td>' +
                         //'<td>' + (row['TransactionNotes'] || '-') + '</td>' +
                         '<td>' + (row['CheckOutConditionNotes'] || '-') + '</td>' +
                         '<td>' + (row['CheckInConditionNotes'] || '-') + '</td>' +
-                        '<td>' + row['TranDate'] + '</td>' +
                         '</tr>';
 
                     $('#transactionTable tbody').append(rowDataHtml);

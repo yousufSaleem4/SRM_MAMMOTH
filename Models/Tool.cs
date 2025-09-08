@@ -260,14 +260,43 @@ ORDER BY Id DESC  ";
         SELECT 
             (SELECT COUNT(ToolName) FROM dbo.Tools) AS TotalTools,
 
-            (SELECT 
-                SUM(t.Quantity) - ISNULL(SUM(a.AllocatedQty), 0)
-             FROM dbo.Tools t
-             LEFT JOIN dbo.ToolAllocation a 
-                ON t.ToolId = a.ToolId
-               AND a.UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
-               AND a.IsReturned = 0
-            ) AS Available,
+            int count = Convert.ToInt32(oDAL.GetObject(sql));
+            return count > 0;
+        }
+        public bool GetToolTransaction(string toolId)
+        {
+            cDAL oDAL = new cDAL(cDAL.ConnectionType.ACTIVE);
+            string query = @"SELECT 
+    tt.TranId,
+    t.ToolName,
+    tt.ToolId,
+    tt.UserId,
+    ta.AllocationId,
+    ta.CheckoutDate,
+    ta.ReturnDate,
+CAST(DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) / 1440 AS VARCHAR(10)) + 'd ' +
+CAST((DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) % 1440) / 60 AS VARCHAR(10)) + 'h ' +
+CAST(DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) % 60 AS VARCHAR(10)) + 'm'
+AS Duration,
+tt.TranType,
+    tt.TranDate,
+    tt.TranQty,
+    --tt.Notes AS TransactionNotes,
+    ta.CheckOutConditionNotes,
+    ta.CheckInConditionNotes
+
+FROM dbo.ToolTran tt
+INNER JOIN dbo.Tools t 
+    ON tt.ToolId = t.ToolId
+LEFT JOIN dbo.ToolAllocation ta 
+    ON tt.ToolId = ta.ToolId 
+   AND tt.UserId = ta.UserId
+
+where t.ToolId = <toolId>
+--ORDER BY tt.TranDate DESC;";
+
+            query = query.Replace("<toolId>", toolId);
+            DataTable dt = oDAL.GetData(query);
 
             (SELECT ISNULL(SUM(AllocatedQty),0) 
              FROM [SRMDBPILOT].[dbo].[ToolAllocation] 
