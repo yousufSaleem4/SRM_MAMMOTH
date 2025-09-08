@@ -224,20 +224,45 @@ ORDER BY Id DESC  ";
         public bool GetToolList()
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
+            var userId = HttpContext.Current.Session["SigninId"].ToString();
             string query = string.Empty;
-            query = @"SELECT [ToolId]
-      ,[ToolName]
-      ,[PartNum]
-      ,[Quantity]
-      ,[PurchaseDate]
-      ,[PurchaseCost]
-      ,[CurrentStatus]
-      ,[CalibrationDueDate]
-      ,[LastMaintenanceDate]
-      ,[IsConsumable]
-  FROM [dbo].[Tools]
-  ";
+            query = @"SELECT 
+    t.ToolId,
+    t.ToolName,
+    t.PartNum,
+    t.Quantity AS TotalQty,
+    ISNULL(t.Quantity - SUM(a.AllocatedQty - a.ReturnedQty), t.Quantity) AS AvailableQty,
+    CASE 
+        WHEN SUM(a.AllocatedQty - a.ReturnedQty) >= t.Quantity THEN 'Issued'
+        ELSE 'Available'
+    END AS CurrentStatus,
+    t.IsConsumable,
+    CASE 
+        WHEN ISNULL(t.Quantity - SUM(a.AllocatedQty - a.ReturnedQty), t.Quantity) > 0 THEN CAST(1 AS BIT)
+        ELSE CAST(0 AS BIT)
+    END AS CanCheckOut,
+    CASE 
+        WHEN EXISTS (
+            SELECT 1 
+            FROM ToolAllocation 
+            WHERE ToolId = t.ToolId AND UserId = @UserId AND IsReturned = 0
+        ) THEN CAST(1 AS BIT)
+        ELSE CAST(0 AS BIT)
+    END AS CanCheckIn,
+Allocations = STUFF((
+        SELECT ',' + CAST(a.AllocationId AS VARCHAR)
+        FROM ToolAllocation a
+        WHERE a.ToolId = t.ToolId 
+          AND a.UserId = @UserId
+          AND a.IsReturned = 0
+        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '')
+FROM Tools t
+LEFT JOIN ToolAllocation a 
+    ON t.ToolId = a.ToolId AND a.IsReturned = 0
+GROUP BY t.ToolId, t.ToolName, t.PartNum, t.Quantity, t.IsConsumable;
 
+  ";
+            query = query.Replace("@UserId", userId);
             DataTable dt = oDAL.GetData(query);
 
             if (oDAL.HasErrors)
@@ -253,19 +278,32 @@ ORDER BY Id DESC  ";
             }
         }
 
-
         public DataTable GetToolStats()
         {
             cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
             string sql = @"
-        SELECT 
-            (SELECT COUNT(ToolName) FROM dbo.Tools) AS TotalTools";
+    SELECT 
+        (SELECT COUNT(ToolName) FROM dbo.Tools) AS TotalTools,
 
-            int count = Convert.ToInt32(oDAL.GetObject(sql));
-            return count > 0;
+        (SELECT 
+            SUM(t.Quantity) - ISNULL(SUM(a.AllocatedQty), 0)
+         FROM dbo.Tools t
+         LEFT JOIN dbo.ToolAllocation a 
+            ON t.ToolId = a.ToolId
+           AND a.UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
+           AND a.IsReturned = 0
+        ) AS Available,
+
+        (SELECT ISNULL(SUM(AllocatedQty),0) 
+         FROM [SRMDBPILOT].[dbo].[ToolAllocation] 
+         WHERE UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
+        ) AS CheckedOut
+";
+
+            return oDAL.GetData(sql);
         }
-        
+
 
         public int GetAvailableQty(int toolId)
         {
