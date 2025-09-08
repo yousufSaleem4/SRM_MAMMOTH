@@ -25,6 +25,8 @@ namespace PlusCP.Models
         public List<Hashtable> lstGetTool { get; set; }
         public string Email { get; set; }
         public string Message { get; set; }
+        public List<Hashtable> lstToolTransaction { get; private set; }
+
         cDAL oDAL;
         public bool GetList()
         {
@@ -258,7 +260,37 @@ ORDER BY Id DESC  ";
 
             string sql = @"
         SELECT 
-            (SELECT COUNT(ToolName) FROM dbo.Tools) AS TotalTools,
+            (SELECT COUNT(ToolName) FROM dbo.Tools) AS TotalTools";
+
+            int count = Convert.ToInt32(oDAL.GetObject(sql));
+            return count > 0;
+        }
+        
+
+        public int GetAvailableQty(int toolId)
+        {
+            oDAL = new cDAL(cDAL.ConnectionType.INIT);
+
+            string sql = $@"
+        SELECT t.Quantity - ISNULL(SUM(a.AllocatedQty), 0) AS AvailableStock
+        FROM Tools t
+        LEFT JOIN ToolAllocation a 
+            ON t.ToolId = a.ToolId AND a.IsReturned = 0
+        WHERE t.ToolId = {toolId}
+        GROUP BY t.Quantity";
+
+            object result = oDAL.GetObject(sql);
+            return result == null ? 0 : Convert.ToInt32(result);
+        }
+
+        public bool UserHasTool(int toolId, int userId)
+        {
+            oDAL = new cDAL(cDAL.ConnectionType.INIT);
+
+            string sql = $@"
+        SELECT COUNT(*) 
+        FROM ToolAllocation 
+        WHERE ToolId = {toolId} AND UserId = {userId} AND IsReturned = 0";
 
             int count = Convert.ToInt32(oDAL.GetObject(sql));
             return count > 0;
@@ -266,47 +298,84 @@ ORDER BY Id DESC  ";
         public bool GetToolTransaction(string toolId)
         {
             cDAL oDAL = new cDAL(cDAL.ConnectionType.ACTIVE);
-            string query = @"SELECT 
+            var userId = HttpContext.Current.Session["SigninId"];
+
+            string query = $@"SELECT 
     tt.TranId,
     t.ToolName,
     tt.ToolId,
     tt.UserId,
-    ta.AllocationId,
+    ui.FirstName + ' ' + ui.LastName AS Username,
+    ta.AllocatedQty,
     ta.CheckoutDate,
     ta.ReturnDate,
-CAST(DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) / 1440 AS VARCHAR(10)) + 'd ' +
-CAST((DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) % 1440) / 60 AS VARCHAR(10)) + 'h ' +
-CAST(DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) % 60 AS VARCHAR(10)) + 'm'
-AS Duration,
-tt.TranType,
+    CAST(DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) / 1440 AS VARCHAR(10)) + 'd ' +
+    CAST((DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) % 1440) / 60 AS VARCHAR(10)) + 'h ' +
+    CAST(DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) % 60 AS VARCHAR(10)) + 'm'
+    AS Duration,
+    tt.TranType,
     tt.TranDate,
     tt.TranQty,
-    --tt.Notes AS TransactionNotes,
     ta.CheckOutConditionNotes,
-    ta.CheckInConditionNotes
-
+    ta.CheckInConditionNotes,
+    ta.ExpectedReturnDate
 FROM dbo.ToolTran tt
 INNER JOIN dbo.Tools t 
     ON tt.ToolId = t.ToolId
 LEFT JOIN dbo.ToolAllocation ta 
-    ON tt.ToolId = ta.ToolId 
-   AND tt.UserId = ta.UserId
-
-where t.ToolId = <toolId>
+    ON tt.AllocationId = ta.AllocationId
+INNER JOIN SRM.UserInfo ui ON ui.UserId = tt.userId
+where t.ToolId = {toolId} AND tt.userId = {userId}
 --ORDER BY tt.TranDate DESC;";
 
-            query = query.Replace("<toolId>", toolId);
             DataTable dt = oDAL.GetData(query);
 
-            (SELECT ISNULL(SUM(AllocatedQty),0) 
-             FROM [SRMDBPILOT].[dbo].[ToolAllocation] 
-             WHERE UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
-            ) AS CheckedOut
-    ";
-
-            return oDAL.GetData(sql);
+            if (!oDAL.HasErrors)
+            {
+                lstToolTransaction = new List<Hashtable>();
+                lstToolTransaction = cCommon.ConvertDtToHashTable(dt);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
-
     }
+    public class ToolTracking
+    {
+        public int ToolId { get; set; }
+        public string ToolName { get; set; }
+        public string PartNum { get; set; }
+        public int TotalQty { get; set; }
+        public int AvailableQty { get; set; }
+        public bool CanCheckOut { get; set; }
+        public bool CanCheckIn { get; set; }
+    }
+
+    public class ToolTransaction
+    {
+        public int TranId { get; set; }
+        public int ToolId { get; set; }
+        public int UserId { get; set; }
+        public int TranQty { get; set; }
+        public string TranType { get; set; }  // "OUT" or "IN"
+        public DateTime TranDate { get; set; }
+        public string Notes { get; set; }
+    }
+
+    public class ToolAllocation
+    {
+        public int AllocationId { get; set; }
+        public int ToolId { get; set; }
+        public int UserId { get; set; }
+        public int AllocatedQty { get; set; }
+        public DateTime CheckoutDate { get; set; }
+        public DateTime? ExpectedReturnDate { get; set; }
+        public bool IsReturned { get; set; }
+        public DateTime? ReturnDate { get; set; }
+        public string ConditionNotes { get; set; }
+    }
+
 }
