@@ -275,6 +275,31 @@ WHERE SerialId = {serialId}";
                 return Json(new { TotalTools = 0, Available = 0, CheckedOut = 0, CheckedIn = 0 }, JsonRequestBehavior.AllowGet);
             }
         }
+        public JsonResult GetCheckedOutMonthly()
+        {
+            DataTable dt = oTool.GetCheckedOutMonthlyStats();
+
+            var result = dt.AsEnumerable().Select(r => new {
+                MonthName = r["MonthName"].ToString(),
+                CheckedOutCount = Convert.ToInt32(r["CheckedOutCount"])
+            }).ToList();
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+
+        public JsonResult GetTopUsedTool()
+        {
+            DataTable dt = oTool.GetTopUsedToolStats();
+
+            var result = dt.AsEnumerable().Select(r => new {
+                ToolName = r["ToolName"].ToString(),
+                UsageCount = Convert.ToInt32(r["UsageCount"])
+            }).ToList();
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
 
         [HttpGet]
         public JsonResult GetAvailableSerials(int toolId)

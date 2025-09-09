@@ -304,26 +304,66 @@ GROUP BY t.ToolId, t.ToolName, t.PartNum, t.TotalQty, t.IsConsumable;
             cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
             string sql = @"
-    SELECT 
-        (SELECT COUNT(ToolName) FROM TOOL.Tool) AS TotalTools,
-
-        (SELECT 
-            SUM(t.Quantity) - ISNULL(SUM(a.AllocatedQty), 0)
-         FROM TOOL.Tool t
+SELECT 
+        (SELECT COUNT(ToolName) FROM TOOL.Tools) AS TotalTools,
+    (SELECT 
+            SUM(t.TotalQty)
+         FROM TOOL.Tools t
          LEFT JOIN TOOL.ToolAllocation a 
             ON t.ToolId = a.ToolId
            AND a.UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
            AND a.IsReturned = 0
         ) AS Available,
 
-        (SELECT ISNULL(SUM(AllocatedQty),0) 
-         FROM [SRMDBPILOT].[dbo].[ToolAllocation] 
-         WHERE UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
+        (SELECT 
+    COUNT(*) AS TotalCheckouts
+    FROM [TOOL].[ToolTransactions]
+    WHERE TranType = 'OUT'
+         AND UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
         ) AS CheckedOut
 ";
 
             return oDAL.GetData(sql);
         }
+
+        public DataTable GetCheckedOutMonthlyStats()
+        {
+            cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
+
+            string sql = @"
+       SELECT 
+ DATENAME(MONTH, TranDate) AS MonthName, 
+            MONTH(TranDate) AS MonthNumber,
+            COUNT(*) AS CheckedOutCount
+    FROM [TOOL].[ToolTransactions]
+    WHERE TranType = 'OUT'
+ AND UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
+        GROUP BY DATENAME(MONTH, TranDate), MONTH(TranDate)
+        ORDER BY MONTH(TranDate);";
+
+            return oDAL.GetData(sql);
+        }
+
+        public DataTable GetTopUsedToolStats()
+        {
+            cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
+
+            string sql = @"
+        SELECT TOP 3
+            t.ToolId,
+            tm.ToolName,
+            COUNT(*) AS UsageCount
+        FROM TOOL.[ToolTransactions] t
+        INNER JOIN TOOL.[Tools] tm ON t.ToolId = tm.ToolId
+        WHERE t.TranType = 'OUT'
+          AND t.UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
+          GROUP BY t.ToolId, tm.ToolName
+        ORDER BY UsageCount DESC;
+    ";
+
+            return oDAL.GetData(sql);
+        }
+
 
 
         public int GetAvailableQty(int toolId)
