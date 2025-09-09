@@ -88,8 +88,9 @@
             padding: 10px; /* ye har card ke around space dega */
         }
 
-
-   
+    .Header {
+        font-weight: bold;
+    }
 </style>
 <div class="panel panel-default" style="border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.1); border: none;">
     <div class="panel-body text-center" style="padding:25px; background: linear-gradient(135deg, #d4edda, #c3e6cb); border-radius:12px;">
@@ -106,34 +107,34 @@
 
 <div class="container mt-4">
     <!-- White Card Container -->
-    <div class="card shadow-lg p-5" style="border-radius:15px; background:#fff;">
+    <div class="card shadow-lg p-4" style="border-radius:16px; background:#fff;">
 
         <!-- Stats Row -->
         <div class="row g-4 mb-5 pt-3">
             <!-- Total Tools -->
             <div class="col-md-4">
-                <div class="p-4 border text-center" style="border:1px solid #e0e0e0; border-radius:12px;">
+                <div class="p-4 border text-center" style="border:1px solid #e0e0e0; border-radius:14px;">
                     <i class="fas fa-toolbox fa-3x text-primary mb-3"></i>
-                    <h5 style="font-size:18px; color:#555;">Total Tools</h5>
-                    <h2 id="totalTools" class="fw-bold" style="font-size:34px;">0</h2>
+                    <h5 style="font-size:19px; color:#555;">Total Tools</h5>
+                    <h2 id="totalTools" class="fw-bold" style="font-size:36px;">0</h2>
                 </div>
             </div>
 
             <!-- Available -->
             <div class="col-md-4">
-                <div class="p-4 border text-center" style="border:1px solid #e0e0e0; border-radius:12px;">
+                <div class="p-4 border text-center" style="border:1px solid #e0e0e0; border-radius:14px;">
                     <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                    <h5 style="font-size:18px; color:#555;">Available</h5>
-                    <h2 id="availableTools" class="fw-bold" style="font-size:34px;">0</h2>
+                    <h5 style="font-size:19px; color:#555;">Available</h5>
+                    <h2 id="availableTools" class="fw-bold" style="font-size:36px;">0</h2>
                 </div>
             </div>
 
             <!-- Checked Out -->
             <div class="col-md-4">
-                <div class="p-4 border text-center" style="border:1px solid #e0e0e0; border-radius:12px;">
+                <div class="p-4 border text-center" style="border:1px solid #e0e0e0; border-radius:14px;">
                     <i class="fas fa-briefcase fa-3x text-warning mb-3"></i>
-                    <h5 style="font-size:18px; color:#555;">Checked Out</h5>
-                    <h2 id="checkedOutTools" class="fw-bold" style="font-size:34px;">0</h2>
+                    <h5 style="font-size:19px; color:#555;">Checked Out</h5>
+                    <h2 id="checkedOutTools" class="fw-bold" style="font-size:36px;">0</h2>
                 </div>
             </div>
         </div>
@@ -141,28 +142,30 @@
         <!-- Charts Row -->
         <div class="row g-4 pt-4">
             <div class="col-md-4">
-                <div class="p-4 border h-100" style="border:1px solid #e0e0e0; border-radius:12px;">
-                    <h5 class="text-center mb-4 text-primary">Tools Distribution</h5>
-                    <canvas id="donutChart" height="250"></canvas>
+                <div class="p-4 border h-100" style="border:1px solid #e0e0e0; border-radius:14px;">
+                    <h4 class="text-center mb-4 Header" style="font-size:21px;">Tools Distribution</h4>
+                    <canvas id="donutChart" height="270"></canvas>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="p-4 border h-100" style="border:1px solid #e0e0e0; border-radius:12px;">
-                    <h5 class="text-center mb-4 text-primary">Checked Out Tools (Monthly)</h5>
-                    <canvas id="barChart" height="250"></canvas>
+                <div class="p-4 border h-100" style="border:1px solid #e0e0e0; border-radius:14px;">
+                    <h4 class="text-center mb-4 Header" style="font-size:21px;">Usage Tools</h4>
+                    <canvas id="topToolsChart" height="270"></canvas>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="p-4 border h-100" style="border:1px solid #e0e0e0; border-radius:12px;">
-                    <h5 class="text-center mb-4 text-primary">Usage Trend</h5>
-                    <canvas id="lineChart" height="250"></canvas>
+                <div class="p-4 border h-100" style="border:1px solid #e0e0e0; border-radius:14px;">
+                    <h4 class="text-center mb-4 Header" style="font-size:21px;">Checked Out Tools (Monthly)</h4>
+                    <canvas id="barChart" height="270"></canvas>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+
 
 
 
@@ -208,45 +211,99 @@
                 alert("Error loading stats!");
             }
         });
+
+
+        $.ajax({
+            url: '/Tool/GetTopUsedTool',
+            type: 'GET',
+            success: function (data) {
+                let labels = [];
+                let values = [];
+
+                $.each(data, function (i, item) {
+                    labels.push(item.ToolName);
+                    values.push(item.UsageCount);
+                });
+
+                // Horizontal Bar Chart
+                new Chart(document.getElementById('topToolsChart'), {
+                    type: 'horizontalBar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Usage Count',
+                            data: values,
+                            backgroundColor: '#444444',
+                            barThickness: 35 // ✅ bar ki width (pixels me) control
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            datalabels: { display: false },
+                        },
+                        tooltips: { enabled: false },
+                        legend: { display: false },
+                        scales: {
+                            xAxes: [{ ticks: { beginAtZero: true } }],
+                            yAxes: [{
+                                barPercentage: 0.6,        // ✅ category space control
+                                categoryPercentage: 0.6    // ✅ aur slim karega
+                            }]
+                        }
+                    }
+                });
+
+
+
+
+
+
+            },
+            error: function () {
+                alert("Error loading Top Used Tools!");
+            }
+        });
+
+
+        $.ajax({
+            url: '/Tool/GetCheckedOutMonthly',
+            type: 'GET',
+            success: function (data) {
+                const labels = data.map(x => x.MonthName);
+                const values = data.map(x => x.CheckedOutCount);
+
+                new Chart(document.getElementById('barChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Checked Out',
+                            data: values,
+                            backgroundColor: '#007bff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+        });
+
+
+
+
+
+
+
     });
 
 
-    // Bar Chart
-    new Chart(document.getElementById('barChart'), {
-        type: 'bar',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [{
-                label: 'Checked Out',
-                data: [10, 20, 15, 30, 25, 40],
-                backgroundColor: '#007bff' // blue
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: { y: { beginAtZero: true } }
-        }
-    });
 
-    // Line Chart
-    new Chart(document.getElementById('lineChart'), {
-        type: 'line',
-        data: {
-            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-            datasets: [{
-                label: 'Usage Trend',
-                data: [5, 15, 10, 20],
-                borderColor: '#28a745', // green
-                backgroundColor: '#28a745',
-                fill: false,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+
+
+
 </script>
 
 

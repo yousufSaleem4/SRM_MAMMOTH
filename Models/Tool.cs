@@ -296,13 +296,53 @@ GROUP BY t.ToolId, t.ToolName, t.PartNum, t.Quantity, t.IsConsumable;
         ) AS Available,
 
         (SELECT ISNULL(SUM(AllocatedQty),0) 
-         FROM [SRMDBPILOT].[dbo].[ToolAllocation] 
+         FROM [dbo].[ToolAllocation] 
          WHERE UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
         ) AS CheckedOut
 ";
 
             return oDAL.GetData(sql);
         }
+
+        public DataTable GetCheckedOutMonthlyStats()
+        {
+            cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
+
+            string sql = @"
+        SELECT 
+            DATENAME(MONTH, TranDate) AS MonthName, 
+            MONTH(TranDate) AS MonthNumber,
+            COUNT(*) AS CheckedOutCount
+        FROM [dbo].[ToolTran]
+        WHERE TranType = 'checkout'
+ AND UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
+        GROUP BY DATENAME(MONTH, TranDate), MONTH(TranDate)
+        ORDER BY MONTH(TranDate);";
+
+            return oDAL.GetData(sql);
+        }
+
+        public DataTable GetTopUsedToolStats()
+        {
+            cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
+
+            string sql = @"
+        SELECT TOP 3
+            t.ToolId,
+            tm.ToolName,
+            COUNT(*) AS UsageCount
+        FROM [dbo].[ToolTran] t
+        INNER JOIN [dbo].[Tools] tm ON t.ToolId = tm.ToolId
+        WHERE t.TranType = 'checkout'
+          AND t.UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
+        GROUP BY t.ToolId, tm.ToolName
+        ORDER BY UsageCount DESC;
+    ";
+
+            return oDAL.GetData(sql);
+        }
+
+
 
 
         public int GetAvailableQty(int toolId)
