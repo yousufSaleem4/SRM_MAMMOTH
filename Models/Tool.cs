@@ -15,16 +15,10 @@ namespace PlusCP.Models
         public string ErrorMessageUpdate { get; set; }
 
 
-        public int ToolId { get; set; }
-        public string ToolName { get; set; }
-        public string PartNum { get; set; }
-        public int Quantity { get; set; }   // total qty
-        public DateTime PurchaseDate { get; set; }
-        public decimal PurchaseCost { get; set; }
-        public string CurrentStatus { get; set; }   // Available / Issued
-        public DateTime? CalibrationDueDate { get; set; }
-        public DateTime? LastMaintenanceDate { get; set; }
-        public bool IsConsumable { get; set; }
+        public int TotalTools { get; set; }
+        public int Available { get; set; }
+        public int CheckedOut { get; set; }
+        public int CheckedIn { get; set; }
 
 
         public List<Hashtable> lstTool { get; set; }
@@ -164,7 +158,7 @@ ORDER BY Id DESC  ";
                         DataTable dt = new DataTable();
                         string query = "";
                         cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
-                        query = "Select SYSValue from TOOL.zSysIni WHERE SysDesc = 'JOINSRM' ";
+                        query = "Select SYSValue from dbo.zSysIni WHERE SysDesc = 'JOINSRM' ";
                         dt = oDAL.GetData(query);
                         htmlBody = dt.Rows[0]["SYSValue"].ToString();
 
@@ -212,7 +206,7 @@ ORDER BY Id DESC  ";
         {
             DataTable dt = new DataTable();
             cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
-            string sql = "SELECT distinct ToolId AS ID, ToolName AS [NAME] FROM TOOL.Tools";
+            string sql = "SELECT distinct ToolId AS ID, ToolName AS [NAME] FROM dbo.Tools";
             dt = oDAL.GetData(sql);
 
             // Add "Select from List" row at the top
@@ -232,55 +226,40 @@ ORDER BY Id DESC  ";
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
             var userId = HttpContext.Current.Session["SigninId"].ToString();
             string query = string.Empty;
-            query = $@"SELECT 
+            query = @"SELECT 
     t.ToolId,
     t.ToolName,
     t.PartNum,
-    t.TotalQty AS TotalQty,
-
-    -- Available = count of ToolSerials that are Available
-    ISNULL(SUM(CASE WHEN ts.Status = 'Available' THEN 1 ELSE 0 END), 0) AS AvailableQty,
-
-    -- Status at tool-level (if all units are issued, mark as Issued)
+    t.Quantity AS TotalQty,
+    ISNULL(t.Quantity - SUM(a.AllocatedQty - a.ReturnedQty), t.Quantity) AS AvailableQty,
     CASE 
-        WHEN SUM(CASE WHEN ts.Status = 'Available' THEN 1 ELSE 0 END) = 0 THEN 'Issued'
+        WHEN SUM(a.AllocatedQty - a.ReturnedQty) >= t.Quantity THEN 'Issued'
         ELSE 'Available'
     END AS CurrentStatus,
-
     t.IsConsumable,
-
-    -- Can check out if at least one serial is Available
     CASE 
-        WHEN SUM(CASE WHEN ts.Status = 'Available' THEN 1 ELSE 0 END) > 0 THEN CAST(1 AS BIT)
+        WHEN ISNULL(t.Quantity - SUM(a.AllocatedQty - a.ReturnedQty), t.Quantity) > 0 THEN CAST(1 AS BIT)
         ELSE CAST(0 AS BIT)
     END AS CanCheckOut,
-
-    -- Can check in if current user has any unreturned allocations
     CASE 
         WHEN EXISTS (
             SELECT 1 
-            FROM Tool.ToolAllocation a
-            INNER JOIN Tool.ToolSerials s ON a.SerialId = s.SerialId
-            WHERE a.ToolId = t.ToolId 
-              AND a.UserId = ${userId} -- replace with logged-in userId
-              AND a.IsReturned = 0
+            FROM ToolAllocation 
+            WHERE ToolId = t.ToolId AND UserId = @UserId AND IsReturned = 0
         ) THEN CAST(1 AS BIT)
         ELSE CAST(0 AS BIT)
     END AS CanCheckIn,
-
-    -- All allocations (for check-in buttons)
-    Allocations = STUFF((
-        SELECT ',' + CAST(a.AllocationId AS VARCHAR(50))
-        FROM Tool.ToolAllocation a
-        WHERE a.ToolId = t.ToolId
-          AND a.UserId = 25
+Allocations = STUFF((
+        SELECT ',' + CAST(a.AllocationId AS VARCHAR)
+        FROM ToolAllocation a
+        WHERE a.ToolId = t.ToolId 
+          AND a.UserId = @UserId
           AND a.IsReturned = 0
         FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '')
-
-FROM Tool.Tools t
-LEFT JOIN Tool.ToolSerials ts ON t.ToolId = ts.ToolId
-GROUP BY t.ToolId, t.ToolName, t.PartNum, t.TotalQty, t.IsConsumable;
-
+FROM Tools t
+LEFT JOIN ToolAllocation a 
+    ON t.ToolId = a.ToolId AND a.IsReturned = 0
+GROUP BY t.ToolId, t.ToolName, t.PartNum, t.Quantity, t.IsConsumable;
 
   ";
             query = query.Replace("@UserId", userId);
@@ -305,12 +284,12 @@ GROUP BY t.ToolId, t.ToolName, t.PartNum, t.TotalQty, t.IsConsumable;
 
             string sql = @"
     SELECT 
-        (SELECT COUNT(ToolName) FROM TOOL.Tool) AS TotalTools,
+        (SELECT COUNT(ToolName) FROM dbo.Tools) AS TotalTools,
 
         (SELECT 
             SUM(t.Quantity) - ISNULL(SUM(a.AllocatedQty), 0)
-         FROM TOOL.Tool t
-         LEFT JOIN TOOL.ToolAllocation a 
+         FROM dbo.Tools t
+         LEFT JOIN dbo.ToolAllocation a 
             ON t.ToolId = a.ToolId
            AND a.UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
            AND a.IsReturned = 0
@@ -378,10 +357,10 @@ GROUP BY t.ToolId, t.ToolName, t.PartNum, t.TotalQty, t.IsConsumable;
     ta.CheckOutConditionNotes,
     ta.CheckInConditionNotes,
     ta.ExpectedReturnDate
-FROM TOOL.ToolTran tt
-INNER JOIN TOOL.Tool t 
+FROM dbo.ToolTran tt
+INNER JOIN dbo.Tools t 
     ON tt.ToolId = t.ToolId
-LEFT JOIN TOOL.ToolAllocation ta 
+LEFT JOIN dbo.ToolAllocation ta 
     ON tt.AllocationId = ta.AllocationId
 INNER JOIN SRM.UserInfo ui ON ui.UserId = tt.userId
 where t.ToolId = {toolId} AND tt.userId = {userId}
@@ -402,52 +381,39 @@ where t.ToolId = {toolId} AND tt.userId = {userId}
         }
 
     }
-    public class ToolSerial
+    public class ToolTracking
     {
-        public int SerialId { get; set; }
         public int ToolId { get; set; }
-        public string SerialNumber { get; set; }
-        public string Status { get; set; }   // Available / CheckedOut / Maintenance / Damaged / Lost
-        public DateTime? PurchaseDate { get; set; }
-        public DateTime? WarrantyExpiry { get; set; }
-        public string ConditionNotes { get; set; }
-        public string Location { get; set; }
-        public DateTime CreatedOn { get; set; }
-
-        // Navigation
-        public Tool Tool { get; set; }
-    }
-    public class ToolAllocation
-    {
-        public Guid AllocationId { get; set; }
-        public int SerialId { get; set; }
-        public int ToolId { get; set; }
-        public int UserId { get; set; }
-        public DateTime CheckoutDate { get; set; }
-        public DateTime? ExpectedReturnDate { get; set; }
-        public DateTime? ReturnDate { get; set; }
-        public bool IsReturned { get; set; }
-        public string ConditionOnReturn { get; set; }
-
-        // Navigation
-        public Tool Tool { get; set; }
-        public ToolSerial ToolSerial { get; set; }
+        public string ToolName { get; set; }
+        public string PartNum { get; set; }
+        public int TotalQty { get; set; }
+        public int AvailableQty { get; set; }
+        public bool CanCheckOut { get; set; }
+        public bool CanCheckIn { get; set; }
     }
 
     public class ToolTransaction
     {
         public int TranId { get; set; }
-        public int SerialId { get; set; }
         public int ToolId { get; set; }
-        public int? UserId { get; set; }
-        public string TranType { get; set; }   // OUT / IN / MAINTENANCE / DAMAGE / LOST
+        public int UserId { get; set; }
         public int TranQty { get; set; }
+        public string TranType { get; set; }  // "OUT" or "IN"
         public DateTime TranDate { get; set; }
         public string Notes { get; set; }
+    }
 
-        // Navigation
-        public Tool Tool { get; set; }
-        public ToolSerial ToolSerial { get; set; }
+    public class ToolAllocation
+    {
+        public int AllocationId { get; set; }
+        public int ToolId { get; set; }
+        public int UserId { get; set; }
+        public int AllocatedQty { get; set; }
+        public DateTime CheckoutDate { get; set; }
+        public DateTime? ExpectedReturnDate { get; set; }
+        public bool IsReturned { get; set; }
+        public DateTime? ReturnDate { get; set; }
+        public string ConditionNotes { get; set; }
     }
 
 }
