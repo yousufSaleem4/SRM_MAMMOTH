@@ -284,17 +284,37 @@
                         datasets: [{
                             label: 'Checked Out',
                             data: values,
-                            backgroundColor: '#007bff'
+                            backgroundColor: '#007bff',
+                       barThickness: 25 // ✅ bar ki width (pixels me) control
                         }]
                     },
                     options: {
                         responsive: true,
-                        scales: { y: { beginAtZero: true } }
+                        plugins: {
+                            datalabels: { display: false },
+                        },
+                        tooltips: { enabled: false },
+                        legend: { display: false },
+                        scales: {
+                           // xAxes: [{ ticks: { beginAtZero: true } }],
+                            xAxes: [{
+                                barPercentage: 0.4,        // ✅ category space control
+                                categoryPercentage: 0.4    // ✅ aur slim karega
+                            }]
+                        }
                     }
                 });
+
+
+
+
+
+
+            },
+            error: function () {
+                alert("Error loading Top Used Tools!");
             }
         });
-
 
 
 
