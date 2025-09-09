@@ -673,7 +673,7 @@
         var lstSerials = data;
         // Append all POs
         $.each(lstSerials, function (index, item) {
-            $('#checkOutSerials').append(new Option(item.SerialNumber, item.SerialId));
+            $('#checkOutSerials').append(new Option(item.ToolName, item.SerialId));
         });
 
         // Reinitialize multiselect
