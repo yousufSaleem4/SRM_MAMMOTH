@@ -305,22 +305,30 @@ GROUP BY t.ToolId, t.ToolName, t.PartNum, t.TotalQty, t.IsConsumable;
 
             string sql = @"
 SELECT 
-        (SELECT COUNT(ToolName) FROM TOOL.Tools) AS TotalTools,
+    -- Total tools count
+    (SELECT COUNT(*) FROM [TOOL].[Tools]) AS TotalTools,
+
+    -- Available tools (TotalQty - User ke active checkouts)
     (SELECT 
-            SUM(t.TotalQty)
-         FROM TOOL.Tools t
-         LEFT JOIN TOOL.ToolAllocation a 
-            ON t.ToolId = a.ToolId
+         SUM(t.TotalQty) - ISNULL(SUM(chk.CheckedOutQty), 0)
+     FROM [TOOL].[Tools] t
+     OUTER APPLY (
+         SELECT COUNT(*) AS CheckedOutQty
+         FROM [TOOL].[ToolAllocation] a
+         WHERE a.ToolId = t.ToolId
            AND a.UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
            AND a.IsReturned = 0
-        ) AS Available,
+     ) chk
+    ) AS Available,
 
-        (SELECT 
-    COUNT(*) AS TotalCheckouts
-    FROM [TOOL].[ToolTransactions]
-    WHERE TranType = 'OUT'
+    -- Checked out count (transactions OUT by user)
+    (SELECT COUNT(*) 
+     FROM [TOOL].[ToolTransactions]
+     WHERE TranType = 'OUT'
          AND UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
-        ) AS CheckedOut
+         AND UserId = 25
+    ) AS CheckedOut;
+
 ";
 
             return oDAL.GetData(sql);

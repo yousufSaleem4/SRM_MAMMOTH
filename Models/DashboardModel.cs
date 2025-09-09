@@ -134,7 +134,7 @@ SELECT DISTINCT
         ELSE 1  -- Exist (uncheck karna hai)
     END AS IsExist
 FROM [dbo].[PODetail] PD
-LEFT JOIN [SRMDBPILOT].[SRM].[BuyerPO] BH
+LEFT JOIN [SRM].[BuyerPO] BH
     ON PD.POHeader_PONum = BH.PONum
 WHERE DATEDIFF(DAY, GETDATE(), PD.Calculated_DueDate) =  '<noOfDays>'
 ";
