@@ -396,39 +396,36 @@
 
             <div class="modal-body">
                 <form id="checkOutForm">
+                    <input type="hidden" id="checkoutToolId" name="ToolId" />
 
-                    <!-- Hidden fields -->
-                    <input type="hidden" id="checkoutToolId" name="toolId" />
-                    <input type="hidden" id="checkoutToolName" name="toolName" />
-
-                    <!-- Tool Name (read-only) -->
+                    <!-- Tool Name -->
                     <div class="form-group">
                         <label>Tool / Item Name</label>
                         <input type="text" class="form-control" id="checkoutToolDisplay" readonly />
                     </div>
 
-                    <!-- Quantity -->
-                    <div class="form-group row">
-                        <div class="col-md-6 pr-2">
-                            <label>Quantity</label>
-                            <input type="number" class="form-control" id="checkOutQuantity" name="Quantity" min="1" required step="1" oninput="this.value = this.value.replace(/[^0-9]/g,'');">
-                        </div>
-                        <div class="col-md-6 pl-2">
-                            <label>Expected Return Date</label>
-                            <input type="date" class="form-control" id="expectedReturnDate" name="ExpectedReturnDate">
-                        </div>
-                    </div>
-                    <!-- Date & Time -->
-                    <div class="form-group hidden">
-                        <label>Date & Time of Check-Out</label>
-                        <input type="datetime-local" class="form-control" id="checkOutDateTime" name="CheckOutDateTime">
-                    </div>
-                    <!-- Condition Notes -->
+                    @*Select Serials*@
+                    @*<div class="form-group">
+                            <label>Select Units (Serial Numbers)</label>
+                            <select id="checkOutSerials" name="serialIds" class="form-control" required></select>
+                            <small class="form-text text-muted">Hold Ctrl/Cmd or use checkboxes to select multiple units</small>
+                        </div>*@
                     <div class="form-group">
-                        <label>Condition Notes</label>
-                        <textarea class="form-control" id="checkOutCondition" name="Condition" rows="5" placeholder="Enter condition details..."></textarea>
+                        <label class="lblText" for="checkOutSerials">Select Tool Serials</label>
+                        <select id="checkOutSerials" class="form-control" multiple="multiple" required>
+                        </select>
+                    </div>
+                    <!-- Expected Return Date -->
+                    <div class="form-group">
+                        <label>Expected Return Date</label>
+                        <input type="date" class="form-control" id="expectedReturnDate" name="ExpectedReturnDate">
                     </div>
 
+                    <!-- Notes -->
+                    <div class="form-group">
+                        <label>Condition Notes</label>
+                        <textarea class="form-control" id="checkOutCondition" name="Notes" rows="3" placeholder="Enter condition details..."></textarea>
+                    </div>
                 </form>
             </div>
 
@@ -441,46 +438,41 @@
 </div>
 
 
+
 <!-- Check-In Modal -->
 <div class="modal fade" id="checkInModal" tabindex="-1" role="dialog" aria-labelledby="checkInLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
+
             <div class="modal-header ModalHeaderColor">
                 <h5 class="modal-title ModalLabelColor">Tool Check-In</h5>
             </div>
+
             <div class="modal-body">
                 <form id="checkInForm">
 
-                    <!-- Hidden fields (populated dynamically when user clicks Check-In) -->
-                    <input type="hidden" id="checkinAllocationId" name="allocationId" />
-                    <input type="hidden" id="checkinToolId" name="toolId" />
-                    <input type="hidden" id="checkinToolName" name="toolName" />
-
-                    <!-- Tool / Item Name (read-only text instead of dropdown) -->
+                    <!-- Allocated Serials -->
+                    <!--<div class="form-group">
+                        <label>Select Tool Units to Check-In</label>
+                        <select id="checkInAllocations" name="AllocationIds" class="form-control" multiple required>-->
+                            <!-- Options populated dynamically via AJAX -->
+                        <!--</select>
+                    </div>-->
                     <div class="form-group">
-                        <label>Tool / Item Name</label>
-                        <input type="text" class="form-control" id="checkinToolDisplay" readonly />
-                    </div>
-
-                    <!-- Quantity Returned -->
-                    <div class="form-group">
-                        <label>Quantity Returned</label>
-                        <input type="number" class="form-control" id="checkInQuantity" name="QuantityReturned" min="1" step="1" required oninput="this.value = this.value.replace(/[^0-9]/g,'');">
-                    </div>
-
-                    <!-- Date & Time -->
-                    <div class="form-group hidden">
-                        <label>Date & Time of Check-In</label>
-                        <input type="datetime-local" class="form-control" id="checkInDateTime" name="CheckInDateTime">
+                        <label class="lblText" for="checkInAllocations">Select Tool Serials</label>
+                        <select id="checkInAllocations" class="form-control" multiple="multiple" required>
+                        </select>
                     </div>
 
                     <!-- Condition Notes -->
                     <div class="form-group">
                         <label>Condition Notes</label>
-                        <textarea class="form-control" id="checkInCondition" name="Condition" rows="5" placeholder="Enter condition details..."></textarea>
+                        <textarea class="form-control" id="checkInCondition" name="Condition" rows="6" placeholder="Enter condition details..."></textarea>
                     </div>
+
                 </form>
             </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 <button id="btnCheckin" type="submit" form="checkInForm" class="btn btn-success">Confirm Check-In</button>
@@ -488,6 +480,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- Modal Transaction -->
 <div id="TransactionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -568,15 +561,15 @@
 
                 if (!isSingleRow) {
                     var columnDef = [
-                        { "data": "ToolId", "title": "Tool Id", "width": "50px", "className": "text-center" },
+                        { "data": "ToolId", "title": "Tool Id", "width": "50px", "className": "text-center" , "visible": false},
                         { "data": "ToolName", "title": "Tool Name", "className": "text-center" },
                         {
-                            "data": "PartNum", "title": "Part Num", "className": "text-center",
+                            "data": "PartNum", "title": "Part No.", "className": "text-center",
 
                         },
 
                         // Use TotalQty from query
-                        { "data": "TotalQty", "title": "Total Quantity", "className": "text-center" },
+                        { "data": "TotalQty", "title": "Total Qty", "className": "text-center" },
 
                         // New column for AvailableQty
                         {
@@ -612,6 +605,13 @@
                             }
                         },
                         {
+                            "data": null, "title": "Tool Transaction", "className": "text-center",
+                            render: function (data, type, row) {
+
+                                return '<a href="#" onclick="TransactionDtl(\'' + row["ToolId"] + '\')">' + "View" + '</a>';
+                            }
+                        },
+                        {
                             "data": null,
                             "title": "Check OUT/IN",
                             "className": "text-center",
@@ -635,14 +635,8 @@
                                             <i class="fa fa-sign-in-alt"></i>
                                         </button>`;
                             }
-                        },
-                        {
-                            "data": null, "title": "Tool Transaction", "className": "text-center",
-                            render: function (data, type, row) {
-
-                                return '<a href="#" onclick="TransactionDtl(\'' + row["ToolId"] + '\')">' + "View" + '</a>';
-                            }
                         }
+
                     ];
 
 
@@ -665,107 +659,153 @@
         OpenPage('/Tool/GetTool', 'Mohsin');
     });
 
-    $(document).on("click", ".checkInBtn", function () {
-        let allocationId = $(this).data("allocationid");
-        let toolId = $(this).data("toolid");
-        let toolName = $(this).data("toolname");
-        console.log(allocationId)
-        // Fill modal fields
-        $("#checkinAllocationId").val(allocationId);
-        $("#checkinToolId").val(toolId);
-        $("#checkinToolName").val(toolName);
-        $("#checkinToolDisplay").val(toolName);
-
-        // Show modal
-        $("#checkInModal").modal("show");
-    });
 
     $(document).on("click", ".checkOutBtn", function () {
-        let toolId = $(this).data("toolid");
-        let toolName = $(this).data("toolname");
-        console.log(toolId)
-        console.log(toolName)
-        // Fill modal fields
-        $("#checkoutToolId").val(toolId);
-        $("#checkoutToolName").val(toolName);
-        $("#checkoutToolDisplay").val(toolName);
+    let toolId = $(this).data("toolid");
+    let toolName = $(this).data("toolname");
 
-        // Show modal
-        $("#checkOutModal").modal("show");
+    $("#checkoutToolId").val(toolId);
+    $("#checkoutToolName").val(toolName);
+    $("#checkoutToolDisplay").val(toolName);
+
+    // Fetch available serials
+    $.get('@Url.Action("GetAvailableSerials","Tool")', { toolId: toolId }, function (data) {
+        // Clear options
+        $('#checkOutSerials').empty();
+        //console.log(data)
+        var lstSerials = data;
+        // Append all POs
+        $.each(lstSerials, function (index, item) {
+            $('#checkOutSerials').append(new Option(item.SerialNumber, item.SerialId));
+        });
+
+        // Reinitialize multiselect
+        $('#checkOutSerials').multiselect('destroy');
+        initializeMultiselect("checkOutSerials");
+
+        // Step 1: Select all by default
+        $('#checkOutSerials').multiselect('selectAll', false);
+
+        $.each(lstSerials, function (index, item) {
+            if (item.IsExist == 1) {
+                $("#checkOutSerials option[value='" + item.SerialId + "']").prop("disabled", true);
+            }
+        });
+
+        // Refresh multiselect after disabling
+        $('#checkOutSerials').multiselect('refresh');
+
+
+        $('#checkOutSerials').multiselect('updateButtonText');
     });
+    $("#checkOutModal").modal("show");
+});
 
-     $("#btnCheckout").click(function (e) {
+    $("#btnCheckout").click(function (e) {
     e.preventDefault();
 
+    let selectedSerials = $("#checkOutSerials").val();
+    console.log(selectedSerials)
     $.ajax({
-        url: '@Url.Action("CheckOut", "Tool")',
+        url: '@Url.Action("CheckOut","Tool")',
         type: 'POST',
         data: {
             toolId: $("#checkoutToolId").val(),
-            qty: $("#checkOutQuantity").val(),
+            serialIds: selectedSerials, // array of selected serials
             expectedReturn: $("#expectedReturnDate").val(),
             notes: $("#checkOutCondition").val(),
             checkOutDateTime: $("#checkOutDateTime").val()
         },
+        traditional: true, // important for array serialization
         success: function (response) {
             if (response.success) {
-                //alert("Tool checked out successfully!");
                 MsgToast("Success!", "Tool Checked Out successfully", "success");
                 $("#checkOutModal").modal("hide");
-                //location.reload();
                 OpenPage('\\Tool\\GetTool');
-
             } else {
-                //alert(response.message);
                 MsgToast("Error!", response.message, "error");
             }
         },
         error: function () {
-            //alert("Error while processing Check-Out.");
-            MsgToast("Error!", "Error while processing Check-In.", "error");
-
+            MsgToast("Error!", "Error while processing Check-Out.", "error");
         }
     });
 });
 
+    $(document).on("click", ".checkInBtn", function () {
+    let toolId = $(this).data("toolid");
+    let toolName = $(this).data("toolname");
+
+    $("#checkinToolId").val(toolId);
+    $("#checkinToolName").val(toolName);
+    $("#checkinToolDisplay").val(toolName);
+
+    // Fetch user allocations
+    $.get('@Url.Action("GetUserAllocations","Tool")', { toolId: toolId }, function (data) {
+        // Clear options
+        $('#checkInAllocations').empty();
+        //console.log(data)
+        var lstAllocation = data;
+        // Append all POs
+        $.each(lstAllocation, function (index, item) {
+            $('#checkInAllocations').append(new Option(item.SerialNumber, item.AllocationId));
+        });
+
+        // Reinitialize multiselect
+        $('#checkInAllocations').multiselect('destroy');
+        initializeMultiselect("checkInAllocations");
+
+        // Step 1: Select all by default
+        $('#checkInAllocations').multiselect('selectAll', false);
+
+        $.each(lstAllocation, function (index, item) {
+            if (item.IsExist == 1) {
+                $("#checkInAllocations option[value='" + item.AllocationId + "']").prop("disabled", true);
+            }
+        });
+
+        // Refresh multiselect after disabling
+        $('#checkInAllocations').multiselect('refresh');
+
+
+        $('#checkInAllocations').multiselect('updateButtonText');
+    });
+
+    $("#checkInModal").modal("show");
+});
 
     $("#btnCheckin").click(function (e) {
     e.preventDefault();
+        let toolId = $(this).data("toolid");
+        let toolName = $(this).data("toolname");
+
+        $("#checkinToolName").val(toolName);
+    let selectedAllocations = $("#checkInAllocations").val();
 
     $.ajax({
-        url: '@Url.Action("CheckIn", "Tool")',
+        url: '@Url.Action("CheckIn","Tool")',
         type: 'POST',
         data: {
-            allocationId: $("#checkinAllocationId").val(),
-            toolId: $("#checkinToolId").val(),
-            qty: $("#checkInQuantity").val(),
-            checkInDateTime: $("#checkInDateTime").val(),
+            toolId: toolId,
+            allocationIds: selectedAllocations, // array of allocation IDs
+            //checkInDateTime: $("#checkInDateTime").val(),
             notes: $("#checkInCondition").val()
         },
+        traditional: true,
         success: function (response) {
             if (response.success) {
-                //alert("Tool checked in successfully!");
                 MsgToast("Success!", "Tool Checked In successfully", "success");
                 $("#checkInModal").modal("hide");
-                //location.reload();
                 OpenPage('\\Tool\\GetTool');
-
             } else {
-                //alert(response.message);
                 MsgToast("Error!", response.message, "error");
             }
         },
         error: function () {
-            //alert("Error while processing Check-In.");
             MsgToast("Error!", "Error while processing Check-In.", "error");
-
-
         }
     });
 });
-
-
-
 
 
     function setCurrentDateTime(inputId) {
@@ -774,13 +814,13 @@
         document.getElementById(inputId).value = formatted;
     }
 
-    $('#checkOutModal').on('show.bs.modal', function () {
-        setCurrentDateTime('checkOutDateTime');
-    });
+    //$('#checkOutModal').on('show.bs.modal', function () {
+    //    setCurrentDateTime('checkOutDateTime');
+    //});
 
-    $('#checkInModal').on('show.bs.modal', function () {
-        setCurrentDateTime('checkInDateTime');
-    });
+    //$('#checkInModal').on('show.bs.modal', function () {
+    //    setCurrentDateTime('checkInDateTime');
+    //});
     function TransactionDtl(toolId) {
         $('#TransactionModal').modal('show');
 
@@ -1001,7 +1041,7 @@
 
         if (isFooter === true)
             tableFooter = $('.dataTables_scrollFoot').innerHeight();
-     
+
 
         var parentHeight = $('#' + lstHeight).innerHeight();
         if (parentHeight == undefined)
@@ -1094,6 +1134,37 @@
         var seconds = ('0' + date.getSeconds()).slice(-2);
 
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+    function initializeMultiselect(dropdownId) {
+        $('#' + dropdownId).multiselect({
+            includeSelectAllOption: true,
+            selectAllText: 'All',
+            buttonWidth: '100%',
+            maxHeight: 170,
+            enableFiltering: true,
+            enableCaseInsensitiveFiltering: true,
+            filterPlaceholder: 'Search',
+            numberDisplayed: 4,
+            templates: {
+                ul: '<ul class="multiselect-container dropdown-menu" style="-ms-overflow-x: hidden; -ms-overflow-y: auto; max-height: 300px; width:100%;"></ul>'
+            },
+            buttonText: function (options, select) {
+                if (options.length == 0) {
+                    return 'select from list';
+                } else if (options.length > this.numberDisplayed) {
+                    return options.length + ' selected';
+                } else {
+                    var selected = [];
+                    options.each(function () {
+                        selected.push($(this).text());
+                    });
+                    return selected.join(', ');
+                }
+            }
+        });
+
+        $('#checkOutSerials').multiselect('selectAll', false);
+        $("#checkOutSerials").multiselect('updateButtonText');
     }
 
 </script>

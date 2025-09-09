@@ -1,5 +1,6 @@
 ﻿using PlusCP.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace PlusCP.Controllers
             oTool = new Tool();
             TempData["ReportTitle"] = menuTitle;
             TempData["RptCode"] = RptCode;
-            ViewBag.ReportTitle = "Tools";
+            ViewBag.ReportTitle = "Tools Management";
             if (Session["isAdmin"].ToString() == "True")
             {
 
@@ -76,7 +77,7 @@ namespace PlusCP.Controllers
             oTool = new Tool();
             TempData["ReportTitle"] = menuTitle;
             TempData["RptCode"] = RptCode;
-            ViewBag.ReportTitle = "Tools";
+            ViewBag.ReportTitle = "Tools Management";
             ViewBag.ddlTool = cCommon.ToDropDownList(oTool.GetToolDropdown(), "ID", "NAME", Session["ProgramId"].ToString(), "ID");
             //if (Session["isAdmin"].ToString() == "True")
             //{
@@ -112,118 +113,96 @@ namespace PlusCP.Controllers
             return jsonResult;
         }
         [HttpPost]
-        public JsonResult CheckOut(int toolId, int qty, DateTime? expectedReturn, string notes)
+        public JsonResult CheckOut(int toolId, string[] serialIds, DateTime? expectedReturn, string notes)
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
-            oTool = new Tool();
             var userId = Convert.ToInt32(Session["SigninId"]);
 
-            // Step 1: Validate available stock
-            int available = oTool.GetAvailableQty(toolId);
-            if (qty <= 0 || qty > available)
-                return Json(new { success = false, message = "Invalid quantity or not enough stock." });
+            if (serialIds == null || serialIds.Length == 0)
+                return Json(new { success = false, message = "No tool units selected for checkout." });
 
-            // Escape notes to avoid SQL injection
-            string safeNotes = notes?.Replace("'", "''") ?? "";
+            foreach (var serialId in serialIds)
+            {
+                // Verify serial availability
+                string checkStatusSql = $"SELECT Status FROM Tool.ToolSerials WHERE SerialId = {serialId}";
+                var status = oDAL.GetObject(checkStatusSql)?.ToString();
 
-            // Step 3: Insert allocation
-            string sqlAlloc = $@"
-        INSERT INTO ToolAllocation (ToolId, UserId, AllocatedQty, CheckoutDate, ExpectedReturnDate, CheckOutConditionNotes, IsReturned)
-        VALUES ({toolId}, {userId}, {qty}, GETDATE(), 
-                {(expectedReturn.HasValue ? $"'{expectedReturn.Value:yyyy-MM-dd}'" : "NULL")},
-                '{safeNotes}', 0)";
-            oDAL.Execute(sqlAlloc);
+                if (status == null || status != "Available")
+                    return Json(new { success = false, message = $"Serial {serialId} is not available for checkout." });
 
-            string AllocaID = $@"
-                    SELECT top 1 
-                            AllocationId 
+                // Insert into ToolTransactions
+                string sqlTran = $@"
+INSERT INTO Tool.ToolTransactions (ToolId, SerialId, UserId, TranType, TranQty, Notes)
+VALUES ({toolId}, {serialId}, {userId}, 'OUT', 1, '{notes?.Replace("'", "''")}')";
+                oDAL.Execute(sqlTran);
 
-                    from dbo.ToolAllocation
-                    where userId = {userId}  AND ToolId = {toolId} AND AllocatedQty = {qty} 
-                   ";
-            int allocatedId = Convert.ToInt32(oDAL.GetObject(AllocaID));
+                // Insert into ToolAllocation
+                string sqlAlloc = $@"
+INSERT INTO Tool.ToolAllocation (AllocationId, SerialId, ToolId, UserId, CheckoutDate, ExpectedReturnDate, IsReturned)
+VALUES (NEWID(), {serialId}, {toolId}, {userId}, GETDATE(),
+        {(expectedReturn.HasValue ? $"'{expectedReturn.Value:yyyy-MM-dd}'" : "NULL")},
+        0)";
+                oDAL.Execute(sqlAlloc);
 
-            // Step 2: Insert transaction record
-            string sqlTran = $@"
-        INSERT INTO ToolTran (ToolId, UserId, TranQty, TranType, TranDate, Notes, AllocationId)
-        VALUES ({toolId}, {userId}, {qty}, 'CheckOut', GETDATE(), '{safeNotes}', {allocatedId})";
-            oDAL.Execute(sqlTran);
-
-
-            // Step 4: Update tool status based on remaining stock
-            string sqlStatus = $@"
-        UPDATE Tools
-        SET CurrentStatus = CASE 
-            WHEN Quantity <= (
-                SELECT ISNULL(SUM(AllocatedQty),0) 
-                FROM ToolAllocation 
-                WHERE ToolId = {toolId} AND IsReturned = 0
-            ) 
-            THEN 'Issued' 
-            ELSE 'Available' 
-        END
-        WHERE ToolId = {toolId}";
-            oDAL.Execute(sqlStatus);
+                // Update ToolSerials status
+                string sqlStatus = $@"
+UPDATE Tool.ToolSerials
+SET Status = 'CheckedOut'
+WHERE SerialId = {serialId}";
+                oDAL.Execute(sqlStatus);
+            }
 
             return Json(new { success = true });
         }
 
+
         [HttpPost]
-        public JsonResult CheckIn(int allocationId, int toolId, int qty, string notes)
+        public JsonResult CheckIn(List<Guid> allocationIds, string notes)
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
             var userId = Convert.ToInt32(Session["SigninId"]);
 
-            // Get allocation details
-            string sqlAlloc = $@"
-        SELECT AllocatedQty, ReturnedQty 
-        FROM ToolAllocation 
-        WHERE AllocationId = {allocationId} AND ToolId = {toolId} AND UserId = {userId}";
-            var dtAlloc = oDAL.GetData(sqlAlloc);
+            foreach (var allocationId in allocationIds)
+            {
+                string sqlAlloc = $@"
+            SELECT SerialId, ToolId
+            FROM Tool.ToolAllocation
+            WHERE AllocationId = '{allocationId}' AND UserId = {userId} AND IsReturned = 0";
+                var dt = oDAL.GetData(sqlAlloc);
 
-            if (dtAlloc.Rows.Count == 0)
-                return Json(new { success = false, message = "No active allocation found." });
+                if (dt.Rows.Count == 0)
+                    continue; // skip invalid allocations
 
-            int allocatedQty = Convert.ToInt32(dtAlloc.Rows[0]["AllocatedQty"]);
-            int returnedQty = Convert.ToInt32(dtAlloc.Rows[0]["ReturnedQty"]);
-            int remainingQty = allocatedQty - returnedQty;
+                int serialId = Convert.ToInt32(dt.Rows[0]["SerialId"]);
+                int toolId = Convert.ToInt32(dt.Rows[0]["ToolId"]);
 
-            if (qty <= 0 || qty > remainingQty)
-                return Json(new { success = false, message = "Invalid quantity to return." });
+                // Log transaction
+                string sqlTran = $@"
+            INSERT INTO Tool.ToolTransactions (ToolId, SerialId, UserId, TranType, TranQty, Notes)
+            VALUES ({toolId}, {serialId}, {userId}, 'IN', 1, '{notes.Replace("'", "''")}')";
+                oDAL.GetObject(sqlTran);
 
-            // Insert transaction log
-            string sqlTran = $@"
-        INSERT INTO ToolTran (ToolId, UserId, TranQty, TranType, TranDate, Notes)
-        VALUES ({toolId}, {userId}, {qty}, 'CheckIn', GETDATE(), '{notes}')";
-            oDAL.GetObject(sqlTran);
+                // Update allocation
+                string sqlUpdateAlloc = $@"
+            UPDATE Tool.ToolAllocation
+            SET ReturnDate = GETDATE(),
+                IsReturned = 1,
+                ConditionOnReturn = '{notes.Replace("'", "''")}'
+            WHERE AllocationId = '{allocationId}'";
+                oDAL.GetObject(sqlUpdateAlloc);
 
-            // Update allocation with partial/complete return
-            string sqlUpdate = $@"
-        UPDATE ToolAllocation
-        SET ReturnedQty = ReturnedQty + {qty},
-            IsReturned = CASE WHEN ReturnedQty + {qty} >= AllocatedQty THEN 1 ELSE 0 END,
-            ReturnDate = CASE WHEN ReturnedQty + {qty} >= AllocatedQty THEN GETDATE() ELSE ReturnDate END,
-            CheckInConditionNotes = '{notes}'
-        WHERE AllocationId = {allocationId}";
-            oDAL.GetObject(sqlUpdate);
+                // Update serial
+                string sqlStatus = $@"
+            UPDATE Tool.ToolSerials
+            SET Status = 'Available'
+            WHERE SerialId = {serialId}";
+                oDAL.GetObject(sqlStatus);
+            }
 
-            // Update tool status (Available/Issued)
-            string sqlStatus = $@"
-        UPDATE Tools
-        SET CurrentStatus = CASE 
-            WHEN Quantity <= (
-                SELECT ISNULL(SUM(AllocatedQty - ReturnedQty),0) 
-                FROM ToolAllocation 
-                WHERE ToolId = {toolId} AND IsReturned = 0
-            ) 
-            THEN 'Issued' 
-            ELSE 'Available' 
-        END
-        WHERE ToolId = {toolId}";
-            oDAL.GetObject(sqlStatus);
-
-            return Json(new { success = true, message = "Tool checked in successfully." });
+            return Json(new { success = true });
         }
+
+
         [HttpGet]
         public JsonResult GetAllocationId()
         {
@@ -297,6 +276,59 @@ namespace PlusCP.Controllers
             }
         }
 
+        [HttpGet]
+        public JsonResult GetAvailableSerials(int toolId)
+        {
+            oDAL = new cDAL(cDAL.ConnectionType.INIT);
+
+            string sql = $@"
+        SELECT SerialId, SerialNumber
+        FROM Tool.ToolSerials
+        WHERE ToolId = {toolId} AND Status = 'Available'
+        ORDER BY SerialNumber";
+
+            var dt = oDAL.GetData(sql);
+
+            //var serials = dt.AsEnumerable().Select(row => new
+            //{
+            //    SerialId = row["SerialId"],
+            //    SerialNumber = row["SerialNumber"]
+            //}).ToList();
+            var serials = cCommon.ConvertDtToHashTable(dt);
+            return Json(serials, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet]
+        public JsonResult GetUserAllocations(int toolId)
+        {
+            oDAL = new cDAL(cDAL.ConnectionType.INIT);
+            var userId = Convert.ToInt32(Session["SigninId"]);
+
+            string sql = $@"
+        SELECT 
+            A.AllocationId, 
+            A.SerialId,
+            A.ToolId, 
+            S.SerialNumber, 
+            A.CheckoutDate, 
+            A.ExpectedReturnDate
+        FROM Tool.ToolAllocation A
+        INNER JOIN Tool.ToolSerials S ON A.SerialId = S.SerialId
+        WHERE A.ToolId = {toolId} AND A.UserId = {userId} AND A.IsReturned = 0
+        ORDER BY A.CheckoutDate";
+
+            var dt = oDAL.GetData(sql);
+
+            var allocations = dt.AsEnumerable().Select(row => new
+            {
+                AllocationId = row["AllocationId"].ToString(),
+                //SerialId = row["SerialId"],
+                //ToolId = row["ToolId"],
+                SerialNumber = row["SerialNumber"].ToString()
+            }).ToList();
+            var lstAllocation = cCommon.ConvertDtToHashTable(dt);
+            return Json(lstAllocation, JsonRequestBehavior.AllowGet);
+        }
 
     }
 }
