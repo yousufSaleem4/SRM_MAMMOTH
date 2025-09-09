@@ -323,10 +323,9 @@ SELECT
 
     -- Checked out count (transactions OUT by user)
     (SELECT COUNT(*) 
-     FROM [TOOL].[ToolTransactions]
-     WHERE TranType = 'OUT'
+     FROM [TOOL].[ToolAllocation]
+     WHERE isreturned = 0
          AND UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
-         AND UserId = 25
     ) AS CheckedOut;
 
 ";
