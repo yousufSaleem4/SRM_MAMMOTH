@@ -399,33 +399,51 @@ SELECT
             cDAL oDAL = new cDAL(cDAL.ConnectionType.ACTIVE);
             var userId = HttpContext.Current.Session["SigninId"];
 
-            string query = $@"SELECT 
-    tt.TranId,
-    t.ToolName,
-    tt.ToolId,
-    tt.UserId,
-    ui.FirstName + ' ' + ui.LastName AS Username,
-    ta.AllocatedQty,
+            string query = $@"
+SELECT 
+    t.[TranId],
+    t.[SerialId] AS ToolSerialId,
+    ts.[ToolName],   
+    CONCAT(u.FirstName, ' ', u.LastName) AS UserName, 
+    t.[TranType],
+    SUM(t.[TranQty]) [TranQty],
+    t.[TranDate],
+    ta.ExpectedReturnDate,   
+    t.[Notes],
+     CASE 
+        WHEN DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) < 60
+            THEN CAST(DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) AS VARCHAR) + ' min'
+        WHEN DATEDIFF(HOUR, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) < 24
+            THEN CAST(DATEDIFF(HOUR, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) AS VARCHAR) + ' hrs'
+        WHEN DATEDIFF(DAY, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) < 30
+            THEN CAST(DATEDIFF(DAY, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) AS VARCHAR) + ' days'
+        WHEN DATEDIFF(MONTH, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) < 12
+            THEN CAST(DATEDIFF(MONTH, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) AS VARCHAR) + ' months'
+        ELSE
+            CAST(DATEDIFF(YEAR, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) AS VARCHAR) + ' yrs'
+    END AS [PossessionDuration]
+FROM [TOOL].[ToolTransactions] t
+INNER JOIN[TOOL].[Tools] ts 
+    ON t.ToolId = ts.ToolId
+INNER JOIN [SRM].[UserInfo] u
+    ON t.UserId = u.UserId
+LEFT JOIN [TOOL].[ToolAllocation] ta
+    ON t.SerialId = ta.SerialId
+   AND t.ToolId = ta.ToolId
+   AND t.UserId = ta.UserId 
+WHERE t.userId = {userId} AND t.toolId = {toolId}
+   GROUP BY  t.[TranId],
+    t.[SerialId],
+    ts.[ToolName],   
+	u.FirstName,
+	u.LastName,
+	t.[TranType],
+	 t.[TranDate],
+    ta.ExpectedReturnDate,
     ta.CheckoutDate,
     ta.ReturnDate,
-    CAST(DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) / 1440 AS VARCHAR(10)) + 'd ' +
-    CAST((DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) % 1440) / 60 AS VARCHAR(10)) + 'h ' +
-    CAST(DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) % 60 AS VARCHAR(10)) + 'm'
-    AS Duration,
-    tt.TranType,
-    tt.TranDate,
-    tt.TranQty,
-    ta.CheckOutConditionNotes,
-    ta.CheckInConditionNotes,
-    ta.ExpectedReturnDate
-FROM TOOL.ToolTran tt
-INNER JOIN TOOL.Tool t 
-    ON tt.ToolId = t.ToolId
-LEFT JOIN TOOL.ToolAllocation ta 
-    ON tt.AllocationId = ta.AllocationId
-INNER JOIN SRM.UserInfo ui ON ui.UserId = tt.userId
-where t.ToolId = {toolId} AND tt.userId = {userId}
---ORDER BY tt.TranDate DESC;";
+    t.[Notes]
+ORDER BY t.TranDate DESC;";
 
             DataTable dt = oDAL.GetData(query);
 
