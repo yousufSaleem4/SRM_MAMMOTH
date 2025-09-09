@@ -91,6 +91,9 @@
     .Header {
         font-weight: bold;
     }
+
+
+
 </style>
 <div class="panel panel-default" style="border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.1); border: none;">
     <div class="panel-body text-center" style="padding:25px; background: linear-gradient(135deg, #d4edda, #c3e6cb); border-radius:12px;">
@@ -105,9 +108,9 @@
     </div>
 </div>
 
-<div class="container mt-4">
+<div class="container-fluid" >
     <!-- White Card Container -->
-    <div class="card shadow-lg p-4" style="border-radius:16px; background:#fff;">
+    <div class="card shadow-lg p-4" style="border-radius: 16px; background: #fff; ">
 
         <!-- Stats Row -->
         <div class="row g-4 mb-5 pt-3">
@@ -142,26 +145,27 @@
         <!-- Charts Row -->
         <div class="row g-4 pt-4">
             <div class="col-md-4">
-                <div class="p-4 border h-100" style="border:1px solid #e0e0e0; border-radius:14px;">
-                    <h4 class="text-center mb-4 Header" style="font-size:21px;">Tools Distribution</h4>
-                    <canvas id="donutChart" height="270"></canvas>
+                <div class="p-3 border h-100" style="border:1px solid #e0e0e0; border-radius:14px; min-height:320px;">
+                    <h4 class="text-center mb-3 Header" style="font-size:19px;">Tools Distribution</h4>
+                    <canvas id="donutChart" height="150"></canvas>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="p-4 border h-100" style="border:1px solid #e0e0e0; border-radius:14px;">
-                    <h4 class="text-center mb-4 Header" style="font-size:21px;">Usage Tools</h4>
-                    <canvas id="topToolsChart" height="270"></canvas>
+                <div class="p-3 border h-100" style="border:1px solid #e0e0e0; border-radius:14px; min-height:320px;">
+                    <h4 class="text-center mb-3 Header" style="font-size:19px;">Usage Tools</h4>
+                    <canvas id="topToolsChart" height="150"></canvas>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="p-4 border h-100" style="border:1px solid #e0e0e0; border-radius:14px;">
-                    <h4 class="text-center mb-4 Header" style="font-size:21px;">Checked Out Tools (Monthly)</h4>
-                    <canvas id="barChart" height="270"></canvas>
+                <div class="p-3 border h-100" style="border:1px solid #e0e0e0; border-radius:14px; min-height:320px;">
+                    <h4 class="text-center mb-3 Header" style="font-size:19px;">Checked Out Tools (Monthly)</h4>
+                    <canvas id="barChart" height="150"></canvas>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
