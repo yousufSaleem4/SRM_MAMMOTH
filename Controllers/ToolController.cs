@@ -309,9 +309,11 @@ WHERE SerialId = {serialId}";
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
             string sql = $@"
-        SELECT SerialId, SerialNumber
-        FROM Tool.ToolSerials
-        WHERE ToolId = {toolId} AND Status = 'Available'
+        SELECT SerialId,
+        t.ToolName + '-' + SerialNumber AS ToolName
+        FROM Tool.ToolSerials ts
+INNER JOIN TOOL.Tools t ON t.ToolId = ts.ToolId
+        WHERE ts.ToolId = {toolId} AND ts.Status = 'Available'
         ORDER BY SerialNumber";
 
             var dt = oDAL.GetData(sql);
