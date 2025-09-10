@@ -5,8 +5,9 @@
 }
 
 @*<link rel="stylesheet" type="text/css" href="~/Content/css/jquery.gridster.css" />
-<script type="text/javascript" src="~/Scripts/jquery.gridster.js"></script>*@
+    <script type="text/javascript" src="~/Scripts/jquery.gridster.js"></script>*@
 <link href="~/Content/css/message.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style type="text/css">
 
@@ -92,24 +93,29 @@
     .Header {
         font-weight: bold;
     }
-
-    
-
 </style>
-<div class="panel panel-default" style="border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.1); border: none;">
-    <div class="panel-body text-center" style="padding:25px; background: linear-gradient(135deg, #d4edda, #c3e6cb); border-radius:12px;">
-        <h3 style="margin:0; color:#003B59; font-weight:bold;">
-            Welcome, @Session["Username"]! <br />
-            <span style="font-size:16px; color:#555;">(ID: @Session["SigninId"])</span>
+<div class="panel panel-default" style="border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.1); border:none;">
+    <div class="panel-body text-center" style="padding: 25px; background: linear-gradient(to top, white, #D6EFE8); border-radius: 12px; ">
+
+        <h3 style="margin:0; color:#2c3e50; font-weight:600; font-family: 'Segoe UI', Tahoma, sans-serif;">
+            <i class="fa-solid fa-user-circle me-2 text-success" style="font-size:28px;"></i>
+            <span style="font-size:22px;">Welcome, <span style="color:#007b83;">@Session["Username"]</span>!</span>
         </h3>
-        <h4 style="margin-top:10px; color:#003B59; font-weight:bold;">
-            Tool Crib <span style="color: #2AAA82; font-size: 25px; font-weight: bold">|</span>
-            <span style="color: #2AAA82; font-size: 20px; font-weight: bold">Portal</span>
+
+        <p style="margin-top:5px; font-size:15px; color:#666; font-style:italic; font-weight:bold;">
+            (ID: @Session["SigninId"])
+        </p>
+
+        <h4 style="margin-top:12px; font-family:'Segoe UI',Tahoma,sans-serif; font-weight:500; color:#2c3e50;">
+            <span style="color:#16a085; font-size:22px; font-weight:600;">Tool Crib</span>
+            <span style="color:#bbb; font-size:20px; font-weight:600;">|</span>
+            <span style="color:#16a085; font-size:20px; font-weight:600;">Portal</span>
         </h4>
     </div>
 </div>
 
-<div class="container-fluid" >
+
+<div class="container-fluid">
     <!-- White Card Container -->
     <div class="card shadow-lg p-4" style="border-radius: 16px; background: #fff; ">
 
@@ -257,7 +263,7 @@
                             yAxes: [{
                                 barPercentage: 0.6,        // ✅ category space control
                                 categoryPercentage: 0.6,    // ✅ aur slim karega
-                                     gridLines: { display: false }  // ✅ X-axis ki lines hide
+                                gridLines: { display: false }  // ✅ X-axis ki lines hide
                             }]
                         }
                     }
