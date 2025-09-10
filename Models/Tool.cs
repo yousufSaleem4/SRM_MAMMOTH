@@ -333,20 +333,20 @@ SELECT
             return oDAL.GetData(sql);
         }
 
-        public DataTable GetCheckedOutMonthlyStats()
+        public DataTable GetCheckedOutWeeklyStats()
         {
             cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
             string sql = @"
-       SELECT 
- DATENAME(MONTH, TranDate) AS MonthName, 
-            MONTH(TranDate) AS MonthNumber,
-            COUNT(*) AS CheckedOutCount
-    FROM [TOOL].[ToolTransactions]
-    WHERE TranType = 'OUT'
+      SELECT 
+    DATEPART(YEAR, TranDate) AS YearNumber,
+    DATEPART(WEEK, TranDate) AS WeekNumber,
+    COUNT(*) AS CheckedOutCount
+FROM [TOOL].[ToolTransactions]
+WHERE TranType = 'OUT'
  AND UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
-        GROUP BY DATENAME(MONTH, TranDate), MONTH(TranDate)
-        ORDER BY MONTH(TranDate);";
+        GROUP BY DATEPART(YEAR, TranDate), DATEPART(WEEK, TranDate)
+ORDER BY YearNumber, WeekNumber; ";
 
             return oDAL.GetData(sql);
         }

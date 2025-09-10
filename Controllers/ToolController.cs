@@ -275,17 +275,19 @@ WHERE SerialId = {serialId}";
                 return Json(new { TotalTools = 0, Available = 0, CheckedOut = 0, CheckedIn = 0 }, JsonRequestBehavior.AllowGet);
             }
         }
-        public JsonResult GetCheckedOutMonthly()
+        public JsonResult GetCheckedOutWeekly()
         {
-            DataTable dt = oTool.GetCheckedOutMonthlyStats();
+            DataTable dt = oTool.GetCheckedOutWeeklyStats(); // 👈 aapko new method banani hogi SQL ke liye
 
             var result = dt.AsEnumerable().Select(r => new {
-                MonthName = r["MonthName"].ToString(),
+                YearNumber = Convert.ToInt32(r["YearNumber"]),
+                WeekNumber = Convert.ToInt32(r["WeekNumber"]),
                 CheckedOutCount = Convert.ToInt32(r["CheckedOutCount"])
             }).ToList();
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }
+
 
 
         public JsonResult GetTopUsedTool()

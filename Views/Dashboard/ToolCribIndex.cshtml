@@ -4,8 +4,8 @@
     Layout = null;
 }
 
-<link rel="stylesheet" type="text/css" href="~/Content/css/jquery.gridster.css" />
-<script type="text/javascript" src="~/Scripts/jquery.gridster.js"></script>
+@*<link rel="stylesheet" type="text/css" href="~/Content/css/jquery.gridster.css" />
+<script type="text/javascript" src="~/Scripts/jquery.gridster.js"></script>*@
 <link href="~/Content/css/message.css" rel="stylesheet" />
 
 <style type="text/css">
@@ -161,7 +161,7 @@
 
             <div class="col-md-4">
                 <div class="p-3 border h-100" style="border:1px solid #e0e0e0; border-radius:14px; min-height:320px;">
-                    <h4 class="text-center mb-3 Header" style="font-size:19px;">Checked Out Tools (Monthly)</h4>
+                    <h4 class="text-center mb-3 Header" style="font-size:19px;">Checked Out Tools (Weekly)</h4>
                     <canvas id="barChart" height="150"></canvas>
                 </div>
             </div>
@@ -276,21 +276,22 @@
 
 
         $.ajax({
-            url: '/Tool/GetCheckedOutMonthly',
+            url: '/Tool/GetCheckedOutWeekly', // 👈 aapka controller method
             type: 'GET',
             success: function (data) {
-                const labels = data.map(x => x.MonthName);
+                // Agar aap sirf WeekNumber bhej rahe ho
+                const labels = data.map(x => "Week " + x.WeekNumber);
                 const values = data.map(x => x.CheckedOutCount);
 
                 new Chart(document.getElementById('barChart'), {
-                    type: 'bar',
+                    type: 'bar',   // 👈 'line' likha hai abhi, bar chart chahiye to 'bar' use karein
                     data: {
                         labels: labels,
                         datasets: [{
                             label: 'Checked Out',
                             data: values,
                             backgroundColor: '#007bff',
-                       barThickness: 25 // ✅ bar ki width (pixels me) control
+                            barThickness: 25 // ✅ bar ki width (pixels me) control
                         }]
                     },
                     options: {
@@ -298,28 +299,28 @@
                         plugins: {
                             datalabels: { display: false },
                         },
-                        tooltips: { enabled: false },
+                        tooltips: { enabled: true }, // ✅ tooltips enable karna zyada useful hai
                         legend: { display: false },
                         scales: {
-                           // xAxes: [{ ticks: { beginAtZero: true } }],
                             xAxes: [{
-                                barPercentage: 0.4,        // ✅ category space control
-                                categoryPercentage: 0.4    // ✅ aur slim karega
+                                barPercentage: 0.3,
+                                categoryPercentage: 0.3,
+                                gridLines: { display: false }   // ✅ X-axis grid off
+                            }],
+                            yAxes: [{
+                                ticks: { beginAtZero: true },
+                                gridLines: { display: false }   // ✅ Y-axis grid off
                             }]
                         }
+
                     }
                 });
-
-
-
-
-
-
             },
             error: function () {
-                alert("Error loading Top Used Tools!");
+                alert("Error loading Checked Out Weekly Stats!");
             }
         });
+
 
 
 
