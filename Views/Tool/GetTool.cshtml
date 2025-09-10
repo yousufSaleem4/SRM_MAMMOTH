@@ -400,30 +400,29 @@
 
                     <!-- Tool Name -->
                     <div class="form-group">
-                        <label>Tool / Item Name</label>
+                        <label>Tool / Item Name:</label>
                         <input type="text" class="form-control" id="checkoutToolDisplay" readonly />
                     </div>
-
-                    @*Select Serials*@
-                    @*<div class="form-group">
-                            <label>Select Units (Serial Numbers)</label>
-                            <select id="checkOutSerials" name="serialIds" class="form-control" required></select>
-                            <small class="form-text text-muted">Hold Ctrl/Cmd or use checkboxes to select multiple units</small>
-                        </div>*@
                     <div class="form-group">
-                        <label class="lblText" for="checkOutSerials">Select Tool Serials</label>
+                        <label class="lblText" for="checkOutSerials">Select Tool Serials:</label>
                         <select id="checkOutSerials" class="form-control" multiple="multiple" required>
                         </select>
                     </div>
                     <!-- Expected Return Date -->
                     <div class="form-group">
-                        <label>Expected Return Date</label>
-                        <input type="date" class="form-control" id="expectedReturnDate" name="ExpectedReturnDate">
+                        <label for="expectedReturnDate">Expected Return Date:</label>
+                        <div class="input-group date" id="datepicker-container">
+                            <input type="text" class="form-control" id="expectedReturnDate" name="ExpectedReturnDate" readonly>
+                            <span class="input-group-addon">
+                                <i class="glyphicon glyphicon-calendar"></i>
+                            </span>
+                        </div>
                     </div>
+
 
                     <!-- Notes -->
                     <div class="form-group">
-                        <label>Condition Notes</label>
+                        <label>Condition Notes:</label>
                         <textarea class="form-control" id="checkOutCondition" name="Notes" rows="3" placeholder="Enter condition details..."></textarea>
                     </div>
                 </form>
@@ -1160,5 +1159,14 @@
         $('#checkOutSerials').multiselect('selectAll', false);
         $("#checkOutSerials").multiselect('updateButtonText');
     }
+
+    $(function () {
+        $('#datepicker-container').datepicker({
+            format: 'yyyy.mm.dd',
+            autoclose: true,
+            todayHighlight: true,
+            startDate: new Date() // prevent selecting past dates
+        }).datepicker('update', new Date()); // default = today
+    });
 
 </script>
