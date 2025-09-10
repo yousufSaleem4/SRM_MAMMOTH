@@ -487,7 +487,7 @@
     <div class="modal-dialog modal-lg custom-modal-width" role="document">
         <div class="modal-content">
             <div class="custom-modal-header ModalHeaderColor">
-                <h5 class="custom-modal-title lbl_ ModalLabelColor">Tool Tran. History</h5>
+                <h5 class="custom-modal-title lbl_ ModalLabelColor">Transaction History</h5>
 
             </div>
             <div class="modal-body">
@@ -508,8 +508,8 @@
                                         <th>Quantity</th>
                                         <th>Transaction Date</th>
                                         <th>Expected Return</th>
-                                        <th>Notes</th>
                                         <th>Possession Duration</th>
+                                        <th>Notes</th>
                                     </tr>
                                 </thead>
                                 <tbody style="text-align:center"></tbody>
@@ -840,15 +840,15 @@
 
                     var rowDataHtml = '<tr>' +
                         '<td hidden>' + row['TranId'] + '</td>' +
-                        '<td>' + row['ToolSerialId'] + '</td>' +
+                        '<td>' + row['ToolSerialIds'] + '</td>' +
                         '<td>' + row['ToolName'] + '</td>' +
                         '<td>' + row['UserName'] + '</td>' +
                         '<td>' + row['TranType'] + '</td>' +
                         '<td>' + row['TranQty'] + '</td>' +
                         '<td>' + row['TranDate'] + '</td>' +
                         '<td>' + (row['ExpectedReturnDate'] ? row['ExpectedReturnDate'] : '-') + '</td>' +
-                        '<td>' + (row['Notes'] ?? '') + '</td>' +
                         '<td>' + (row['PossessionDuration'] ?? '-') + '</td>' +
+                        '<td>' + (row['Notes'] ?? '') + '</td>' +
                         '</tr>';
 
                     $('#transactionTable tbody').append(rowDataHtml);

@@ -407,57 +407,74 @@ ORDER BY YearNumber, WeekNumber; ";
             var userId = HttpContext.Current.Session["SigninId"];
 
             string query = $@"
+
 SELECT 
     t.[TranId],
-    t.[SerialId] AS ToolSerialId,
-    ts.[ToolName],   
-    CONCAT(u.FirstName, ' ', u.LastName) AS UserName, 
+    t.[SerialId] AS ToolSerialIds,      
+    ts.[ToolName],
+    CONCAT(u.FirstName, ' ', u.LastName) AS UserName,
     t.[TranType],
-    SUM(t.[TranQty]) [TranQty],
-    t.[TranDate],
-    ta.ExpectedReturnDate,   
+    t.[TranQty],
+    FORMAT(t.[TranDate], 'yyyy-MM-dd HH:mm') AS TranDate,
+    MAX(ta.ExpectedReturnDate) AS ExpectedReturnDate,
     t.[Notes],
-     CASE 
-        WHEN DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) < 60
-            THEN CAST(DATEDIFF(MINUTE, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) AS VARCHAR) + ' min'
-        WHEN DATEDIFF(HOUR, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) < 24
-            THEN CAST(DATEDIFF(HOUR, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) AS VARCHAR) + ' hrs'
-        WHEN DATEDIFF(DAY, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) < 30
-            THEN CAST(DATEDIFF(DAY, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) AS VARCHAR) + ' days'
-        WHEN DATEDIFF(MONTH, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) < 12
-            THEN CAST(DATEDIFF(MONTH, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) AS VARCHAR) + ' months'
-        ELSE
-            CAST(DATEDIFF(YEAR, ta.CheckoutDate, ISNULL(ta.ReturnDate, GETDATE())) AS VARCHAR) + ' yrs'
-    END AS [PossessionDuration]
+    -- Possession duration computed from allocations that belong to this transaction's serials
+    CASE 
+      WHEN MIN(ta.CheckoutDate) IS NULL THEN '-' 
+      ELSE
+        CASE 
+          WHEN DATEDIFF(MINUTE, MIN(ta.CheckoutDate), ISNULL(MAX(ta.ReturnDate), GETDATE())) < 60
+            THEN CAST(DATEDIFF(MINUTE, MIN(ta.CheckoutDate), ISNULL(MAX(ta.ReturnDate), GETDATE())) AS VARCHAR(10)) + ' min'
+          WHEN DATEDIFF(HOUR, MIN(ta.CheckoutDate), ISNULL(MAX(ta.ReturnDate), GETDATE())) < 24
+            THEN CAST(DATEDIFF(HOUR, MIN(ta.CheckoutDate), ISNULL(MAX(ta.ReturnDate), GETDATE())) AS VARCHAR(10)) + ' hrs'
+          WHEN DATEDIFF(DAY, MIN(ta.CheckoutDate), ISNULL(MAX(ta.ReturnDate), GETDATE())) < 30
+            THEN CAST(DATEDIFF(DAY, MIN(ta.CheckoutDate), ISNULL(MAX(ta.ReturnDate), GETDATE())) AS VARCHAR(10)) + ' days'
+          WHEN DATEDIFF(MONTH, MIN(ta.CheckoutDate), ISNULL(MAX(ta.ReturnDate), GETDATE())) < 12
+            THEN CAST(DATEDIFF(MONTH, MIN(ta.CheckoutDate), ISNULL(MAX(ta.ReturnDate), GETDATE())) AS VARCHAR(10)) + ' months'
+          ELSE CAST(DATEDIFF(YEAR, MIN(ta.CheckoutDate), ISNULL(MAX(ta.ReturnDate), GETDATE())) AS VARCHAR(10)) + ' yrs'
+        END
+    END AS PossessionDuration
 FROM [TOOL].[ToolTransactions] t
-INNER JOIN[TOOL].[Tools] ts 
+INNER JOIN [TOOL].[Tools] ts
     ON t.ToolId = ts.ToolId
 INNER JOIN [SRM].[UserInfo] u
     ON t.UserId = u.UserId
+
+-- split the SerialId CSV into rows (trim spaces)
+OUTER APPLY (
+    SELECT LTRIM(RTRIM(value)) AS Serial
+    FROM STRING_SPLIT(t.SerialId, ',')
+) s
+
+-- join allocations only for those serials
 LEFT JOIN [TOOL].[ToolAllocation] ta
-    ON t.SerialId = ta.SerialId
-   AND t.ToolId = ta.ToolId
-   AND t.UserId = ta.UserId 
-WHERE t.userId = {userId} AND t.toolId = {toolId}
-   GROUP BY  t.[TranId],
+    ON ta.SerialId = s.Serial
+   AND ta.ToolId = t.ToolId
+   AND ta.UserId = t.UserId
+
+WHERE t.UserId = {userId}
+  AND t.ToolId = {toolId}
+
+GROUP BY
+    t.[TranId],
     t.[SerialId],
-    ts.[ToolName],   
-	u.FirstName,
-	u.LastName,
-	t.[TranType],
-	 t.[TranDate],
-    ta.ExpectedReturnDate,
-    ta.CheckoutDate,
-    ta.ReturnDate,
+    ts.[ToolName],
+    u.FirstName,
+    u.LastName,
+    t.[TranType],
+    t.[TranQty],
+    t.[TranDate],
     t.[Notes]
-ORDER BY t.TranDate DESC;";
+
+ORDER BY MAX(t.TranDate) DESC;
+";
 
             DataTable dt = oDAL.GetData(query);
 
             if (!oDAL.HasErrors)
             {
                 lstToolTransaction = new List<Hashtable>();
-                lstToolTransaction = cCommon.ConvertDtToHashTable(dt);
+                lstToolTransaction = cCommon.ConvertDtToHashTableWithZero(dt);
                 return true;
             }
             else

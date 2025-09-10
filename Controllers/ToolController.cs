@@ -121,22 +121,18 @@ namespace PlusCP.Controllers
             if (serialIds == null || serialIds.Length == 0)
                 return Json(new { success = false, message = "No tool units selected for checkout." });
 
+            // Create a comma-separated list of serial IDs
+            string serialList = string.Join(",", serialIds);
+
+            // Insert ONE transaction log (with combined serials)
+            string sqlTran = $@"
+INSERT INTO Tool.ToolTransactions (ToolId, SerialId, UserId, TranType, TranQty, Notes)
+VALUES ({toolId}, '{serialList}', {userId}, 'OUT', {serialIds.Length}, '{notes?.Replace("'", "''")}')";
+            oDAL.Execute(sqlTran);
+
             foreach (var serialId in serialIds)
             {
-                // Verify serial availability
-                string checkStatusSql = $"SELECT Status FROM Tool.ToolSerials WHERE SerialId = {serialId}";
-                var status = oDAL.GetObject(checkStatusSql)?.ToString();
-
-                if (status == null || status != "Available")
-                    return Json(new { success = false, message = $"Serial {serialId} is not available for checkout." });
-
-                // Insert into ToolTransactions
-                string sqlTran = $@"
-INSERT INTO Tool.ToolTransactions (ToolId, SerialId, UserId, TranType, TranQty, Notes)
-VALUES ({toolId}, {serialId}, {userId}, 'OUT', 1, '{notes?.Replace("'", "''")}')";
-                oDAL.Execute(sqlTran);
-
-                // Insert into ToolAllocation
+                // Insert into ToolAllocation (still per serial for tracking)
                 string sqlAlloc = $@"
 INSERT INTO Tool.ToolAllocation (AllocationId, SerialId, ToolId, UserId, CheckoutDate, ExpectedReturnDate, IsReturned)
 VALUES (NEWID(), {serialId}, {toolId}, {userId}, GETDATE(),
@@ -162,45 +158,54 @@ WHERE SerialId = {serialId}";
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
             var userId = Convert.ToInt32(Session["SigninId"]);
 
+            List<int> serialsToLog = new List<int>();
+            int toolId = 0; // we’ll grab this from allocation rows
+
             foreach (var allocationId in allocationIds)
             {
                 string sqlAlloc = $@"
-            SELECT SerialId, ToolId
-            FROM Tool.ToolAllocation
-            WHERE AllocationId = '{allocationId}' AND UserId = {userId} AND IsReturned = 0";
+SELECT SerialId, ToolId
+FROM Tool.ToolAllocation
+WHERE AllocationId = '{allocationId}' AND UserId = {userId} AND IsReturned = 0";
                 var dt = oDAL.GetData(sqlAlloc);
 
                 if (dt.Rows.Count == 0)
-                    continue; // skip invalid allocations
+                    continue;
 
                 int serialId = Convert.ToInt32(dt.Rows[0]["SerialId"]);
-                int toolId = Convert.ToInt32(dt.Rows[0]["ToolId"]);
-
-                // Log transaction
-                string sqlTran = $@"
-            INSERT INTO Tool.ToolTransactions (ToolId, SerialId, UserId, TranType, TranQty, Notes)
-            VALUES ({toolId}, {serialId}, {userId}, 'IN', 1, '{notes.Replace("'", "''")}')";
-                oDAL.GetObject(sqlTran);
+                toolId = Convert.ToInt32(dt.Rows[0]["ToolId"]);
+                serialsToLog.Add(serialId);
 
                 // Update allocation
                 string sqlUpdateAlloc = $@"
-            UPDATE Tool.ToolAllocation
-            SET ReturnDate = GETDATE(),
-                IsReturned = 1,
-                ConditionOnReturn = '{notes.Replace("'", "''")}'
-            WHERE AllocationId = '{allocationId}'";
-                oDAL.GetObject(sqlUpdateAlloc);
+UPDATE Tool.ToolAllocation
+SET ReturnDate = GETDATE(),
+    IsReturned = 1,
+    ConditionOnReturn = '{notes.Replace("'", "''")}'
+WHERE AllocationId = '{allocationId}'";
+                oDAL.Execute(sqlUpdateAlloc);
 
                 // Update serial
                 string sqlStatus = $@"
-            UPDATE Tool.ToolSerials
-            SET Status = 'Available'
-            WHERE SerialId = {serialId}";
-                oDAL.GetObject(sqlStatus);
+UPDATE Tool.ToolSerials
+SET Status = 'Available'
+WHERE SerialId = {serialId}";
+                oDAL.Execute(sqlStatus);
+            }
+
+            if (serialsToLog.Count > 0)
+            {
+                // Log ONE transaction with combined serials
+                string serialList = string.Join(",", serialsToLog);
+                string sqlTran = $@"
+INSERT INTO Tool.ToolTransactions (ToolId, SerialId, UserId, TranType, TranQty, Notes)
+VALUES ({toolId}, '{serialList}', {userId}, 'IN', {serialsToLog.Count}, '{notes.Replace("'", "''")}')";
+                oDAL.Execute(sqlTran);
             }
 
             return Json(new { success = true });
         }
+
 
 
         [HttpGet]
