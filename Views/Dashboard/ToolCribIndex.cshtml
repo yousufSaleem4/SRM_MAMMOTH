@@ -7,6 +7,7 @@
 <link rel="stylesheet" type="text/css" href="~/Content/css/jquery.gridster.css" />
 <script type="text/javascript" src="~/Scripts/jquery.gridster.js"></script>
 <link href="~/Content/css/message.css" rel="stylesheet" />
+
 <style type="text/css">
 
     /* Card base styling */
@@ -92,7 +93,7 @@
         font-weight: bold;
     }
 
-
+    
 
 </style>
 <div class="panel panel-default" style="border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.1); border: none;">
@@ -153,7 +154,7 @@
 
             <div class="col-md-4">
                 <div class="p-3 border h-100" style="border:1px solid #e0e0e0; border-radius:14px; min-height:320px;">
-                    <h4 class="text-center mb-3 Header" style="font-size:19px;">Usage Tools</h4>
+                    <h4 class="text-center mb-3 Header" style="font-size:19px;">Top 3 Usage Tools</h4>
                     <canvas id="topToolsChart" height="150"></canvas>
                 </div>
             </div>
@@ -249,10 +250,14 @@
                         tooltips: { enabled: false },
                         legend: { display: false },
                         scales: {
-                            xAxes: [{ ticks: { beginAtZero: true } }],
+                            xAxes: [{
+                                ticks: { beginAtZero: true },
+                                gridLines: { display: false }  // ✅ X-axis ki lines hide
+                            }],
                             yAxes: [{
                                 barPercentage: 0.6,        // ✅ category space control
-                                categoryPercentage: 0.6    // ✅ aur slim karega
+                                categoryPercentage: 0.6,    // ✅ aur slim karega
+                                     gridLines: { display: false }  // ✅ X-axis ki lines hide
                             }]
                         }
                     }
