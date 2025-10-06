@@ -1,0 +1,184 @@
+﻿@model PlusCP.Models.BigTVTool
+@{
+    ViewBag.Title = "BigTVTool";
+    Layout = null;
+}
+
+<style>
+ .content-wrapper {
+    background: @(ViewBag.DashboardBodyBg) !important; /* sirf solid color */
+    background-image: none !important; /* remove gradient from AdminLTE */
+}
+
+
+
+    html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: @(ViewBag.DashboardBodyBg) !important;
+    color: @(ViewBag.DashboardTableDataText);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+
+    #dashboard {
+        width: 100%;
+        margin: 20px auto;
+        border-collapse: collapse;
+        box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        #dashboard table {
+            width: 100%;
+            /*height: 100%;*/
+            border-collapse: collapse;
+
+        }
+
+    #dashboard th, #dashboard td {
+        padding: 12px 15px;
+        text-align: center;
+        font-size: 1.1em;
+    }
+
+        #dashboard th {
+            background-color: @(ViewBag.DashboardTableBg);
+            color: @(ViewBag.DashboardTableHeaderText);
+            border-bottom: 1px solid #fff; /* row ke beech white border */
+        }
+
+        #dashboard tbody tr {
+            background-color: @(ViewBag.DashboardTableBg);
+        }
+
+
+
+
+@*#dashboard tbody tr:hover {
+    background-color: @(ViewBag.DashboardTableRowHover);
+}
+
+
+    #dashboard tbody tr:hover {
+        background-color: @(ViewBag.DashboardTableRowHover);
+    }*@
+
+    .status {
+        font-weight: bold;
+        padding: 5px 10px;
+        border-radius: 5px;
+        color: #fff;
+        display: inline-block;
+    }
+
+    .status-Available { background-color: #28a745; }
+    .status-Issued { background-color: goldenrod; }
+
+
+   .header-container {
+    display: flex;
+    justify-content: space-between; /* left aur right side */
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.header {
+    font-size: 60px;
+    background-color: @(ViewBag.DashboardBodyBg);
+    color: @(ViewBag.DashboardHeaderText);
+    margin: 0;
+    text-align:center;
+}
+
+#lastUpdated {
+    font-size: 22px;
+    color: @(ViewBag.DashboardHeaderText);
+    font-weight: normal;
+}
+
+</style>
+<div class="header">
+    <h1 class="header">@ViewBag.ReportTitle</h1>
+    <span id="lastUpdated"></span>
+</div>
+
+
+<div id="dashboard">
+
+    <table>
+
+        <thead>
+            <tr style="color:@(ViewBag.DashboardHeaderText);background:@(ViewBag.DashboardTableBg)">
+                <th>Tool Name</th>
+                <th>Part No.</th>
+                <th>Total Qty</th>
+                <th>Available Qty</th>
+                <th>Consumable</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="dashboardBody"></tbody>
+    </table>
+</div>
+
+<script>
+    function safeNumber(val) {
+        return (val === null || val === undefined || val === "") ? 0 : val;
+    }
+
+    function updateLastUpdated() {
+        $("#lastUpdated").text("Last updated: " + new Date().toLocaleTimeString());
+    }
+
+    $(document).ready(function () {
+        loadDashboard();
+        updateLastUpdated();
+
+        setInterval(function () {
+            loadDashboard();
+            updateLastUpdated();
+        }, 10000); // 10 sec
+    });
+
+
+    function loadDashboard() {
+        $.ajax({
+            url: '/BigTVTool/GetList',
+            type: 'GET',
+            cache: false,
+            success: function (data) {
+                var tbody = $('#dashboardBody');
+                tbody.empty();
+
+                if (!data.lstBigTVTool || data.lstBigTVTool.length === 0) {
+                    tbody.append('<tr><td colspan="6">No tools available</td></tr>');
+                    return;
+                }
+
+                data.lstBigTVTool.forEach(function (tool, index) {
+                    var statusClass = tool.CurrentStatus === 'Available' ? 'status-Available' : 'status-Issued';
+
+                    var row = $(`
+<tr>
+    <td>${tool.ToolName || ''}</td>
+    <td>${tool.PartNum || ''}</td>
+   <td>${safeNumber(tool.TotalQty)}</td>
+<td>${safeNumber(tool.AvailableQty)}</td>
+  <td>${tool.IsConsumable === true ? 'Y' : tool.IsConsumable === false ? 'N' : ''}</td>
+i9
+    <td><span class="status ${statusClass}">${tool.CurrentStatus}</span></td>
+</tr>
+                    `);
+
+                    tbody.append(row);
+                });
+            },
+            error: function () {
+                $('#dashboardBody').html('<tr><td colspan="6" style="color:red;">Failed to load data</td></tr>');
+            }
+        });
+    }
+</script>
