@@ -1,4 +1,5 @@
-﻿using PlusCP.Models;
+﻿using IP.Classess;
+using PlusCP.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -113,100 +114,155 @@ namespace PlusCP.Controllers
             return jsonResult;
         }
         [HttpPost]
-        public JsonResult CheckOut(int toolId, string[] serialIds, DateTime? expectedReturn, string notes)
+        public JsonResult CheckOut(string email, string password, int toolId, List<int> serialIds, List<int> partIds, DateTime? expectedReturn, string notes)
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
-            var userId = Convert.ToInt32(Session["SigninId"]);
+            var passEncrypt = BasicEncrypt.Instance.Encrypt(password.Trim());
 
-            if (serialIds == null || serialIds.Length == 0)
-                return Json(new { success = false, message = "No tool units selected for checkout." });
+            // 🔹 Step 1: Authenticate user
+            string sqlAuth = $@"
+            SELECT UserId, FirstName + ' ' + LastName AS UserName, Email
+            FROM SRM.UserInfo 
+            WHERE Email = '{email}'
+              AND Password = '{passEncrypt}'
+              AND Type IN ('Admin', 'Tool Crib')
+              AND IsActive = 1";
 
-            // Create a comma-separated list of serial IDs
-            string serialList = string.Join(",", serialIds);
+            var dtUser = oDAL.GetData(sqlAuth);
 
-            // Insert ONE transaction log (with combined serials)
-            string sqlTran = $@"
-INSERT INTO Tool.ToolTransactions (ToolId, SerialId, UserId, TranType, TranQty, Notes)
-VALUES ({toolId}, '{serialList}', {userId}, 'OUT', {serialIds.Length}, '{notes?.Replace("'", "''")}')";
-            oDAL.Execute(sqlTran);
+            if (dtUser.Rows.Count == 0)
+                return Json(new { success = false, message = "Invalid email or password." });
 
-            foreach (var serialId in serialIds)
+            int userId = Convert.ToInt32(dtUser.Rows[0]["UserId"]);
+            string userName = dtUser.Rows[0]["UserName"].ToString();
+
+            // 🔹 Step 2: Basic validation
+            if ((serialIds == null || !serialIds.Any()) && (partIds == null || !partIds.Any()))
+                return Json(new { success = false, message = "Please select at least one tool serial or part number to check out." });
+
+            // 🔹 Step 3: Handle serial allocations
+            if (serialIds != null && serialIds.Any())
             {
-                // Insert into ToolAllocation (still per serial for tracking)
-                string sqlAlloc = $@"
-INSERT INTO Tool.ToolAllocation (AllocationId, SerialId, ToolId, UserId, CheckoutDate, ExpectedReturnDate, IsReturned)
-VALUES (NEWID(), {serialId}, {toolId}, {userId}, GETDATE(),
-        {(expectedReturn.HasValue ? $"'{expectedReturn.Value:yyyy-MM-dd}'" : "NULL")},
-        0)";
-                oDAL.Execute(sqlAlloc);
+                foreach (int serialId in serialIds)
+                {
+                    // Verify serial availability
+                    string sqlStatus = $"SELECT Status FROM Tool.ToolSerials WHERE SerialId = {serialId}";
+                    var status = oDAL.GetObject(sqlStatus)?.ToString();
+                    if (status == null || status != "Available")
+                        continue;
 
-                // Update ToolSerials status
-                string sqlStatus = $@"
-UPDATE Tool.ToolSerials
-SET Status = 'CheckedOut'
-WHERE SerialId = {serialId}";
-                oDAL.Execute(sqlStatus);
+                    // Insert into ToolAllocation
+                    string sqlAlloc = $@"
+INSERT INTO Tool.ToolAllocation (AllocationId, SerialId, ToolId, UserId, CheckoutDate, ExpectedReturnDate, IsReturned, ConditionOnReturn)
+VALUES (NEWID(), {serialId}, {toolId}, {userId}, GETDATE(), 
+        {(expectedReturn.HasValue ? $"'{expectedReturn.Value:yyyy-MM-dd}'" : "NULL")},
+        0, '{notes?.Replace("'", "''")}')";
+                    oDAL.Execute(sqlAlloc);
+
+                    // Log transaction
+                    string sqlTran = $@"
+INSERT INTO Tool.ToolTransactions (ToolId, SerialId, UserId, TranType, TranQty, Notes, TranDate)
+VALUES ({toolId}, {serialId}, {userId}, 'OUT', 1, '{notes?.Replace("'", "''")}', GETDATE())";
+                    oDAL.Execute(sqlTran);
+
+                    // Update serial status
+                    string sqlUpdateSerial = $"UPDATE Tool.ToolSerials SET Status = 'CheckedOut' WHERE SerialId = {serialId}";
+                    oDAL.Execute(sqlUpdateSerial);
+                }
             }
 
-            return Json(new { success = true });
+            // 🔹 Step 4: Handle part allocations
+            if (partIds != null && partIds.Any())
+            {
+                foreach (int partId in partIds)
+                {
+                    // Only allocate parts that are still pending
+                    string sqlPartStatus = $"SELECT Status FROM Tool.PartNo WHERE PartId = {partId}";
+                    var partStatus = oDAL.GetObject(sqlPartStatus)?.ToString();
+                    if (partStatus != "Pending")
+                        continue;
+
+                    // Insert into PartAllocation
+                    string sqlPartAlloc = $@"
+INSERT INTO Tool.PartAllocation (AllocationId, PartId, UserId, CheckoutDate, ExpectedReturnDate, IsReturned)
+VALUES (NEWID(), {partId}, {userId}, GETDATE(),
+        {(expectedReturn.HasValue ? $"'{expectedReturn.Value:yyyy-MM-dd}'" : "NULL")},0)";
+                    oDAL.Execute(sqlPartAlloc);
+
+                    // Update PartNo
+                    string sqlUpdatePart = $@"
+UPDATE Tool.PartNo
+SET Status = 'InProgress',
+    ToolUsedId = {toolId},
+    ModifiedBy = '{userName.Replace("'", "''")}',
+    ModifiedOn = GETDATE()
+WHERE PartId = {partId}";
+                    oDAL.Execute(sqlUpdatePart);
+                }
+            }
+
+            return Json(new { success = true, message = "Tool(s) and Part(s) checked out successfully." });
         }
 
 
         [HttpPost]
-        public JsonResult CheckIn(List<Guid> allocationIds, string notes)
+        public JsonResult CheckIn(string email, string password, List<int> serialIds, List<int> partIds, string notes)
         {
-            oDAL = new cDAL(cDAL.ConnectionType.INIT);
-            var userId = Convert.ToInt32(Session["SigninId"]);
-
-            List<int> serialsToLog = new List<int>();
-            int toolId = 0; // we’ll grab this from allocation rows
-
-            foreach (var allocationId in allocationIds)
-            {
-                string sqlAlloc = $@"
-SELECT SerialId, ToolId
-FROM Tool.ToolAllocation
-WHERE AllocationId = '{allocationId}' AND UserId = {userId} AND IsReturned = 0";
-                var dt = oDAL.GetData(sqlAlloc);
-
-                if (dt.Rows.Count == 0)
-                    continue;
-
-                int serialId = Convert.ToInt32(dt.Rows[0]["SerialId"]);
-                toolId = Convert.ToInt32(dt.Rows[0]["ToolId"]);
-                serialsToLog.Add(serialId);
-
-                // Update allocation
-                string sqlUpdateAlloc = $@"
-UPDATE Tool.ToolAllocation
-SET ReturnDate = GETDATE(),
-    IsReturned = 1,
-    ConditionOnReturn = '{notes.Replace("'", "''")}'
-WHERE AllocationId = '{allocationId}'";
-                oDAL.Execute(sqlUpdateAlloc);
-
-                // Update serial
-                string sqlStatus = $@"
-UPDATE Tool.ToolSerials
-SET Status = 'Available'
-WHERE SerialId = {serialId}";
-                oDAL.Execute(sqlStatus);
-            }
-
-            if (serialsToLog.Count > 0)
-            {
-                // Log ONE transaction with combined serials
-                string serialList = string.Join(",", serialsToLog);
-                string sqlTran = $@"
-INSERT INTO Tool.ToolTransactions (ToolId, SerialId, UserId, TranType, TranQty, Notes)
-VALUES ({toolId}, '{serialList}', {userId}, 'IN', {serialsToLog.Count}, '{notes.Replace("'", "''")}')";
-                oDAL.Execute(sqlTran);
-            }
-
-            return Json(new { success = true });
+            var result = ToolCheckInService.ProcessCheckIn(email, password, serialIds, partIds, notes);
+            return Json(result);
         }
 
+        [HttpGet]
+        public JsonResult GetAllocatedToolSerials(string toolId)
+        {
+            oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
+            string sql = $@"
+        SELECT 
+            TS.SerialId, 
+            TS.SerialNumber, 
+            TA.AllocationId
+        FROM Tool.ToolAllocation TA
+        INNER JOIN Tool.ToolSerials TS ON TS.SerialId = TA.SerialId
+        WHERE TA.ToolId = '{toolId}' AND TA.IsReturned = 0";
+
+            var dt = oDAL.GetData(sql);
+
+            var result = dt.AsEnumerable().Select(r => new
+            {
+                AllocationId = r["AllocationId"].ToString(),
+                SerialId = Convert.ToInt32(r["SerialId"]),
+                SerialNumber = r["SerialNumber"].ToString()
+            }).ToList();
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet]
+        public JsonResult GetAllocatedPartNos()
+        {
+            oDAL = new cDAL(cDAL.ConnectionType.INIT);
+
+            string sql = @"
+        SELECT DISTINCT
+    PN.PartId,
+    PN.PartNo
+FROM TOOL.PartAllocation PA
+INNER JOIN TOOL.PartNo PN ON PN.PartId = PA.PartId
+WHERE PA.IsReturned = 0
+  AND PN.Status = 'InProgress'
+";
+
+            var dt = oDAL.GetData(sql);
+
+            var result = dt.AsEnumerable().Select(r => new
+            {
+                PartId = Convert.ToInt32(r["PartId"]),
+                PartNo = r["PartNo"].ToString()
+            }).ToList();
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
 
         [HttpGet]
         public JsonResult GetAllocationId()
@@ -279,34 +335,32 @@ VALUES ({toolId}, '{serialList}', {userId}, 'IN', {serialsToLog.Count}, '{notes.
             {
                 return Json(new { TotalTools = 0, Available = 0, CheckedOut = 0, CheckedIn = 0 }, JsonRequestBehavior.AllowGet);
             }
-        }
+        }//Created by Mohsin
         public JsonResult GetCheckedOutWeekly()
         {
             DataTable dt = oTool.GetCheckedOutWeeklyStats(); // 👈 aapko new method banani hogi SQL ke liye
 
-            var result = dt.AsEnumerable().Select(r => new {
+            var result = dt.AsEnumerable().Select(r => new
+            {
                 YearNumber = Convert.ToInt32(r["YearNumber"]),
                 WeekNumber = Convert.ToInt32(r["WeekNumber"]),
                 CheckedOutCount = Convert.ToInt32(r["CheckedOutCount"])
             }).ToList();
 
             return Json(result, JsonRequestBehavior.AllowGet);
-        }
-
-
-
+        }//Created by Mohsin
         public JsonResult GetTopUsedTool()
         {
             DataTable dt = oTool.GetTopUsedToolStats();
 
-            var result = dt.AsEnumerable().Select(r => new {
+            var result = dt.AsEnumerable().Select(r => new
+            {
                 ToolName = r["ToolName"].ToString(),
                 UsageCount = Convert.ToInt32(r["UsageCount"])
             }).ToList();
 
             return Json(result, JsonRequestBehavior.AllowGet);
-        }
-
+        }//Created by Mohsin
 
         [HttpGet]
         public JsonResult GetAvailableSerials(int toolId)
@@ -315,54 +369,38 @@ VALUES ({toolId}, '{serialList}', {userId}, 'IN', {serialsToLog.Count}, '{notes.
 
             string sql = $@"
         SELECT SerialId,
-        t.ToolName + '-' + SerialNumber AS ToolName
+        SerialNumber AS ToolName
         FROM Tool.ToolSerials ts
 INNER JOIN TOOL.Tools t ON t.ToolId = ts.ToolId
         WHERE ts.ToolId = {toolId} AND ts.Status = 'Available'
         ORDER BY SerialNumber";
 
             var dt = oDAL.GetData(sql);
-
-            //var serials = dt.AsEnumerable().Select(row => new
-            //{
-            //    SerialId = row["SerialId"],
-            //    SerialNumber = row["SerialNumber"]
-            //}).ToList();
             var serials = cCommon.ConvertDtToHashTable(dt);
             return Json(serials, JsonRequestBehavior.AllowGet);
         }
-
-        [HttpGet]
-        public JsonResult GetUserAllocations(int toolId)
+        public JsonResult GetPartNo(int toolId)
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
-            var userId = Convert.ToInt32(Session["SigninId"]);
 
             string sql = $@"
-        SELECT 
-            A.AllocationId, 
-            A.SerialId,
-            A.ToolId, 
-            S.SerialNumber, 
-            A.CheckoutDate, 
-            A.ExpectedReturnDate
-        FROM Tool.ToolAllocation A
-        INNER JOIN Tool.ToolSerials S ON A.SerialId = S.SerialId
-        WHERE A.ToolId = {toolId} AND A.UserId = {userId} AND A.IsReturned = 0
-        ORDER BY A.CheckoutDate";
+         SELECT PN.PartId, PN.PartNo
+FROM TOOL.PartNo PN
+WHERE PN.Status = 'Pending' AND PN.PartId NOT IN (
+    SELECT PartId
+    FROM Tool.PartAllocation
+    WHERE IsReturned = 0
+);";
 
             var dt = oDAL.GetData(sql);
 
-            var allocations = dt.AsEnumerable().Select(row => new
+            var lstPartNo = dt.AsEnumerable().Select(row => new
             {
-                AllocationId = row["AllocationId"].ToString(),
-                //SerialId = row["SerialId"],
-                //ToolId = row["ToolId"],
-                SerialNumber = row["SerialNumber"].ToString()
+                PartId = row["PartId"].ToString(),
+                PartNo = row["PartNo"].ToString(),
             }).ToList();
-            var lstAllocation = cCommon.ConvertDtToHashTable(dt);
-            return Json(lstAllocation, JsonRequestBehavior.AllowGet);
-        }
 
+            return Json(lstPartNo, JsonRequestBehavior.AllowGet);
+        }
     }
 }

@@ -288,6 +288,7 @@
     <Compile Include="Models\Setting.cs" />
     <Compile Include="Models\SignupViewModel.cs" />
     <Compile Include="Models\Tool.cs" />
+    <Compile Include="Models\ToolCheckInService.cs" />
     <Compile Include="Models\UserRoleX.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

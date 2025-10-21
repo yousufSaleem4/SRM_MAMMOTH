@@ -338,6 +338,26 @@
     textarea {
         resize: none;
     }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+        .password-wrapper .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #777;
+            z-index: 2;
+            border: none;
+            background: none;
+        }
+
+        .password-wrapper input {
+            padding-right: 35px; /* Leave space for the icon */
+        }
 </style>
 
 <div id="parent" class="container-fluid">
@@ -399,39 +419,66 @@
                     <input type="hidden" id="checkoutToolId" name="ToolId" />
 
                     <!-- Tool Name -->
-                    <div class="form-group">
-                        <label>Tool / Item Name:</label>
+                    <div class="form-group mb-2">
+                        <label>Tool Name:</label>
                         <input type="text" class="form-control" id="checkoutToolDisplay" readonly />
                     </div>
-                    <div class="form-group">
-                        <label class="lblText" for="checkOutSerials">Select Tool Serials:</label>
-                        <select id="checkOutSerials" class="form-control" multiple="multiple" required>
-                        </select>
-                    </div>
-                    <!-- Expected Return Date -->
-                    <div class="form-group">
-                        <label for="expectedReturnDate">Expected Return Date:</label>
-                        <div class="input-group date" id="datepicker-container">
-                            <input type="text" class="form-control" id="expectedReturnDate" name="ExpectedReturnDate" readonly>
-                            <span class="input-group-addon">
-                                <i class="glyphicon glyphicon-calendar"></i>
-                            </span>
+
+                    <!-- Email and Password -->
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mb-2">
+                            <label for="checkOutEmail">Email:</label>
+                            <input type="email" class="form-control" id="checkOutEmail" placeholder="Enter user email" required />
+                        </div>
+
+                        <div class="form-group col-md-6 mb-2">
+                            <label for="checkOutPassword">Password:</label>
+                            <div class="password-wrapper">
+                                <input type="password" class="form-control" id="checkOutPassword" placeholder="Enter password" required />
+                                <i class="fa fa-eye toggle-password" id="togglePasswordIcon"></i>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- Tool Serials & Part Numbers (side-by-side) -->
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mb-2">
+                            <label class="lblText" for="checkOutSerials">Select Tool Serials:</label>
+                            <select id="checkOutSerials" class="form-control" multiple="multiple" required></select>
+                        </div>
+                        <div class="form-group col-md-6 mb-2">
+                            <label for="checkoutPartNos">Select Part Numbers:</label>
+                            <select id="checkoutPartNos" class="form-control select2" multiple></select>
+                        </div>
+                    </div>
 
-                    <!-- Notes -->
-                    <div class="form-group">
-                        <label>Condition Notes:</label>
-                        <textarea class="form-control" id="checkOutCondition" name="Notes" rows="3" placeholder="Enter condition details..."></textarea>
+                    <!-- Expected Return Date & Condition Notes (side-by-side) -->
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mb-2">
+                            <label for="expectedReturnDate">Expected Return Date:</label>
+                            <div class="input-group date" id="datepicker-container">
+                                <input type="text" class="form-control" id="expectedReturnDate" name="ExpectedReturnDate" readonly>
+                                <span class="input-group-addon">
+                                    <i class="glyphicon glyphicon-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-md-6 mb-2">
+                            <label for="checkOutCondition">Condition Notes:</label>
+                            <textarea class="form-control" id="checkOutCondition" name="Notes" rows="5" placeholder="Enter condition details..."></textarea>
+                        </div>
                     </div>
                 </form>
             </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button id="btnCheckout" type="submit" form="checkOutForm" class="btn btn-danger">Confirm Check-Out</button>
+
+
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+                <button id="btnCheckout" type="submit" form="checkOutForm" class="btn btn-danger btn-sm">Confirm Check-Out</button>
             </div>
+
         </div>
     </div>
 </div>
@@ -443,42 +490,71 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
 
+            <!-- Header -->
             <div class="modal-header ModalHeaderColor">
                 <h5 class="modal-title ModalLabelColor">Tool Check-In</h5>
             </div>
 
+            <!-- Body -->
             <div class="modal-body">
                 <form id="checkInForm">
 
-                    <!-- Allocated Serials -->
-                    <!--<div class="form-group">
-                        <label>Select Tool Units to Check-In</label>
-                        <select id="checkInAllocations" name="AllocationIds" class="form-control" multiple required>-->
-                    <!-- Options populated dynamically via AJAX -->
-                    <!--</select>
-                    </div>-->
-                    <div class="form-group">
-                        <label class="lblText" for="checkInAllocations">Select Tool Serials</label>
-                        <select id="checkInAllocations" class="form-control" multiple="multiple" required>
-                        </select>
+                    <input type="hidden" id="checkinToolId" name="ToolId" />
+
+                    <!-- Tool Name -->
+                    <div class="form-group mb-2">
+                        <label>Tool Name:</label>
+                        <input type="text" class="form-control" id="checkInToolDisplay" readonly />
                     </div>
 
-                    <!-- Condition Notes -->
+                    <!-- Email + Password -->
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="checkInEmail">Email:</label>
+                            <input type="email" class="form-control" id="checkInEmail" placeholder="Enter user email" required />
+                        </div>
+
+                        <div class="form-group col-md-6 mb-2">
+                            <label for="checkInPassword">Password:</label>
+                            <div class="password-wrapper">
+                                <input type="password" class="form-control" id="checkInPassword" placeholder="Enter password" required />
+                                <i class="fa fa-eye toggle-password" id="toggleCheckInPasswordIcon"></i>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Tool Serials & Part Numbers (side-by-side) -->
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mb-2">
+                            <label class="lblText" for="checkInSerials">Select Tool Serials:</label>
+                            <select id="checkInSerials" class="form-control" multiple="multiple" required></select>
+                        </div>
+                        <div class="form-group col-md-6 mb-2">
+                            <label for="checkInPartNos">Select Part Numbers:</label>
+                            <select id="checkInPartNos" class="form-control select2" multiple></select>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
                     <div class="form-group">
-                        <label>Condition Notes</label>
-                        <textarea class="form-control" id="checkInCondition" name="Condition" rows="6" placeholder="Enter condition details..."></textarea>
+                        <label for="checkInNotes">Check-In Notes:</label>
+                        <textarea class="form-control" id="checkInCondition" rows="3" placeholder="Enter notes or condition updates..."></textarea>
                     </div>
 
                 </form>
             </div>
 
+            <!-- Footer -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 <button id="btnCheckin" type="submit" form="checkInForm" class="btn btn-success">Confirm Check-In</button>
             </div>
+
         </div>
     </div>
 </div>
+
 
 
 <!-- Modal Transaction -->
@@ -531,6 +607,17 @@
 
 <script src="~/Scripts/Message.js"></script>
 <script>
+    $(document).on('click', '.toggle-password', function () {
+        const icon = $(this);
+        const input = icon.siblings('input');
+
+        const isPassword = input.attr('type') === 'password';
+        input.attr('type', isPassword ? 'text' : 'password');
+        icon.toggleClass('fa-eye fa-eye-slash');
+    });
+
+
+
     ToggleDataList(false);
 
     LoadData();
@@ -557,83 +644,63 @@
 
                 if (!isSingleRow) {
                     var columnDef = [
-                        { "data": "ToolId", "title": "Tool Id", "width": "50px", "className": "text-center" , "visible": false},
+                        { "data": "ToolId", "title": "Tool Id", "width": "50px", "className": "text-center", "visible": false },
                         { "data": "ToolName", "title": "Tool Name", "className": "text-center" },
-                        {
-                            "data": "PartNum", "title": "Part No.", "className": "text-center",
+                        { "data": "PartNum", "title": "Part No.", "className": "text-center" },
 
-                        },
-
-                        // Use TotalQty from query
+                        // Total Qty
                         { "data": "TotalQty", "title": "Total Qty", "className": "text-center" },
 
-                        // New column for AvailableQty
+                        // Available Qty
                         {
                             "data": "AvailableQty", "title": "Available Qty", "className": "text-center",
                             "render": function (data, type, row) {
-                                var d = data.toString();
-                                if (d == "" || d == 0)
-                                    return "0";
-                                else
-                                    return d;
-                                }
+                                var d = data?.toString() || "0";
+                                return (d === "" || d === "0") ? "0" : d;
+                            }
                         },
 
-                        //{ "data": "PurchaseDate", "title": "Purchase Date", "className": "text-center" },
-                        //{
-                        //    "data": "PurchaseCost", "title": "Purchase Cost", "className": "text-center",
-                        //    "render": function (data, type, row) {
-                        //        return formatDecimal(data);
-                        //    }
-                        //},
+                        // Current Status
                         { "data": "CurrentStatus", "title": "Current Status", "className": "text-center" },
 
-                        //{ "data": "CalibrationDueDate", "title": "Calibration Due Date", "className": "text-center" },
-                        //{ "data": "LastMaintenanceDate", "title": "Last Maintenance Date", "className": "text-center" },
+                        // Is Consumable
                         {
                             "data": "IsConsumable", "title": "Is Consumable", "className": "text-center",
-                            "render": function (data, type, row) {
-                                if (data === true || data === "true" || data === 1) {
-                                    return "1";
-                                } else {
-                                    return "0";
-                                }
+                            "render": function (data) {
+                                return (data === true || data === "true" || data === 1) ? "1" : "0";
                             }
                         },
+
+                        // Tool Transaction Link
                         {
                             "data": null, "title": "Tool Transaction", "className": "text-center",
-                            render: function (data, type, row) {
-
-                                return '<a href="#" onclick="TransactionDtl(\'' + row["ToolId"] + '\')">' + "View" + '</a>';
+                            "render": function (data, type, row) {
+                                return `<a href="#" onclick="TransactionDtl('${row["ToolId"]}')">View</a>`;
                             }
                         },
+
+                        // Check OUT / IN Buttons (always enabled for admin)
                         {
                             "data": null,
                             "title": "Check OUT/IN",
                             "className": "text-center",
                             "orderable": false,
                             "render": function (data, type, row) {
-                                let checkoutDisabled = row["CanCheckOut"] ? "" : "disabled";
-                                let checkinDisabled = row["CanCheckIn"] ? "" : "disabled";
-
                                 return `
-                                        <button class="btn btn-sm btn-danger checkOutBtn"
-                                                data-ToolId="${row["ToolId"]}"
-                                                data-ToolName="${row["ToolName"]}"
-                                                ${checkoutDisabled}>
-                                            <i class="fa fa-sign-out-alt"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-success checkInBtn"
-                                                data-ToolId="${row["ToolId"]}"
-                                                data-ToolName="${row["ToolName"]}"
-                                                data-allocationid=""
-                                                ${checkinDisabled}>
-                                            <i class="fa fa-sign-in-alt"></i>
-                                        </button>`;
+                <button class="btn btn-sm btn-danger checkOutBtn"
+                        data-ToolId="${row["ToolId"]}"
+                        data-ToolName="${row["ToolName"]}">
+                    <i class="fa fa-sign-out-alt"></i>
+                </button>
+                <button class="btn btn-sm btn-success checkInBtn"
+                        data-ToolId="${row["ToolId"]}"
+                        data-ToolName="${row["ToolName"]}">
+                    <i class="fa fa-sign-in-alt"></i>
+                </button>`;
                             }
                         }
-
                     ];
+
 
 
                     ToggleDataList(true);
@@ -679,47 +746,54 @@
         $('#checkOutSerials').multiselect('destroy');
         initializeMultiselect("checkOutSerials");
 
-        // Step 1: Select all by default
-        $('#checkOutSerials').multiselect('selectAll', false);
+        //// Step 1: Select all by default
+        //$('#checkOutSerials').multiselect('selectAll', false);
 
-        $.each(lstSerials, function (index, item) {
-            if (item.IsExist == 1) {
-                $("#checkOutSerials option[value='" + item.SerialId + "']").prop("disabled", true);
-            }
-        });
+        //$.each(lstSerials, function (index, item) {
+        //    if (item.IsExist == 1) {
+        //        $("#checkOutSerials option[value='" + item.SerialId + "']").prop("disabled", true);
+        //    }
+        //});
 
         // Refresh multiselect after disabling
         $('#checkOutSerials').multiselect('refresh');
-
-
         $('#checkOutSerials').multiselect('updateButtonText');
     });
+        loadCheckoutDropdowns(toolId);
     $("#checkOutModal").modal("show");
 });
 
     $("#btnCheckout").click(function (e) {
     e.preventDefault();
 
+    // Get selected serials and parts
     let selectedSerials = $("#checkOutSerials").val();
-    console.log(selectedSerials)
+    let selectedPartNos = $("#checkoutPartNos").val();
+        console.log(selectedPartNos);
+    // Collect user credentials
+    let userEmail = $("#checkOutEmail").val();
+    let userPassword = $("#checkOutPassword").val();
+
     $.ajax({
         url: '@Url.Action("CheckOut","Tool")',
         type: 'POST',
         data: {
             toolId: $("#checkoutToolId").val(),
-            serialIds: selectedSerials, // array of selected serials
+            serialIds: selectedSerials,          // array of selected serials
+            partIds: selectedPartNos,            // array of selected part numbers
             expectedReturn: $("#expectedReturnDate").val(),
             notes: $("#checkOutCondition").val(),
-            checkOutDateTime: $("#checkOutDateTime").val()
+            email: userEmail,
+            password: userPassword
         },
-        traditional: true, // important for array serialization
+        traditional: true, // required for sending arrays properly
         success: function (response) {
             if (response.success) {
-                MsgToast("Success!", "Tool Checked Out successfully", "success");
+                MsgToast("Success!", response.message || "Tool checked out successfully", "success");
                 $("#checkOutModal").modal("hide");
-                OpenPage('\\Tool\\GetTool');
+                LoadData();
             } else {
-                MsgToast("Error!", response.message, "error");
+                MsgToast("Error!", response.message || "An error occurred.", "error");
             }
         },
         error: function () {
@@ -728,95 +802,135 @@
     });
 });
 
+
     $(document).on("click", ".checkInBtn", function () {
     let toolId = $(this).data("toolid");
     let toolName = $(this).data("toolname");
 
-    $("#checkinToolId").val(toolId);
     $("#checkinToolName").val(toolName);
-    $("#checkinToolDisplay").val(toolName);
-
-    // Fetch user allocations
-    $.get('@Url.Action("GetUserAllocations","Tool")', { toolId: toolId }, function (data) {
-        // Clear options
-        $('#checkInAllocations').empty();
-        //console.log(data)
-        var lstAllocation = data;
-        // Append all POs
-        $.each(lstAllocation, function (index, item) {
-            $('#checkInAllocations').append(new Option(item.SerialNumber, item.AllocationId));
-        });
-
-        // Reinitialize multiselect
-        $('#checkInAllocations').multiselect('destroy');
-        initializeMultiselect("checkInAllocations");
-
-        // Step 1: Select all by default
-        $('#checkInAllocations').multiselect('selectAll', false);
-
-        $.each(lstAllocation, function (index, item) {
-            if (item.IsExist == 1) {
-                $("#checkInAllocations option[value='" + item.AllocationId + "']").prop("disabled", true);
-            }
-        });
-
-        // Refresh multiselect after disabling
-        $('#checkInAllocations').multiselect('refresh');
+    $("#checkInToolDisplay").val(toolName);
 
 
-        $('#checkInAllocations').multiselect('updateButtonText');
+    // Clear old dropdowns
+    $('#checkInSerials').empty();
+    $('#checkInPartNos').empty();
+
+    // Fetch allocated serials
+    $.get('@Url.Action("GetAllocatedToolSerials","Tool")', { toolId: toolId }, function (data) {
+        if (data && data.length > 0) {
+            $.each(data, function (index, item) {
+                $('#checkInSerials').append(new Option(item.SerialNumber, item.SerialId));
+            });
+        }
+        //else {
+        //    $('#checkInSerials').append(new Option("No allocated serials", ""));
+        //}
+
+        // Initialize or refresh multiselect
+        $('#checkInSerials').multiselect('destroy');
+        initializeMultiselect("checkInSerials");
+        $('#checkInSerials').multiselect('refresh');
+
     });
 
+    // Fetch allocated part numbers
+    $.get('@Url.Action("GetAllocatedPartNos","Tool")', { toolId: toolId }, function (data) {
+        if (data && data.length > 0) {
+            $.each(data, function (index, item) {
+                $('#checkInPartNos').append(new Option(item.PartNo, item.PartId));
+            });
+        }
+        //else {
+        //    $('#checkInPartNos').append(new Option("No allocated part numbers", ""));
+        //}
+
+        // Initialize or refresh multiselect
+        $('#checkInPartNos').multiselect('destroy');
+        initializeMultiselect("checkInPartNos");
+        $('#checkInPartNos').multiselect('refresh');
+
+    });
+
+    // Finally, open the modal
     $("#checkInModal").modal("show");
 });
 
+
     $("#btnCheckin").click(function (e) {
     e.preventDefault();
-        let toolId = $(this).data("toolid");
-        let toolName = $(this).data("toolname");
 
-        $("#checkinToolName").val(toolName);
-    let selectedAllocations = $("#checkInAllocations").val();
+    // Gather values
+    let email = $("#checkInEmail").val();
+    let password = $("#checkInPassword").val();
+    let selectedSerials = $("#checkInSerials").val();     // multi-select for tool serials
+    let selectedPartNos = $("#checkInPartNos").val();     // multi-select for part numbers
+    let notes = $("#checkInCondition").val();
+
+    // Basic validation before making the request
+    if (!email || !password) {
+        MsgToast("Warning!", "Please enter your email and password.", "warning");
+        return;
+    }
+
+    if ((!selectedSerials || selectedSerials.length === 0) && (!selectedPartNos || selectedPartNos.length === 0)) {
+        MsgToast("Warning!", "Please select at least one tool serial or part number to check in.", "warning");
+        return;
+    }
 
     $.ajax({
-        url: '@Url.Action("CheckIn","Tool")',
+        url: '@Url.Action("CheckIn", "Tool")',
         type: 'POST',
         data: {
-            toolId: toolId,
-            allocationIds: selectedAllocations, // array of allocation IDs
-            //checkInDateTime: $("#checkInDateTime").val(),
-            notes: $("#checkInCondition").val()
+            email: email,
+            password: password,
+            serialIds: selectedSerials,
+            partIds: selectedPartNos,
+            notes: notes
         },
-        traditional: true,
+        traditional: true, // ensures arrays (serialIds, partIds) are serialized properly
         success: function (response) {
             if (response.success) {
-                MsgToast("Success!", "Tool Checked In successfully", "success");
+                MsgToast("Success!", response.message || "Check-In completed successfully.", "success");
                 $("#checkInModal").modal("hide");
-                OpenPage('\\Tool\\GetTool');
+                LoadData();
             } else {
-                MsgToast("Error!", response.message, "error");
+                MsgToast("Error!", response.message || "Unable to process check-in.", "error");
             }
         },
         error: function () {
-            MsgToast("Error!", "Error while processing Check-In.", "error");
+            MsgToast("Error!", "Something went wrong while processing check-in.", "error");
         }
     });
 });
 
 
-    function setCurrentDateTime(inputId) {
-        let now = new Date();
-        let formatted = now.toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
-        document.getElementById(inputId).value = formatted;
-    }
+    function loadCheckoutDropdowns(toolId) {
 
-    //$('#checkOutModal').on('show.bs.modal', function () {
-    //    setCurrentDateTime('checkOutDateTime');
-    //});
+        // Load available part numbers
+        $.getJSON('@Url.Action("GetPartNo","Tool")', { toolId: toolId }, function (lstPartNo) {
+        $("#checkoutPartNos").empty();
+            $.each(lstPartNo, function(i, part) {
+            $("#checkoutPartNos").append(`<option value="${part.PartId}">${part.PartNo}</option>`);
+            });
 
-    //$('#checkInModal').on('show.bs.modal', function () {
-    //    setCurrentDateTime('checkInDateTime');
-    //});
+            // Reinitialize multiselect
+            $('#checkoutPartNos').multiselect('destroy');
+            initializeMultiselect("checkoutPartNos");
+
+            // Step 1: Select all by default
+            //$('#checkoutPartNos').multiselect('selectAll', true);
+
+            //$.each(lstSerials, function (index, item) {
+            //    if (item.IsExist == 1) {
+            //        $("#checkoutPartNos option[value='" + item.SerialId + "']").prop("disabled", true);
+            //    }
+            //});
+
+            // Refresh multiselect after disabling
+            $('#checkoutPartNos').multiselect('refresh');
+            $('#checkoutPartNos').multiselect('updateButtonText');
+    });
+}
     function TransactionDtl(toolId) {
         $('#TransactionModal').modal('show');
 
@@ -862,7 +976,6 @@
         });
 
     }
-
     function MakeDataGridForTraining(tableId, data, tableHeight, columns, buttonId, search, isScrollX, footerFunction, isFramed, detailed, reportTitleId, rowSelection, lstHeight) {
         var isFooter = footerFunction === undefined || footerFunction === false ? false : true;
         var isFramed = isFramed === undefined || isFramed === false ? false : true;
@@ -999,14 +1112,14 @@
                 }
             ],
             select: true,
-            drawCallback: function () {
-                $.get("/Tool/GetAllocationId", function (allocations) {
-                    allocations.forEach(function (alloc) {
-                        $(`.checkInBtn[data-ToolId='${alloc.ToolId}']`)
-                            .attr("data-allocationid", alloc.AllocationId);
-                    });
-                });
-            }
+            //drawCallback: function () {
+            //    $.get("/Tool/GetAllocationId", function (allocations) {
+            //        allocations.forEach(function (alloc) {
+            //            $(`.checkInBtn[data-ToolId='${alloc.ToolId}']`)
+            //                .attr("data-allocationid", alloc.AllocationId);
+            //        });
+            //    });
+            //}
         });
         table.buttons().container()
             .appendTo('#buttons');
@@ -1113,21 +1226,6 @@
         // Otherwise (alphanumeric or plain int), leave as-is
         return data;
     }
-    function formatDate(msDate) {
-        if (!msDate) return '';
-
-        var timestamp = parseInt(msDate.replace(/[^0-9]/g, ''));
-        var date = new Date(timestamp);
-
-        var year = date.getFullYear();
-        var month = ('0' + (date.getMonth() + 1)).slice(-2);
-        var day = ('0' + date.getDate()).slice(-2);
-        var hours = ('0' + date.getHours()).slice(-2);
-        var minutes = ('0' + date.getMinutes()).slice(-2);
-        var seconds = ('0' + date.getSeconds()).slice(-2);
-
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    }
     function initializeMultiselect(dropdownId) {
         $('#' + dropdownId).multiselect({
             includeSelectAllOption: true,
@@ -1156,8 +1254,8 @@
             }
         });
 
-        $('#checkOutSerials').multiselect('selectAll', false);
-        $("#checkOutSerials").multiselect('updateButtonText');
+        //$('#' + dropdownId).multiselect('selectAll', true);
+        $('#' + dropdownId).multiselect('updateButtonText');
     }
 
     $(function () {
