@@ -11,7 +11,16 @@ namespace PlusCP.Models
         private static cDAL oDAL;
 
         // 🔹 Entry point for Check-In
-        public static object ProcessCheckIn(string email, string password, List<int> serialIds, List<int> partIds, string notes)
+        public static object ProcessCheckIn(
+            int toolId,
+            string toolName,
+            string email,
+            string password,
+            List<int> serialIds,
+            List<string> serialNo,
+            List<int> partIds,
+            List<string> partNo,
+            string notes)
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
@@ -42,6 +51,23 @@ namespace PlusCP.Models
                     unauthorizedSerials,
                     unauthorizedParts
                 };
+            }
+
+            // 🔹 Log a single consolidated transaction (for all checked-in items)
+            if (checkedInSerials.Any() || checkedInParts.Any())
+            {
+                LogSingleTransaction(
+                    toolId,
+                    toolName,
+                    user.UserId,
+                    user.UserName,
+                    "IN", // TranType
+                    notes,
+                    serialIds,
+                    serialNo,
+                    partIds,
+                    partNo
+                );
             }
 
             // ✅ Success
@@ -187,6 +213,50 @@ SET Status = 'Completed',
 WHERE PartId = {partId}";
             oDAL.Execute(sql);
         }
+        private static void LogSingleTransaction(
+    int toolId,
+    string toolName,
+    int userId,
+    string userName,
+    string tranType,
+    string notes,
+    List<int> serialIds,
+    List<string> serialNo,
+    List<int> partIds,
+    List<string> partNo)
+        {
+            // handle potential nulls gracefully
+            string serialIdList = (serialIds != null && serialIds.Any()) ? string.Join(",", serialIds) : "";
+            string serialNoList = (serialNo != null && serialNo.Any()) ? string.Join(",", serialNo.Select(s => s.Replace("'", "''"))) : "";
+            string partIdList = (partIds != null && partIds.Any()) ? string.Join(",", partIds) : "";
+            string partNoList = (partNo != null && partNo.Any()) ? string.Join(",", partNo.Select(p => p.Replace("'", "''"))) : "";
+            string safeToolName = toolName?.Replace("'", "''") ?? "";
+            string safeUserName = userName?.Replace("'", "''") ?? "";
+            string safeNotes = notes?.Replace("'", "''") ?? "";
+
+            int tranQty = (serialIds?.Count ?? 0) + (partIds?.Count ?? 0);
+
+            string sql = $@"
+INSERT INTO Tool.ToolTransactions 
+(ToolId, ToolName, ToolSerialId, ToolSerialNumber, PartId, PartNo, TranType, TranQty, ExpectedReturnDate, UserId, Username, TranDate, Notes)
+VALUES (
+    {toolId},
+    '{safeToolName}',
+    '{serialIdList}',
+    '{serialNoList}',
+    '{partIdList}',
+    '{partNoList}',
+    '{tranType}',
+    {tranQty},
+    NULL,  -- ExpectedReturnDate is NULL for Check-In
+    {userId},
+    '{safeUserName}',
+    GETDATE(),
+    '{safeNotes}'
+)";
+            oDAL.Execute(sql);
+        }
+
     }
 
     // Helper class to hold user info

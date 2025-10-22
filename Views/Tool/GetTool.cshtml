@@ -504,7 +504,7 @@
                     <!-- Tool Name -->
                     <div class="form-group mb-2">
                         <label>Tool Name:</label>
-                        <input type="text" class="form-control" id="checkInToolDisplay" readonly />
+                        <input type="text" class="form-control" id="checkInToolName" readonly />
                     </div>
 
                     <!-- Email + Password -->
@@ -575,17 +575,19 @@
                             <table id="transactionTable" class="table table-striped table-bordered">
                                 <thead class="sticky-header">
                                     <tr>
-                                        <th hidden>Tran Id</th>
-                                        <th>Tool Serial Id</th>
+                                        <th>Tool Id</th>
                                         <th>Tool Name</th>
-                                        <th>User</th>
-                                        <th>Transaction Type</th>
-                                        <th>Quantity</th>
-                                        <th>Transaction Date</th>
-                                        <th>Expected Return</th>
-                                        <th>Possession Duration</th>
+                                        <th>Tool Serial No.</th>
+                                        <th>Part No.</th>
+                                        <th>Tran. Type</th>
+                                        <th>Tran. Qty</th>
+                                        <th>Tran. Date</th>
+                                        <th>Expected Return Date</th>
+                                        <th>User Id</th>
+                                        <th>Username</th>
                                         <th>Notes</th>
                                     </tr>
+
                                 </thead>
                                 <tbody style="text-align:center"></tbody>
                             </table>
@@ -723,6 +725,7 @@
     });
 
 
+    //MODAL Opening function
     $(document).on("click", ".checkOutBtn", function () {
     let toolId = $(this).data("toolid");
     let toolName = $(this).data("toolname");
@@ -731,69 +734,88 @@
     $("#checkoutToolName").val(toolName);
     $("#checkoutToolDisplay").val(toolName);
 
+    // Destroy + clear before refill
+    $('#checkOutSerials').multiselect('destroy');
+    $('#checkOutSerials').empty();
+
     // Fetch available serials
-    $.get('@Url.Action("GetAvailableSerials","Tool")', { toolId: toolId }, function (data) {
-        // Clear options
-        $('#checkOutSerials').empty();
-        //console.log(data)
-        var lstSerials = data;
-        // Append all POs
-        $.each(lstSerials, function (index, item) {
+    $.get('@Url.Action("GetAvailableSerials", "Tool")', { toolId: toolId }, function (data) {
+        $.each(data, function (index, item) {
             $('#checkOutSerials').append(new Option(item.ToolName, item.SerialId));
         });
 
-        // Reinitialize multiselect
-        $('#checkOutSerials').multiselect('destroy');
+        // Reinitialize
         initializeMultiselect("checkOutSerials");
-
-        //// Step 1: Select all by default
-        //$('#checkOutSerials').multiselect('selectAll', false);
-
-        //$.each(lstSerials, function (index, item) {
-        //    if (item.IsExist == 1) {
-        //        $("#checkOutSerials option[value='" + item.SerialId + "']").prop("disabled", true);
-        //    }
-        //});
-
-        // Refresh multiselect after disabling
         $('#checkOutSerials').multiselect('refresh');
-        $('#checkOutSerials').multiselect('updateButtonText');
     });
-        loadCheckoutDropdowns(toolId);
+
+    // Fetch other dropdowns if needed
+    loadCheckoutDropdowns(toolId);
+
     $("#checkOutModal").modal("show");
 });
+
 
     $("#btnCheckout").click(function (e) {
     e.preventDefault();
 
-    // Get selected serials and parts
-    let selectedSerials = $("#checkOutSerials").val();
-    let selectedPartNos = $("#checkoutPartNos").val();
-        console.log(selectedPartNos);
-    // Collect user credentials
+    // Gather tool info
+    let toolId = $("#checkoutToolId").val();
+    let toolName = $("#checkoutToolDisplay").val() || $("#checkoutToolDisplay").text();
+
+    // Gather selected serials and parts
+    let selectedSerials = $("#checkOutSerials").val(); // IDs
+    let selectedPartNos = $("#checkoutPartNos").val(); // IDs
+
+    // Get display texts (Serial Numbers & Part Numbers)
+    let selectedSerialTexts = $("#checkOutSerials option:selected").map(function () {
+        return $(this).text().trim();
+    }).get();
+
+    let selectedPartNoTexts = $("#checkoutPartNos option:selected").map(function () {
+        return $(this).text().trim();
+    }).get();
+
+    // Gather user credentials and other info
     let userEmail = $("#checkOutEmail").val();
     let userPassword = $("#checkOutPassword").val();
+    let expectedReturnDate = $("#expectedReturnDate").val();
+    let notes = $("#checkOutCondition").val();
+
+    // Basic validation
+    if (!userEmail || !userPassword) {
+        MsgToast("Warning!", "Please enter your email and password.", "warning");
+        return;
+    }
+
+    if ((!selectedSerials || selectedSerials.length === 0) && (!selectedPartNos || selectedPartNos.length === 0)) {
+        MsgToast("Warning!", "Please select at least one tool serial or part number to check out.", "warning");
+        return;
+    }
 
     $.ajax({
         url: '@Url.Action("CheckOut","Tool")',
         type: 'POST',
         data: {
-            toolId: $("#checkoutToolId").val(),
-            serialIds: selectedSerials,          // array of selected serials
-            partIds: selectedPartNos,            // array of selected part numbers
-            expectedReturn: $("#expectedReturnDate").val(),
-            notes: $("#checkOutCondition").val(),
+            toolId: toolId,
+            toolName: toolName,
+            serialIds: selectedSerials,
+            serialNumbers: selectedSerialTexts,
+            partIds: selectedPartNos,
+            partNumbers: selectedPartNoTexts,
+            expectedReturn: expectedReturnDate,
+            notes: notes,
             email: userEmail,
             password: userPassword
         },
-        traditional: true, // required for sending arrays properly
+        traditional: true, // serialize arrays correctly
         success: function (response) {
             if (response.success) {
                 MsgToast("Success!", response.message || "Tool checked out successfully", "success");
                 $("#checkOutModal").modal("hide");
                 LoadData();
             } else {
-                MsgToast("Error!", response.message || "An error occurred.", "error");
+                MsgToast("Error!", response.message || "An error occurred during check-out.", "error");
             }
         },
         error: function () {
@@ -803,68 +825,69 @@
 });
 
 
+    //MODAL Opening function
     $(document).on("click", ".checkInBtn", function () {
     let toolId = $(this).data("toolid");
     let toolName = $(this).data("toolname");
 
-    $("#checkinToolName").val(toolName);
-    $("#checkInToolDisplay").val(toolName);
+    $("#checkinToolId").val(toolId);
+    $("#checkInToolName").val(toolName);
 
-
-    // Clear old dropdowns
+    // 🔹 Serial dropdown
+    $('#checkInSerials').multiselect('destroy');
     $('#checkInSerials').empty();
-    $('#checkInPartNos').empty();
 
-    // Fetch allocated serials
-    $.get('@Url.Action("GetAllocatedToolSerials","Tool")', { toolId: toolId }, function (data) {
-        if (data && data.length > 0) {
-            $.each(data, function (index, item) {
-                $('#checkInSerials').append(new Option(item.SerialNumber, item.SerialId));
-            });
-        }
-        //else {
-        //    $('#checkInSerials').append(new Option("No allocated serials", ""));
-        //}
+    $.get('@Url.Action("GetAllocatedToolSerials", "Tool")', { toolId: toolId }, function (data) {
+        $.each(data, function (index, item) {
+            $('#checkInSerials').append(new Option(item.SerialNumber, item.SerialId));
+        });
 
-        // Initialize or refresh multiselect
-        $('#checkInSerials').multiselect('destroy');
         initializeMultiselect("checkInSerials");
         $('#checkInSerials').multiselect('refresh');
-
     });
 
-    // Fetch allocated part numbers
-    $.get('@Url.Action("GetAllocatedPartNos","Tool")', { toolId: toolId }, function (data) {
-        if (data && data.length > 0) {
-            $.each(data, function (index, item) {
-                $('#checkInPartNos').append(new Option(item.PartNo, item.PartId));
-            });
-        }
-        //else {
-        //    $('#checkInPartNos').append(new Option("No allocated part numbers", ""));
-        //}
+    // 🔹 PartNo dropdown
+    $('#checkInPartNos').multiselect('destroy');
+    $('#checkInPartNos').empty();
 
-        // Initialize or refresh multiselect
-        $('#checkInPartNos').multiselect('destroy');
+    $.get('@Url.Action("GetAllocatedPartNos", "Tool")', { toolId: toolId }, function (data) {
+        $.each(data, function (index, item) {
+            $('#checkInPartNos').append(new Option(item.PartNo, item.PartId));
+        });
+
         initializeMultiselect("checkInPartNos");
         $('#checkInPartNos').multiselect('refresh');
-
     });
 
-    // Finally, open the modal
     $("#checkInModal").modal("show");
 });
+
 
 
     $("#btnCheckin").click(function (e) {
     e.preventDefault();
 
+    //$("#checkinToolId").val(toolId);
+    //$("#checkInToolName").val(toolName);
+
+    let toolId = $("#checkinToolId").val();
+    let toolName = $("#checkInToolName").val() || $("#checkInToolName").text();
+
     // Gather values
     let email = $("#checkInEmail").val();
     let password = $("#checkInPassword").val();
-    let selectedSerials = $("#checkInSerials").val();     // multi-select for tool serials
-    let selectedPartNos = $("#checkInPartNos").val();     // multi-select for part numbers
+    let selectedSerials = $("#checkInSerials").val();     // array of serial IDs
+    let selectedPartNos = $("#checkInPartNos").val();     // array of part IDs
     let notes = $("#checkInCondition").val();
+
+    // Get visible text (serial numbers / part numbers)
+    let selectedSerialTexts = $("#checkInSerials option:selected").map(function () {
+        return $(this).text().trim();
+    }).get();
+
+    let selectedPartNoTexts = $("#checkInPartNos option:selected").map(function () {
+        return $(this).text().trim();
+    }).get();
 
     // Basic validation before making the request
     if (!email || !password) {
@@ -881,13 +904,17 @@
         url: '@Url.Action("CheckIn", "Tool")',
         type: 'POST',
         data: {
+            toolId: toolId,
+            toolName: toolName,
             email: email,
             password: password,
             serialIds: selectedSerials,
+            serialNo: selectedSerialTexts,
             partIds: selectedPartNos,
+            partNo: selectedPartNoTexts,
             notes: notes
         },
-        traditional: true, // ensures arrays (serialIds, partIds) are serialized properly
+        traditional: true, // ensures arrays serialize correctly
         success: function (response) {
             if (response.success) {
                 MsgToast("Success!", response.message || "Check-In completed successfully.", "success");
@@ -904,33 +931,38 @@
 });
 
 
+
     function loadCheckoutDropdowns(toolId) {
 
-        // Load available part numbers
-        $.getJSON('@Url.Action("GetPartNo","Tool")', { toolId: toolId }, function (lstPartNo) {
-        $("#checkoutPartNos").empty();
-            $.each(lstPartNo, function(i, part) {
-            $("#checkoutPartNos").append(`<option value="${part.PartId}">${part.PartNo}</option>`);
+    // 🔹 Always destroy and clear before repopulating
+    $('#checkoutPartNos').multiselect('destroy');
+    $('#checkoutPartNos').empty();
+
+    // 🔹 Load available part numbers via AJAX
+    $.getJSON('@Url.Action("GetPartNo", "Tool")', { toolId: toolId }, function (lstPartNo) {
+
+        if (lstPartNo && lstPartNo.length > 0) {
+            $.each(lstPartNo, function (i, part) {
+                $("#checkoutPartNos").append(
+                    new Option(part.PartNo, part.PartId)
+                );
             });
+        } else {
+            // Optional: show placeholder if no parts exist
+            $("#checkoutPartNos").append(
+                new Option("No part numbers available", "")
+            );
+        }
 
-            // Reinitialize multiselect
-            $('#checkoutPartNos').multiselect('destroy');
-            initializeMultiselect("checkoutPartNos");
+        // 🔹 Reinitialize multiselect after populating
+        initializeMultiselect("checkoutPartNos");
 
-            // Step 1: Select all by default
-            //$('#checkoutPartNos').multiselect('selectAll', true);
-
-            //$.each(lstSerials, function (index, item) {
-            //    if (item.IsExist == 1) {
-            //        $("#checkoutPartNos option[value='" + item.SerialId + "']").prop("disabled", true);
-            //    }
-            //});
-
-            // Refresh multiselect after disabling
-            $('#checkoutPartNos').multiselect('refresh');
-            $('#checkoutPartNos').multiselect('updateButtonText');
+        // 🔹 Refresh the UI
+        $('#checkoutPartNos').multiselect('refresh');
+        $('#checkoutPartNos').multiselect('updateButtonText');
     });
 }
+
     function TransactionDtl(toolId) {
         $('#TransactionModal').modal('show');
 
@@ -944,7 +976,7 @@
             datatype: JSON,
             success: function (data) {
                 var lstToolTransaction = [];
-                lstToolTransaction = data.lstToolTransaction; debugger
+                lstToolTransaction = data.lstToolTransaction;
                 $('#transactionTable tbody').empty();
                 // Iterate over selected rows and append to table
                 for (var i = 0; i < lstToolTransaction.length; i++) {
@@ -952,15 +984,16 @@
                     var row = lstToolTransaction[i];
 
                     var rowDataHtml = '<tr>' +
-                        '<td hidden>' + row['TranId'] + '</td>' +
-                        '<td>' + row['ToolSerialIds'] + '</td>' +
-                        '<td>' + row['ToolName'] + '</td>' +
-                        '<td>' + row['UserName'] + '</td>' +
-                        '<td>' + row['TranType'] + '</td>' +
-                        '<td>' + row['TranQty'] + '</td>' +
-                        '<td>' + row['TranDate'] + '</td>' +
-                        '<td>' + (row['ExpectedReturnDate'] ? row['ExpectedReturnDate'] : '-') + '</td>' +
-                        '<td>' + (row['PossessionDuration'] ?? '-') + '</td>' +
+                        '<td>' + (row['ToolId'] ?? '') + '</td>' +
+                        '<td>' + (row['ToolName'] ?? '-') + '</td>' +
+                        '<td>' + (row['ToolSerialNumber'] ?? '-') + '</td>' +
+                        '<td>' + (row['PartNo'] ?? '-') + '</td>' +
+                        '<td>' + (row['TranType'] ?? '-') + '</td>' +
+                        '<td class="text-center">' + (row['TranQty'] ?? '0') + '</td>' +
+                        '<td>' + (row['TranDate'] ?? '-') + '</td>' +
+                        '<td>' + (row['ExpectedReturnDate'] ?? '-') + '</td>' +
+                        '<td>' + (row['UserId'] ?? '-') + '</td>' +
+                        '<td>' + (row['Username'] ?? '-') + '</td>' +
                         '<td>' + (row['Notes'] ?? '') + '</td>' +
                         '</tr>';
 

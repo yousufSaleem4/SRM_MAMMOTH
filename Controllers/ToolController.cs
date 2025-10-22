@@ -114,7 +114,7 @@ namespace PlusCP.Controllers
             return jsonResult;
         }
         [HttpPost]
-        public JsonResult CheckOut(string email, string password, int toolId, List<int> serialIds, List<int> partIds, DateTime? expectedReturn, string notes)
+        public JsonResult CheckOut(int toolId, string toolName, List<int> serialIds, List<string> serialNumbers, List<int> partIds, List<string> partNumbers, string expectedReturn, string notes, string email, string password)
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
             var passEncrypt = BasicEncrypt.Instance.Encrypt(password.Trim());
@@ -155,15 +155,8 @@ namespace PlusCP.Controllers
                     string sqlAlloc = $@"
 INSERT INTO Tool.ToolAllocation (AllocationId, SerialId, ToolId, UserId, CheckoutDate, ExpectedReturnDate, IsReturned, ConditionOnReturn)
 VALUES (NEWID(), {serialId}, {toolId}, {userId}, GETDATE(), 
-        {(expectedReturn.HasValue ? $"'{expectedReturn.Value:yyyy-MM-dd}'" : "NULL")},
-        0, '{notes?.Replace("'", "''")}')";
+{(string.IsNullOrEmpty(expectedReturn) ? "NULL" : $"'{expectedReturn}'")},0, '{notes?.Replace("'", "''")}')";
                     oDAL.Execute(sqlAlloc);
-
-                    // Log transaction
-                    string sqlTran = $@"
-INSERT INTO Tool.ToolTransactions (ToolId, SerialId, UserId, TranType, TranQty, Notes, TranDate)
-VALUES ({toolId}, {serialId}, {userId}, 'OUT', 1, '{notes?.Replace("'", "''")}', GETDATE())";
-                    oDAL.Execute(sqlTran);
 
                     // Update serial status
                     string sqlUpdateSerial = $"UPDATE Tool.ToolSerials SET Status = 'CheckedOut' WHERE SerialId = {serialId}";
@@ -186,7 +179,7 @@ VALUES ({toolId}, {serialId}, {userId}, 'OUT', 1, '{notes?.Replace("'", "''")}',
                     string sqlPartAlloc = $@"
 INSERT INTO Tool.PartAllocation (AllocationId, PartId, UserId, CheckoutDate, ExpectedReturnDate, IsReturned)
 VALUES (NEWID(), {partId}, {userId}, GETDATE(),
-        {(expectedReturn.HasValue ? $"'{expectedReturn.Value:yyyy-MM-dd}'" : "NULL")},0)";
+        {(string.IsNullOrEmpty(expectedReturn) ? "NULL" : $"'{expectedReturn}'")},0)";
                     oDAL.Execute(sqlPartAlloc);
 
                     // Update PartNo
@@ -201,14 +194,36 @@ WHERE PartId = {partId}";
                 }
             }
 
+            // 🔹 Step X: Log consolidated transaction
+            string sqlTran = $@"
+INSERT INTO Tool.ToolTransactions 
+(ToolId, ToolName, ToolSerialId, ToolSerialNumber, PartId, PartNo, TranType, TranQty, ExpectedReturnDate, UserId, Username, TranDate, Notes)
+VALUES (
+    {toolId},
+    '{toolName?.Replace("'", "''") ?? ""}',
+    '{string.Join(",", serialIds ?? new List<int>())}',
+    '{string.Join(",", (serialNumbers ?? new List<string>()).Select(s => s.Replace("'", "''")))}',
+    '{string.Join(",", partIds ?? new List<int>())}',
+    '{string.Join(",", (partNumbers ?? new List<string>()).Select(p => p.Replace("'", "''")))}',
+    'OUT',
+    {((serialIds?.Count ?? 0) + (partIds?.Count ?? 0))},
+    {(string.IsNullOrEmpty(expectedReturn) ? "NULL" : $"'{expectedReturn}'")},
+    {userId},
+    '{userName?.Replace("'", "''") ?? ""}',
+    GETDATE(),
+    '{notes?.Replace("'", "''") ?? ""}'
+)";
+
+            oDAL.Execute(sqlTran);
+
             return Json(new { success = true, message = "Tool(s) and Part(s) checked out successfully." });
         }
 
 
         [HttpPost]
-        public JsonResult CheckIn(string email, string password, List<int> serialIds, List<int> partIds, string notes)
+        public JsonResult CheckIn(int toolId, string toolName, string email, string password, List<int> serialIds, List<string> serialNo, List<int> partIds, List<string> partNo, string notes)
         {
-            var result = ToolCheckInService.ProcessCheckIn(email, password, serialIds, partIds, notes);
+            var result = ToolCheckInService.ProcessCheckIn(toolId, toolName, email, password, serialIds, serialNo, partIds, partNo, notes);
             return Json(result);
         }
 
