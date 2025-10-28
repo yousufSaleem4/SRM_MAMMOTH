@@ -137,12 +137,21 @@
         loadDashboard();
         updateLastUpdated();
 
-        setInterval(function () {
+        // 🔹 Start interval and store reference
+        dashboardInterval = setInterval(function () {
             loadDashboard();
             updateLastUpdated();
-        }, 10000); // 10 sec
-    });
+        }, 10000);
 
+        // 🔹 Stop interval on page unload / navigation
+        $(window).on("beforeunload", function () {
+            clearInterval(dashboardInterval);
+        });
+        // 🔹 Optional: if you use AJAX navigation, stop when clicking any menu
+        $("a").on("click", function () {
+            clearInterval(dashboardInterval);
+        });
+    });
 
     function loadDashboard() {
         $.ajax({
