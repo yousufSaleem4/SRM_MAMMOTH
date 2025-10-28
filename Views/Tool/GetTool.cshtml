@@ -358,6 +358,63 @@
         .password-wrapper input {
             padding-right: 35px; /* Leave space for the icon */
         }
+
+
+    .dots-text {
+        font-size: 22px;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 4px 8px;
+        color: #333;
+        user-select: none;
+        transition: color 0.2s ease;
+    }
+
+        .dots-text:hover {
+            color: #007bff;
+        }
+
+    .dropdown-custom {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 6px);
+        background: #fff;
+        min-width: 160px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-radius: 8px;
+        z-index: 2147483647;
+    }
+
+    .dropdown-custom.show .dropdown-content {
+        display: block;
+    }
+
+    .dropdown-content a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        color: #333;
+        text-decoration: none;
+        font-size: 14px;
+        transition: background 0.2s ease;
+    }
+
+        .dropdown-content a:hover {
+            background: #f0f0f0;
+        }
+
+        .dropdown-content a .icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
 </style>
 
 <div id="parent" class="container-fluid">
@@ -575,7 +632,7 @@
                             <table id="transactionTable" class="table table-striped table-bordered">
                                 <thead class="sticky-header">
                                     <tr>
-                                       @* <th>Tool Id</th>*@
+                                        @* <th>Tool Id</th>*@
                                         <th>Tool Name</th>
                                         <th>Tool Serial No.</th>
                                         <th>Part No.</th>
@@ -689,18 +746,24 @@
                             "orderable": false,
                             "render": function (data, type, row) {
                                 return `
-                <button class="btn btn-sm btn-danger checkOutBtn"
-                        data-ToolId="${row["ToolId"]}"
-                        data-ToolName="${row["ToolName"]}">
-                    <i class="fa fa-sign-out-alt"></i>
-                </button>
-                <button class="btn btn-sm btn-success checkInBtn"
-                        data-ToolId="${row["ToolId"]}"
-                        data-ToolName="${row["ToolName"]}">
-                    <i class="fa fa-sign-in-alt"></i>
-                </button>`;
+        <div class="dropdown-custom">
+            <span class="dots-text">⋯</span>
+            <div class="dropdown-content">
+                <a href="#" class="checkOutBtn"
+                   data-ToolId="${row["ToolId"]}"
+                   data-ToolName="${row["ToolName"]}">
+                    <i class="fa fa-sign-out-alt icon text-danger"></i> Check OUT
+                </a>
+                <a href="#" class="checkInBtn"
+                   data-ToolId="${row["ToolId"]}"
+                   data-ToolName="${row["ToolName"]}">
+                    <i class="fa fa-sign-in-alt icon text-success"></i> Check IN
+                </a>
+            </div>
+        </div>`;
                             }
                         }
+
                     ];
 
 
@@ -722,6 +785,25 @@
 
     $('#GetToolList').click(function () {
         OpenPage('/Tool/GetTool', 'Mohsin');
+    });
+
+
+    // 🔸 Toggle dropdown open/close
+    $(document).off("click", ".dots-text").on("click", ".dots-text", function (e) {
+        e.stopPropagation();
+        let parent = $(this).closest(".dropdown-custom");
+        $(".dropdown-custom").not(parent).removeClass("show");
+        parent.toggleClass("show");
+    });
+
+    // Prevent closing when clicking inside
+    $(document).off("click", ".dropdown-content").on("click", ".dropdown-content", function (e) {
+        e.stopPropagation();
+    });
+
+    // Close dropdown when clicking anywhere else
+    $(document).off("click.dropdownClose").on("click.dropdownClose", function () {
+        $(".dropdown-custom").removeClass("show");
     });
 
 
