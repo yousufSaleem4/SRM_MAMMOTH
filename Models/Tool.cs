@@ -164,7 +164,7 @@ ORDER BY Id DESC  ";
                         DataTable dt = new DataTable();
                         string query = "";
                         cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
-                        query = "Select SYSValue from TOOL.zSysIni WHERE SysDesc = 'JOINSRM' ";
+                        query = "Select SYSValue from dbo.zSysIni WHERE SysDesc = 'JOINSRM' ";
                         dt = oDAL.GetData(query);
                         htmlBody = dt.Rows[0]["SYSValue"].ToString();
 
@@ -418,7 +418,7 @@ SELECT
       ,[Username]
       ,[ExpectedReturnDate]
       ,[Notes]
-  FROM [SRMDBPILOT].[TOOL].[ToolTransactions]
+  FROM [TOOL].[ToolTransactions]
   order by TranDate desc
 ";
 

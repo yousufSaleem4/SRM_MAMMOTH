@@ -741,21 +741,35 @@
                         // Check OUT / IN Buttons (always enabled for admin)
                         {
                             "data": null,
-                            "title": "Check OUT/IN",
+                            "title": "Action",
                             "className": "text-center",
                             "orderable": false,
                             "render": function (data, type, row) {
+
+                                // 🔹 Condition 1: If TotalQty = AvailableQty → Disable Check-IN
+                                let disableCheckIn = (parseInt(row["TotalQty"]) === parseInt(row["AvailableQty"]));
+
+                                // 🔹 Condition 2: If Status = "Consumed" OR AvailableQty = 0 → Disable Check-OUT
+                                let disableCheckOut = (row["CurrentStatus"]?.trim().toLowerCase() === "issued" || parseInt(row["AvailableQty"]) === 0);
+
+
+                                // 🔹 Apply CSS class or disable links accordingly
+                                let checkOutClass = disableCheckOut ? "disabled text-muted pe-none" : "checkOutBtn";
+                                let checkInClass = disableCheckIn ? "disabled text-muted pe-none" : "checkInBtn";
+
                                 return `
         <div class="dropdown-custom">
             <span class="dots-text">⋯</span>
             <div class="dropdown-content">
-                <a href="#" class="checkOutBtn"
-                   data-ToolId="${row["ToolId"]}"
+                <a href="#" class="${checkOutClass}" 
+                   ${disableCheckOut ? 'style="pointer-events:none;opacity:0.5;"' : ''}
+                   data-ToolId="${row["ToolId"]}" 
                    data-ToolName="${row["ToolName"]}">
                     <i class="fa fa-sign-out-alt icon text-danger"></i> Check OUT
                 </a>
-                <a href="#" class="checkInBtn"
-                   data-ToolId="${row["ToolId"]}"
+                <a href="#" class="${checkInClass}"
+                   ${disableCheckIn ? 'style="pointer-events:none;opacity:0.5;"' : ''}
+                   data-ToolId="${row["ToolId"]}" 
                    data-ToolName="${row["ToolName"]}">
                     <i class="fa fa-sign-in-alt icon text-success"></i> Check IN
                 </a>
@@ -763,6 +777,7 @@
         </div>`;
                             }
                         }
+
 
                     ];
 

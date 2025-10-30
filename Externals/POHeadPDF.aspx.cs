@@ -38,7 +38,7 @@ namespace PlusCP.Externals
                              ,[Vendor]
                              ,[VendorEmail]
                              ,[Buyer]
-                        FROM [SRMDBPILOT].[dbo].[BuyerPOHeader]
+                        FROM [dbo].[BuyerPOHeader]
                         WHERE PONumber = @PONo";
 
                 // Read Connection String

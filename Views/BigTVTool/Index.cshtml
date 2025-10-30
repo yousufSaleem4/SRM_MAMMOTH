@@ -74,7 +74,9 @@
         display: inline-block;
     }
 
-    .status-Available { background-color: #28a745; }
+    .status-Available {
+        background-color: #041e42;
+    }
     .status-Issued { background-color: goldenrod; }
 
 
@@ -116,7 +118,6 @@
                 <th>Part No.</th>
                 <th>Total Qty</th>
                 <th>Available Qty</th>
-                <th>Consumable</th>
                 <th>Status</th>
             </tr>
         </thead>
@@ -176,8 +177,6 @@
     <td>${tool.PartNum || ''}</td>
    <td>${safeNumber(tool.TotalQty)}</td>
 <td>${safeNumber(tool.AvailableQty)}</td>
-  <td>${tool.IsConsumable === true ? 'Y' : tool.IsConsumable === false ? 'N' : ''}</td>
-i9
     <td><span class="status ${statusClass}">${tool.CurrentStatus}</span></td>
 </tr>
                     `);

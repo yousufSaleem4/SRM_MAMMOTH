@@ -204,7 +204,7 @@ namespace PlusCP.Models
             }
 
 
-            sql = "select SysValue from [SRMDBPILOT].[dbo].[zSysIni] where [SysCode] = '12647' AND [SysDesc] = 'Terms and Condition' ";
+            sql = "select SysValue from [dbo].[zSysIni] where [SysCode] = '12647' AND [SysDesc] = 'Terms and Condition' ";
             dt = oDAL.GetData(sql);
             if (dt.Rows.Count > 0)
             {

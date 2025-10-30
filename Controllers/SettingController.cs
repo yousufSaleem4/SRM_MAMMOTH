@@ -128,7 +128,7 @@ namespace PlusCP.Controllers
 
             string sql = "";
 
-            sql = @"UPDATE [SRMDBPILOT].[dbo].[zSysIni] 
+            sql = @"UPDATE [dbo].[zSysIni] 
            SET   SysValue = '<TermsCondition>' 
         WHERE SysCode = '12647' AND SysDesc  = 'Terms and Condition' "; 
 
