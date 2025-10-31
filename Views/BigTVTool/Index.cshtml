@@ -12,14 +12,18 @@
 
 
 
+    .main-header {
+        display: none !important;
+    }
+
     html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    background-color: @(ViewBag.DashboardBodyBg) !important;
-    color: @(ViewBag.DashboardTableDataText);
-    font-family: 'Segoe UI', sans-serif;
-}
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: @(ViewBag.DashboardBodyBg) !important;
+        color: @(ViewBag.DashboardTableDataText);
+        font-family: 'Segoe UI', sans-serif;
+    }
 
 
     #dashboard {
@@ -124,8 +128,19 @@
         <tbody id="dashboardBody"></tbody>
     </table>
 </div>
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+    function Navigate(action, url, controller, menuName, subMenuName, params) {
+        if (controller === "BigTVTool") {
+            window.open(url, '_blank');
+            return;
+        }
+
+        $("#main-content").load(url, function () {
+            console.log("Page loaded:", url);
+        });
+    }
+
     function safeNumber(val) {
         return (val === null || val === undefined || val === "") ? 0 : val;
     }
@@ -138,17 +153,15 @@
         loadDashboard();
         updateLastUpdated();
 
-        // 🔹 Start interval and store reference
         dashboardInterval = setInterval(function () {
             loadDashboard();
             updateLastUpdated();
         }, 10000);
 
-        // 🔹 Stop interval on page unload / navigation
         $(window).on("beforeunload", function () {
             clearInterval(dashboardInterval);
         });
-        // 🔹 Optional: if you use AJAX navigation, stop when clicking any menu
+
         $("a").on("click", function () {
             clearInterval(dashboardInterval);
         });
@@ -170,17 +183,14 @@
 
                 data.lstBigTVTool.forEach(function (tool, index) {
                     var statusClass = tool.CurrentStatus === 'Available' ? 'status-Available' : 'status-Issued';
-
-                    var row = $(`
+                    var row = `
 <tr>
     <td>${tool.ToolName || ''}</td>
     <td>${tool.PartNum || ''}</td>
-   <td>${safeNumber(tool.TotalQty)}</td>
-<td>${safeNumber(tool.AvailableQty)}</td>
+    <td>${safeNumber(tool.TotalQty)}</td>
+    <td>${safeNumber(tool.AvailableQty)}</td>
     <td><span class="status ${statusClass}">${tool.CurrentStatus}</span></td>
-</tr>
-                    `);
-
+</tr>`;
                     tbody.append(row);
                 });
             },
@@ -190,3 +200,4 @@
         });
     }
 </script>
+
