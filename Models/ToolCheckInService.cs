@@ -6,264 +6,227 @@ using System.Linq;
 
 namespace PlusCP.Models
 {
-    public class ToolCheckInService
+    public static class ToolCheckInService
     {
         private static cDAL oDAL;
 
-        // 🔹 Entry point for Check-In
-        public static object ProcessCheckIn(
-            int toolId,
-            string toolName,
-            string email,
-            string password,
-            List<int> serialIds,
-            List<string> serialNo,
-            List<int> partIds,
-            List<string> partNo,
-            string notes)
+        public static object ProcessBatchCheckIn(List<CheckInModel> checkins)
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
-            var user = AuthenticateUser(email, password);
-            if (user == null)
-                return new { success = false, message = "Invalid email or password." };
+            var results = new List<object>();
 
-            List<int> checkedInSerials = new List<int>();
-            List<int> checkedInParts = new List<int>();
-            List<int> unauthorizedSerials = new List<int>();
-            List<int> unauthorizedParts = new List<int>();
-
-            // 🔸 Process Serials
-            if (serialIds != null && serialIds.Any())
-                ProcessSerialCheckIn(user, serialIds, notes, checkedInSerials, unauthorizedSerials);
-
-            // 🔸 Process Parts
-            if (partIds != null && partIds.Any())
-                ProcessPartCheckIn(user, partIds, notes, checkedInParts, unauthorizedParts);
-
-            // 🔸 Validation
-            if (unauthorizedSerials.Any() || unauthorizedParts.Any())
+            foreach (var item in checkins)
             {
-                return new
-                {
-                    success = false,
-                    message = "Unauthorized check-in attempt detected. Some items belong to other users.",
-                    unauthorizedSerials,
-                    unauthorizedParts
-                };
+                results.Add(ProcessSingleToolCheckInWithRepair(
+                    item.ToolId,
+                    item.ToolName,
+                    item.SerialItems,
+                    item.PartIds,
+                    item.PartNo,
+                    item.Notes,
+                    item.Hours,
+                    item.Rating
+                ));
             }
 
-            // 🔹 Log a single consolidated transaction (for all checked-in items)
-            if (checkedInSerials.Any() || checkedInParts.Any())
-            {
-                LogSingleTransaction(
-                    toolId,
-                    toolName,
-                    user.UserId,
-                    user.UserName,
-                    "IN", // TranType
-                    notes,
-                    serialIds,
-                    serialNo,
-                    partIds,
-                    partNo
-                );
-            }
-
-            // ✅ Success
             return new
             {
                 success = true,
-                message = $"Successfully checked in {checkedInSerials.Count} tool(s) and {checkedInParts.Count} part(s).",
-                unauthorizedSerials,
-                unauthorizedParts
+                message = "Check-in processed successfully.",
+                details = results
             };
         }
 
-        // 🔹 Method 1: Authenticate user
-        private static UserModel AuthenticateUser(string email, string password)
+        private static object ProcessSingleToolCheckInWithRepair(
+            int toolId,
+            string toolName,
+            List<SerialCheckinItem> serialItems,
+            List<int> partIds,
+            List<string> partNo,
+            string notes,
+            decimal? hours,
+            int? rating
+        )
         {
-            string passEncrypt = BasicEncrypt.Instance.Encrypt(password.Trim());
+            var checkedInSerials = new List<int>();
+            var checkedInSerialNos = new List<string>();
+            var checkedInParts = new List<int>();
 
-            string sql = $@"
-SELECT UserId, FirstName + ' ' + LastName AS UserName, Email
-FROM SRM.UserInfo 
-WHERE Email = '{email}'
-  AND Password = '{passEncrypt}'
-  AND IsActive = 1";
+            // yahaan store karenge last user (transaction me use karne ke liye)
+            int lastUserId = 0;
+            string lastUserName = "Unknown";
 
-            var dt = oDAL.GetData(sql);
-            if (dt.Rows.Count == 0) return null;
+            var serials = serialItems ?? new List<SerialCheckinItem>();
 
-            return new UserModel
-            {
-                UserId = Convert.ToInt32(dt.Rows[0]["UserId"]),
-                UserName = dt.Rows[0]["UserName"].ToString(),
-                Email = dt.Rows[0]["Email"].ToString()
-            };
-        }
-
-        // 🔹 Method 2: Process Tool Serials
-        private static void ProcessSerialCheckIn(UserModel user, List<int> serialIds, string notes, List<int> checkedInSerials, List<int> unauthorizedSerials)
-        {
-            foreach (int serialId in serialIds)
+            // ===========================
+            //  SERIAL CHECK-IN
+            // ===========================
+            foreach (var s in serials)
             {
                 string sqlAlloc = $@"
-SELECT AllocationId, ToolId, UserId
-FROM Tool.ToolAllocation
-WHERE SerialId = {serialId} AND IsReturned = 0";
+SELECT TOP 1 
+    a.AllocationId,
+    a.UserId,
+    sf.Name AS UserName
+FROM Tool.ToolAllocation a
+LEFT JOIN TOOL.SysUserFile sf ON sf.ID = a.UserId
+WHERE a.SerialId = {s.SerialId} AND a.IsReturned = 0";
 
                 var dtAlloc = oDAL.GetData(sqlAlloc);
-                if (dtAlloc.Rows.Count == 0)
-                    continue;
-
-                int allocUserId = Convert.ToInt32(dtAlloc.Rows[0]["UserId"]);
-                if (allocUserId != user.UserId)
-                {
-                    unauthorizedSerials.Add(serialId);
-                    continue;
-                }
-
-                checkedInSerials.Add(serialId);
+                if (dtAlloc.Rows.Count == 0) continue;
 
                 Guid allocationId = Guid.Parse(dtAlloc.Rows[0]["AllocationId"].ToString());
-                int toolId = Convert.ToInt32(dtAlloc.Rows[0]["ToolId"]);
+                int allocUserId = Convert.ToInt32(dtAlloc.Rows[0]["UserId"]);
+                string allocUserName = dtAlloc.Rows[0]["UserName"]?.ToString() ?? "Unknown";
 
-                LogToolTransaction(toolId, serialId, user.UserId, notes);
-                UpdateToolAllocation(allocationId, notes);
-                FreeToolSerial(serialId);
-            }
-        }
+                // store for transaction log
+                lastUserId = allocUserId;
+                lastUserName = allocUserName;
 
-        // 🔹 Method 3: Process Parts
-        private static void ProcessPartCheckIn(UserModel user, List<int> partIds, string notes, List<int> checkedInParts, List<int> unauthorizedParts)
-        {
-            foreach (int partId in partIds)
-            {
-                string sqlPartAlloc = $@"
-SELECT AllocationId, UserId
-FROM Tool.PartAllocation
-WHERE PartId = {partId} AND IsReturned = 0";
+                checkedInSerials.Add(s.SerialId);
+                checkedInSerialNos.Add(s.SerialNo);
 
-                var dtPartAlloc = oDAL.GetData(sqlPartAlloc);
-                if (dtPartAlloc.Rows.Count == 0)
-                    continue;
-
-                int allocUserId = Convert.ToInt32(dtPartAlloc.Rows[0]["UserId"]);
-                if (allocUserId != user.UserId)
-                {
-                    unauthorizedParts.Add(partId);
-                    continue;
-                }
-
-                checkedInParts.Add(partId);
-                Guid partAllocId = Guid.Parse(dtPartAlloc.Rows[0]["AllocationId"].ToString());
-
-                UpdatePartAllocation(partAllocId);
-                UpdatePartNo(partId, user.UserName);
-            }
-        }
-
-        // 🔹 Method 4: Log transaction
-        private static void LogToolTransaction(int toolId, int serialId, int userId, string notes)
-        {
-            string sql = $@"
-INSERT INTO Tool.ToolTransactions (ToolId, SerialId, UserId, TranType, TranQty, Notes, TranDate)
-VALUES ({toolId}, {serialId}, {userId}, 'IN', 1, '{notes?.Replace("'", "''")}', GETDATE())";
-            oDAL.Execute(sql);
-        }
-
-        // 🔹 Method 5: Update Tool Allocation
-        private static void UpdateToolAllocation(Guid allocationId, string notes)
-        {
-            string sql = $@"
+                // close allocation
+                oDAL.Execute($@"
 UPDATE Tool.ToolAllocation
 SET ReturnDate = GETDATE(),
     IsReturned = 1,
-    ConditionOnReturn = '{notes?.Replace("'", "''")}'
-WHERE AllocationId = '{allocationId}'";
-            oDAL.Execute(sql);
-        }
+    ConditionOnReturn = '{(notes ?? "").Replace("'", "''")}'
+WHERE AllocationId = '{allocationId}'");
 
-        // 🔹 Method 6: Free Tool Serial
-        private static void FreeToolSerial(int serialId)
-        {
-            string sql = $"UPDATE Tool.ToolSerials SET Status = 'Available' WHERE SerialId = {serialId}";
-            oDAL.Execute(sql);
-        }
+                // repair selected?
+                if (s.IsRepair || !string.IsNullOrEmpty(s.RepairAction))
+                {
+                    string repairStatus = "Repair";
+                    string rs = s.RepairAction?.ToLower() ?? "";
 
-        // 🔹 Method 7: Update Part Allocation
-        private static void UpdatePartAllocation(Guid allocationId)
-        {
-            string sql = $@"
+                    if (rs == "repair") repairStatus = "Repair";
+                    else if (rs == "broken") repairStatus = "Broken";
+                    else if (rs == "calibration" || rs == "callibration") repairStatus = "Calibration";
+
+                    // INSERT into Repair table
+                    string sqlRepair = $@"
+INSERT INTO Tool.Repair
+(RepairId, ToolId, SerialId, SerialNumber, ReportedByUserId, ReportedByName, ReportedDate, Hours, Rating, Status)
+VALUES (
+    NEWID(),
+    {toolId},
+    {s.SerialId},
+    '{s.SerialNo.Replace("'", "''")}',
+    {allocUserId},
+    '{allocUserName.Replace("'", "''")}',
+    GETDATE(),
+    {(s.Hours ?? 0)},
+    {(s.Rating ?? 0)},
+    '{repairStatus}'
+)";
+                    oDAL.Execute(sqlRepair);
+
+                    // maintenance
+                    oDAL.Execute($"UPDATE Tool.ToolSerials SET Status = 'Maintenance' WHERE SerialId = {s.SerialId}");
+                }
+                else
+                {
+                    // normal free
+                    oDAL.Execute($"UPDATE Tool.ToolSerials SET Status = 'Available' WHERE SerialId = {s.SerialId}");
+                }
+            }
+
+            // ===========================
+            //  PART CHECK-IN
+            // ===========================
+            if (partIds != null && partIds.Any())
+            {
+                foreach (var partId in partIds)
+                {
+                    string sqlPart = $@"
+SELECT TOP 1 AllocationId
+FROM Tool.PartAllocation
+WHERE PartId = {partId} AND IsReturned = 0";
+
+                    var dt = oDAL.GetData(sqlPart);
+                    if (dt.Rows.Count == 0) continue;
+
+                    Guid allocationId = Guid.Parse(dt.Rows[0]["AllocationId"].ToString());
+                    checkedInParts.Add(partId);
+
+                    // close allocation
+                    oDAL.Execute($@"
 UPDATE Tool.PartAllocation
 SET ReturnDate = GETDATE(), IsReturned = 1
-WHERE AllocationId = '{allocationId}'";
-            oDAL.Execute(sql);
-        }
+WHERE AllocationId = '{allocationId}'");
 
-        // 🔹 Method 8: Update PartNo table
-        private static void UpdatePartNo(int partId, string userName)
-        {
-            string sql = $@"
+                    // mark part completed
+                    oDAL.Execute($@"
 UPDATE Tool.PartNo
 SET Status = 'Completed',
-    ModifiedBy = '{userName.Replace("'", "''")}',
+    ModifiedBy = '{lastUserName.Replace("'", "''")}',
     ModifiedOn = GETDATE()
-WHERE PartId = {partId}";
-            oDAL.Execute(sql);
-        }
-        private static void LogSingleTransaction(
-    int toolId,
-    string toolName,
-    int userId,
-    string userName,
-    string tranType,
-    string notes,
-    List<int> serialIds,
-    List<string> serialNo,
-    List<int> partIds,
-    List<string> partNo)
-        {
-            // handle potential nulls gracefully
-            string serialIdList = (serialIds != null && serialIds.Any()) ? string.Join(",", serialIds) : "";
-            string serialNoList = (serialNo != null && serialNo.Any()) ? string.Join(",", serialNo.Select(s => s.Replace("'", "''"))) : "";
-            string partIdList = (partIds != null && partIds.Any()) ? string.Join(",", partIds) : "";
-            string partNoList = (partNo != null && partNo.Any()) ? string.Join(",", partNo.Select(p => p.Replace("'", "''"))) : "";
-            string safeToolName = toolName?.Replace("'", "''") ?? "";
-            string safeUserName = userName?.Replace("'", "''") ?? "";
-            string safeNotes = notes?.Replace("'", "''") ?? "";
+WHERE PartId = {partId}");
+                }
+            }
 
-            int tranQty = (serialIds?.Count ?? 0) + (partIds?.Count ?? 0);
-
-            string sql = $@"
+            // ===========================
+            //  TRANSACTION LOG
+            // ===========================
+            if (checkedInSerials.Any() || checkedInParts.Any())
+            {
+                string sqlTran = $@"
 INSERT INTO Tool.ToolTransactions 
-(ToolId, ToolName, ToolSerialId, ToolSerialNumber, PartId, PartNo, TranType, TranQty, ExpectedReturnDate, UserId, Username, TranDate, Notes)
+(ToolId, ToolName, ToolSerialId, ToolSerialNumber, PartId, PartNo, TranType, TranQty,
+ UserId, Username, TranDate, Notes, Hours, Rating)
 VALUES (
     {toolId},
-    '{safeToolName}',
-    '{serialIdList}',
-    '{serialNoList}',
-    '{partIdList}',
-    '{partNoList}',
-    '{tranType}',
-    {tranQty},
-    NULL,  -- ExpectedReturnDate is NULL for Check-In
-    {userId},
-    '{safeUserName}',
+    '{toolName.Replace("'", "''")}',
+    '{string.Join(",", checkedInSerials)}',
+    '{string.Join(",", checkedInSerialNos)}',
+    '{string.Join(",", checkedInParts)}',
+    '{string.Join(",", (partNo ?? new List<string>()).Select(x => x.Replace("'", "''")))}',
+    'IN',
+    {(checkedInSerials.Count + checkedInParts.Count)},
+    {lastUserId},
+    '{lastUserName.Replace("'", "''")}',
     GETDATE(),
-    '{safeNotes}'
+    '{(notes ?? "").Replace("'", "''")}',
+    {(hours ?? 0)},
+    {(rating ?? 0)}
 )";
-            oDAL.Execute(sql);
+                oDAL.Execute(sqlTran);
+            }
+
+            return new
+            {
+                toolId,
+                toolName,
+                serialsChecked = checkedInSerials.Count,
+                partsChecked = checkedInParts.Count
+            };
         }
 
-    }
+        // ===========================
+        // MODELS
+        // ===========================
+        public class SerialCheckinItem
+        {
+            public int SerialId { get; set; }
+            public string SerialNo { get; set; }
+            public bool IsRepair { get; set; }
+            public string RepairAction { get; set; }
+            public decimal? Hours { get; set; }
+            public int? Rating { get; set; }
+        }
 
-    // Helper class to hold user info
-    public class UserModel
-    {
-        public int UserId { get; set; }
-        public string UserName { get; set; }
-        public string Email { get; set; }
+        public class CheckInModel
+        {
+            public int ToolId { get; set; }
+            public string ToolName { get; set; }
+            public List<SerialCheckinItem> SerialItems { get; set; }
+            public List<int> PartIds { get; set; }
+            public List<string> PartNo { get; set; }
+            public string Notes { get; set; }
+            public decimal? Hours { get; set; }
+            public int? Rating { get; set; }
+        }
     }
 }

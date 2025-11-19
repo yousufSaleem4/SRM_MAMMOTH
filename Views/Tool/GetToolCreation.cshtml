@@ -1,0 +1,1187 @@
+﻿@model PlusCP.Models.Tool
+@{
+    ViewBag.Title = "GetToolCreation";
+    Layout = null;
+
+}
+<link href="~/Content/css/message.css" rel="stylesheet" />
+<link href="~/Content/css/jquery.dataTables.colResize.css" rel="stylesheet" />
+<link href="~/Content/css/GetPO.css" rel="stylesheet" />
+<!-- 🔹 Toastr CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+<!-- 🔹 Toastr JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<style>
+
+
+    /* Refresh Button */
+    .btn-refresh {
+        background-color: #003B59 !important; /* Distinct orange color */
+        color: white !important;
+        border-radius: 30px !important;
+        margin-left: 5px !important;
+        height: 25px !important;
+        padding: 0px 12px !important;
+        border: 2px solid #003B59 !important;
+        transition: all 0.3s ease-in-out;
+    }
+
+        .btn-refresh:hover {
+            background-color: white !important;
+            color: #003B59 !important;
+            border: 2px solid #003B59 !important;
+        }
+
+
+    .RedColor {
+        color: red;
+    }
+
+    .GreenColor {
+        color: green;
+    }
+
+    .required:after {
+        content: " *";
+        color: red;
+    }
+
+    .datepicker td, th {
+        text-align: center;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .Message {
+        height: 200px;
+        width: 500px
+    }
+
+
+
+    .custom-modal-header .close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    */
+
+    .table.dataTable {
+        font-family: "Segoe UI", "Roboto";
+        clear: both;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 16px;
+    }
+
+    .dataTables_wrapper,
+    .dataTables_length,
+    .dataTables_filter,
+    .dataTables_info,
+    .dataTables_paginate,
+    table.dataTable thead th,
+    table.dataTable tbody td {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif !important;
+    }
+
+        .dataTables_wrapper .dataTables_paginate {
+            text-align: left !important;
+            float: none !important;
+            display: flex;
+            justify-content: left;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif !important;
+        }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button {
+                font-size: 15px !important; /* Increase font size */
+                padding: 8px 12px; /* Increase button padding */
+                color: #003B59 !important;
+            }
+
+        .dataTables_wrapper .dataTables_paginate {
+            margin-left: 60px !important; /* Adjust this value as needed */
+        }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button i {
+                font-size: 15px !important; /* Increase icon size */
+                color: #003B59 !important;
+            }
+
+        .dataTables_wrapper .dataTables_info {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif !important;
+            font-size: 16px !important; /* Adjust size */
+            color: #333 !important; /* Darker text */
+            margin-left: 5px;
+        }
+    /* Change odd row background color */
+    table.dataTable tbody tr:nth-child(odd) {
+        background-color: #ECEDEF; /* Change to your desired color */
+    }
+
+    /* Change even row background color */
+    table.dataTable tbody tr:nth-child(even) {
+        background-color: #ffffff; /* Change to your desired color */
+    }
+
+    table.dataTable tbody tr.selected {
+        background-color: #D6EFE8; /* Orange color */
+        /*color: white;*/ /* Change text color if needed */
+    }
+    /* Search icon inside input */
+    .search-icon {
+        position: absolute;
+        top: 50%;
+        left: 8px;
+        transform: translateY(-50%);
+        color: darkgrey;
+        font-size: 14px;
+        pointer-events: none; /* Prevents clicking on the icon */
+    }
+
+    .search-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .txtSearch-frame {
+        margin-top: 5px;
+        height: 28px;
+        width: 150px;
+        border: none;
+        color: #003B59;
+        border: 2px solid #003B59 !important;
+        width: 200px;
+        padding-left: 30px; /* Space for the icon */
+    }
+
+    .pdf-icon {
+        width: 30px;
+        height: 30px;
+        image-rendering: crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
+    }
+
+    .pad {
+        padding-bottom: 15px;
+        padding: 2px;
+        padding-top: 10px;
+    }
+
+    .lblHeading {
+        font-size: 19px;
+        color: #003B59 !important;
+    }
+
+    .table-container {
+        height: 200px; /* Set the desired fixed height */
+        overflow-y: auto;
+    }
+
+    /*table > thead > tr > th {
+        background-color: gray !important;
+        color: white;
+    }*/
+
+    table.table thead th {
+        background-color: #003B59 !important; /* Change to your desired color */
+        color: white; /* Change to desired text color */
+        font-size: 15px;
+        font-family: 'Poppins', sans-serif;
+        height: 40px;
+    }
+
+    table.table tbody td, lbl_ {
+        /*background-color: white !important; /* Change to your desired color */
+        font-size: 15px;
+        color: #003B59 !important;
+    }
+
+    table.table tbody tr {
+        height: 50px; /* Adjust height as needed */
+    }
+
+        /* Hover effect */
+        table.table tbody tr:hover {
+            background-color: #f5f5f5 !important; /* Light gray background on hover */
+            transition: background-color 0.8s ease-in-out;
+            cursor: pointer;
+        }
+
+
+
+
+    table th {
+        /*padding: 1rem 0.5rem !important;*/
+        border: 1px solid black;
+        border-bottom: 1px solid black;
+        /*padding: 8px;*/
+        text-align: left;
+    }
+
+    table td {
+        padding: 1rem 0.5rem !important;
+        font-size: 15px !important;
+        font-weight: 500 !important;
+        vertical-align: middle;
+    }
+
+    table {
+        border-collapse: separate;
+        border-spacing: 0 10px; /* Adjust the second value to increase/decrease the vertical gap */
+        width: 100%;
+    }
+
+        table.table-bordered.dataTable tbody th, table.table-bordered.dataTable tbody td {
+            border-bottom-width: 1px;
+        }
+
+
+
+
+    .sticky-header th {
+        position: sticky;
+        top: 0;
+        background-color: #f2f2f2;
+    }
+
+
+
+    .t-head {
+        color: #023160;
+    }
+
+
+
+    .box-header {
+        background-color: #f8f9fc !important;
+        color: #003B59 !important;
+        border-bottom: 2px solid #f8f9fc;
+        box-shadow: 0px 5px #ededed;
+    }
+
+
+    .btn-box-tool {
+        color: #003B59 !important;
+    }
+
+
+    /*/Badges/*/
+
+    .btn-badges {
+        color: #003B59 !important;
+        border-radius: 25px !important;
+        margin-left: 5px !important;
+        height: 25px !important;
+        padding: 2px 12px !important;
+    }
+
+        .btn-badges:hover {
+            background-color: #003B59 !important;
+            color: white !important;
+        }
+
+            .btn-badges:hover .badge_light {
+                background-color: white !important;
+                color: #003B59 !important;
+            }
+
+    .badge_light {
+        background-color: #003B59 !important;
+        color: white !important;
+    }
+
+    .btn-badges-Sent {
+        border-radius: 25px !important;
+        height: 25px !important;
+        width: 60px;
+    }
+
+    .selected {
+        background-color: deepskyblue !important;
+        color: black;
+    }
+
+
+
+    /* 🔹 Compact Modal Overall */
+    #addToolModal .modal-dialog {
+        max-width: 480px;
+        margin-top: 60px;
+    }
+
+    #addToolModal .modal-content {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+    /* 🔹 Header */
+    #addToolModal .modal-header {
+        background-color: #D6EFE8 !important;
+        color: #003B59 !important;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        font-weight: 600;
+        font-size: 15px;
+        padding: 8px 10px;
+        border-bottom: 2px solid #b8d8cf;
+    }
+
+    #addToolModal .modal-title {
+        flex: 1;
+        text-align: center;
+    }
+
+    #addToolModal .close {
+        position: absolute;
+        right: 12px;
+        top: 8px;
+        color: #003B59;
+        opacity: 0.7;
+        font-size: 18px;
+    }
+
+        #addToolModal .close:hover {
+            opacity: 1;
+        }
+
+    /* 🔹 Body */
+    #addToolModal .modal-body {
+        background: #f9fdfb;
+        padding: 20px 25px;
+    }
+
+    /* 🔹 Form Fields */
+    #addToolModal label {
+        font-weight: 600;
+        color: #003B59;
+        margin-bottom: 5px;
+    }
+
+    #addToolModal input.form-control {
+        font-size: 14px;
+        height: 34px;
+        border-radius: 5px;
+        border: 1px solid #c7d8d3;
+    }
+
+    /* 🔹 Serial Fields Group */
+    #addToolModal .serial-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+        #addToolModal .serial-row input {
+            flex: 1;
+        }
+
+    /* 🔹 Add / Remove Buttons */
+    #addToolModal .btn-add-serial,
+    #addToolModal .btn-remove-serial {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+    }
+
+    #addToolModal .btn-add-serial {
+        background-color: #28a745;
+        border: none;
+        color: #fff;
+    }
+
+        #addToolModal .btn-add-serial:hover {
+            background-color: #23913d;
+        }
+
+    #addToolModal .btn-remove-serial {
+        background-color: #dc3545;
+        border: none;
+        color: #fff;
+    }
+
+        #addToolModal .btn-remove-serial:hover {
+            background-color: #c82333;
+        }
+
+    /* 🔹 Footer */
+    #addToolModal .modal-footer {
+        background-color: #f1f8f6;
+        border-top: 1px solid #d0e7e1;
+        justify-content: center;
+        gap: 10px;
+        padding: 8px 10px;
+    }
+
+    #addToolModal .btn-primary {
+        background-color: #003B59;
+        border-color: #003B59;
+        font-size: 13px;
+        padding: 5px 15px;
+    }
+
+        #addToolModal .btn-primary:hover {
+            background-color: #005c85;
+        }
+
+
+
+
+
+  /* 🔹 Compact Modal Overall */
+#editToolModal .modal-dialog {
+    max-width: 480px;
+    margin-top: 60px;
+}
+
+#editToolModal .modal-content {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+/* 🔹 Header */
+#editToolModal .modal-header {
+    background-color: #D6EFE8 !important;
+    color: #003B59 !important;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 8px 10px;
+    border-bottom: 2px solid #b8d8cf;
+}
+
+#editToolModal .modal-title {
+    flex: 1;
+    text-align: center;
+}
+
+#editToolModal .close {
+    position: absolute;
+    right: 12px;
+    top: 8px;
+    color: #003B59;
+    opacity: 0.7;
+    font-size: 18px;
+}
+
+#editToolModal .close:hover {
+    opacity: 1;
+}
+
+/* 🔹 Body */
+#editToolModal .modal-body {
+    background: #f9fdfb;
+    padding: 20px 25px;
+}
+
+/* 🔹 Form Fields */
+#editToolModal label {
+    font-weight: 600;
+    color: #003B59;
+    margin-bottom: 5px;
+}
+
+#editToolModal input.form-control {
+    font-size: 14px;
+    height: 34px;
+    border-radius: 5px;
+    border: 1px solid #c7d8d3;
+}
+
+/* 🔹 Serial Fields Group */
+#editToolModal .serial-edit-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+#editToolModal .serial-edit-row input {
+    flex: 1;
+}
+
+/* 🔹 Add / Remove Buttons */
+#editToolModal .btn-add-serial,
+#editToolModal .btn-remove-serial {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+/* ➕ Add Button */
+#editToolModal .btn-add-serial {
+    background-color: #28a745;
+    border: none;
+    color: #fff;
+}
+
+#editToolModal .btn-add-serial:hover {
+    background-color: #23913d;
+}
+
+/* ➖ Remove Button */
+#editToolModal .btn-remove-serial {
+    background-color: #dc3545;
+    border: none;
+    color: #fff;
+}
+
+#editToolModal .btn-remove-serial:hover {
+    background-color: #c82333;
+}
+
+/* 🔹 Footer */
+#editToolModal .modal-footer {
+    background-color: #f1f8f6;
+    border-top: 1px solid #d0e7e1;
+    justify-content: center;
+    gap: 10px;
+    padding: 8px 10px;
+}
+
+/* 🔹 Buttons */
+#editToolModal .btn-primary {
+    background-color: #003B59;
+    border-color: #003B59;
+    font-size: 13px;
+    padding: 5px 15px;
+}
+
+#editToolModal .btn-primary:hover {
+    background-color: #005c85;
+}
+
+#editToolModal .btn-secondary {
+    background-color: #f0f0f0;
+    color: #003B59;
+    font-size: 13px;
+    padding: 5px 15px;
+    border: 1px solid #d0e7e1;
+}
+
+#editToolModal .btn-secondary:hover {
+    background-color: #e2e2e2;
+}
+
+
+
+</style>
+<div id="parent" class="container-fluid">
+    <input id="rptCode" type="hidden" value="019" />
+    <input id="rptTitle" class="lblHeading" type="hidden" value="@ViewBag.ReportTitle" />
+    <div id="dataLists" class="box panel panel-default">
+        <div class="box-header with-border">
+
+            <h5 class="box-title"><strong>@ViewBag.ReportTitle  </strong><strong id="filterString"></strong></h5>
+            <button id="GetToolList" class="btn btn-badges">
+                Refresh
+            </button>
+
+
+            <button type="button" class="btn btn-badges" data-toggle="modal" data-target="#addToolModal">
+                <i class="fa fa-plus"></i> Add Tool
+            </button>
+
+
+
+
+            <div id="buttons" class="box-tools pull-right">
+
+            </div>
+        </div>
+
+        <div class="box-body" id="lstP">
+            <table id="lstToolCreation" class="table table-bordered table-striped text-sm table-hover" style="width:100%">
+                <thead class="sorted-asc">
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<!-- 🔹 Add Tool Modal -->
+<div class="modal fade" id="addToolModal" tabindex="-1" role="dialog" aria-labelledby="addToolLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addToolLabel">Add New Tool</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+                <form id="addToolForm">
+
+                    <div class="form-group mb-3">
+                        <label for="toolName">Tool Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="toolName" placeholder="Enter tool name" required />
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <label>Serial Numbers</label>
+                        <div id="serialContainer">
+                            <div class="serial-row">
+                                <input type="text" class="form-control serial-input" placeholder="Enter serial number" />
+                                <button type="button" class="btn btn-success btn-add-serial"><i class="fa fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="btnSaveTool">Save Tool</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- 🔹 Edit Tool Modal -->
+<div class="modal fade" id="editToolModal" tabindex="-1" role="dialog" aria-labelledby="editToolLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header bg-warning text-dark text-center">
+                <h5 class="modal-title w-100">Edit Tool</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="editToolForm">
+                    <input type="hidden" id="editToolId" />
+
+                    <div class="form-group">
+                        <label>Tool Name</label>
+                        <input type="text" class="form-control" id="editToolName" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Serial Numbers</label>
+                        <div id="editSerialContainer"></div>
+                        <button type="button" class="btn btn-success btn-sm mt-2" id="btnAddSerialEdit">
+                            <i class="fa fa-plus"></i> Add Serial
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="btnUpdateTool">Save Changes</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // 🔹 Add new serial input row dynamically
+    $(document).on('click', '.btn-add-serial', function () {
+        let newRow = `
+    <div class="input-group mb-2 serial-row">
+        <input type="text" class="form-control serial-input" placeholder="Enter serial number" />
+        <div class="input-group-append">
+            <button type="button" class="btn btn-danger btn-remove-serial"><i class="fa fa-minus"></i></button>
+        </div>
+    </div>`;
+        $("#serialContainer").append(newRow);
+    });
+
+    // 🔹 Remove serial row
+    $(document).on('click', '.btn-remove-serial', function () {
+        $(this).closest('.serial-row').remove();
+    });
+
+    // 🔹 Save Tool
+    $("#btnSaveTool").click(function () {
+        let toolName = $("#toolName").val().trim();
+        if (!toolName) {
+            alert("Please enter tool name.");
+            return;
+        }
+
+        let serials = [];
+        $(".serial-input").each(function () {
+            let val = $(this).val().trim();
+            if (val) serials.push(val);
+        });
+
+        if (serials.length === 0) {
+            alert("Please enter at least one serial number.");
+            return;
+        }
+
+        let payload = {
+            ToolName: toolName,
+            SerialNumbers: serials
+        };
+
+        $.ajax({
+            url: '/Tool/AddTool',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8", // ✅ REQUIRED
+            data: JSON.stringify(payload),
+            dataType: "json", // ✅ Optional but good practice
+            success: function (res) {
+                if (res.success) {
+                    MsgToast("Success!", "Tool added successfully!", "success");
+                    $("#addToolModal").modal('hide');
+                    LoadData();
+                } else {
+                    MsgToast("Error!", res.message || "Unable to add tool.", "error");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log("AJAX error:", error);
+                MsgToast("Error!", "Something went wrong while adding tool.", "error");
+            }
+        });
+    });
+
+
+
+
+
+
+    // 🔹 Open Edit Modal and Prefill
+    $(document).on("click", ".btn-edit-tool", function () {
+        let toolId = $(this).data("toolid");
+
+        $.get("/Tool/GetToolById", { id: toolId }, function (res) {
+            if (!res || !res.success) {
+                MsgToast("Error!", res.message || "Unable to fetch tool data.", "error");
+                return;
+            }
+
+            let tool = res.data;
+            $("#editToolId").val(tool.ToolId);
+            $("#editToolName").val(tool.ToolName);
+
+            let $container = $("#editSerialContainer");
+            $container.empty();
+
+            tool.SerialNumbers.forEach(serial => {
+                $container.append(`
+                <div class="input-group mb-2 serial-edit-row">
+                    <input type="text" class="form-control serial-edit-input" value="${serial}" />
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-danger btn-remove-serial"><i class="fa fa-minus"></i></button>
+                    </div>
+                </div>
+            `);
+            });
+
+            $("#editToolModal").modal("show");
+        });
+    });
+
+    // 🔹 Add new serial in edit mode
+    $("#btnAddSerialEdit").click(function () {
+        $("#editSerialContainer").append(`
+        <div class="input-group mb-2 serial-edit-row">
+            <input type="text" class="form-control serial-edit-input" placeholder="Enter serial number" />
+            <div class="input-group-append">
+                <button type="button" class="btn btn-danger btn-remove-serial"><i class="fa fa-minus"></i></button>
+            </div>
+        </div>
+    `);
+    });
+
+    // 🔹 Remove serial
+    $(document).on("click", ".btn-remove-serial", function () {
+        $(this).closest(".serial-edit-row").remove();
+    });
+
+    // 🔹 Save Updated Tool
+    $("#btnUpdateTool").click(function () {
+        let toolId = $("#editToolId").val();
+        let toolName = $("#editToolName").val().trim();
+        let modifiedBy = $("#loggedUserName").val() || "Admin"; // replace with session user if available
+
+        if (!toolName) {
+            MsgToast("Warning!", "Please enter tool name.", "warning");
+            return;
+        }
+
+        let serials = [];
+        $(".serial-edit-input").each(function () {
+            let val = $(this).val().trim();
+            if (val) serials.push(val);
+        });
+
+        if (serials.length === 0) {
+            MsgToast("Warning!", "Please enter at least one serial.", "warning");
+            return;
+        }
+
+        let payload = {
+            ToolId: toolId,
+            ToolName: toolName,
+            SerialNumbers: serials,
+            ModifiedBy: modifiedBy
+        };
+
+        $.ajax({
+            url: '/Tool/UpdateTool',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(payload),
+            success: function (res) {
+                if (res.success) {
+                    MsgToast("Success!", "Tool updated successfully!", "success");
+                    $("#editToolModal").modal('hide');
+                    LoadData();
+                } else {
+                    MsgToast("Error!", res.message || "Failed to update tool.", "error");
+                }
+            },
+            error: function () {
+                MsgToast("Error!", "Something went wrong while updating.", "error");
+            }
+        });
+    });
+
+
+    LoadData();
+    function LoadData() {
+        $('#tblBody').empty();
+        $('#lstToolCreation').DataTable().clear();
+        $('#lstToolCreation').DataTable().destroy();
+
+        var isSingleRow = false;
+
+        $.ajax({
+
+            cache: false,
+            type: 'GET',
+            url: '/Tool/GetToolCreationList',
+            data: {
+
+            },
+            datatype: JSON,
+            success: function (data) {
+                $('#filterString').append(data.filterString);
+                $('#tblBody').empty();
+                $('#lstToolCreation').DataTable().clear();
+                $('#lstToolCreation').DataTable().destroy();
+
+
+                var columnDef = [
+                    { "data": "ToolId", "title": "Tool Id", "width": "50px", "className": "text-center", "visible": false },
+                    { "data": "ToolName", "title": "Tool Name", "className": "text-center" },
+
+                    // Total Qty
+                    { "data": "TotalQty", "title": "Total Qty", "className": "text-center" },
+
+                    // Available Qty
+                    {
+                        "data": "AvailableQty", "title": "Available Qty", "className": "text-center",
+                        "render": function (data, type, row) {
+                            var d = data?.toString() || "0";
+                            return (d === "" || d === "0") ? "0" : d;
+                        }
+                    },
+
+                    // Current Status
+                    { "data": "CurrentStatus", "title": "Current Status", "className": "text-center" },
+                    { "data": "CreatedBy", "title": "Created By", "className": "text-center" },
+                    { "data": "CreatedOn", "title": "Created On", "className": "text-center" },
+                    { "data": "ModifiedBy", "title": "Modified By", "className": "text-center" },
+                    { "data": "ModifiedOn", "title": "Modified On", "className": "text-center" },
+                        // 🔹 Add this new column for Edit Action
+                    {
+                        "data": null,
+                        "title": "Actions",
+                        "className": "text-center",
+                        "render": function (data, type, row) {
+                            return `
+            <span class="glyphicon glyphicon-pencil btn-edit-tool"
+                  data-toolid="${row.ToolId}"
+                  title="Edit Tool"
+                  style="cursor:pointer; color:black; font-size:16px;">
+            </span>
+        `;
+                        }
+                    }
+
+
+
+
+
+                ];
+
+
+
+                ToggleDataList(true);
+
+                MakeDataGridForTraining('lstToolCreation', data.lstToolCreation, 0, columnDef, 'buttons', true, true, false, false);
+
+
+                if (data["ErrorMessage"] != null) {
+                    $('.dataTables_empty > p').text(data["ErrorMessage"]);
+                }
+            },
+
+            onerror: function (r) { r },
+            failure: function (r) { r }
+        });
+    }
+
+    function MakeDataGridForTraining(tableId, data, tableHeight, columns, buttonId, search, isScrollX, footerFunction, isFramed, detailed, reportTitleId, rowSelection, lstHeight) {
+        var isFooter = footerFunction === undefined || footerFunction === false ? false : true;
+        var isFramed = isFramed === undefined || isFramed === false ? false : true;
+        var isDetailed = detailed === undefined ? false : true;
+        var reportTitle = '';
+
+        if (reportTitleId === undefined)
+            reportTitle = $('.box-title').text();
+        else
+            reportTitle = reportTitleId;
+
+        var gridHeight = 0;
+
+        isScrollX = isScrollX === undefined ? false : true;
+        if (search === undefined) { search = true; }
+
+        var gridButtonsClass = '';
+        var gridSearchBoxClass = '';
+        if (isDetailed === true) {
+            gridButtonsClass = 'btn-header btn-box-tool';
+            gridSearchBoxClass = 'bg-white';
+            gridButtonSize = 30;
+        }
+        else {
+            gridButtonsClass = 'btn-header btn-box-tool';
+            gridSearchBoxClass = 'btn-box-tool bg-white txtSearch';
+            gridButtonSize = 30;
+        }
+
+        var boxtool;
+        if (search === true) {
+            if (isFramed) {
+                $('#trHeadSearch').empty();
+                boxtool = `
+        <div class="search-container">
+            <i class="fa fa-search search-icon"></i>
+            <input class="txtSearch-frame" id="txtFrameSearch" type="text" placeholder="Search..">
+        </div>`;
+                $('#trHeadSearch').append(boxtool);
+            } else {
+                $('#' + buttonId).empty();
+                boxtool = `
+        <div class="search-container">
+            <i class="fa fa-search search-icon"></i>
+            <input class="txtSearch-frame" id="txtFrameSearch${tableId}" type="text" placeholder="Search..">
+        </div>`;
+                $('#' + buttonId).append(boxtool);
+            }
+        }
+        else {
+            if (isFramed) {
+                $('#trHeadSearch').empty();
+                boxtool = '<input class="txtSearch-frame" id="txtFrameSearch" type="text" placeholder="Search.." style="padding-left: 10px !important;" >';
+                $('#trHeadSearch').append(boxtool);
+            }
+            else {
+                $('#' + buttonId).empty();
+
+            }
+        }
+
+        var table = $('#' + tableId).DataTable({
+            order: [],
+            createdRow: rowSelection,
+            data: data,
+            columns: columns,
+            paging: true,
+            ordering: true,
+            searching: search,
+            deferRender: true,
+            destroy: true,
+            pagingType: 'full',
+            pageLength: 20,
+            scrollCollapse: false,
+            scrollX: isScrollX,
+            colReorder: true,
+            orderClasses: false,
+            deferRender: true,
+            select: true,
+            colResize: true,
+            //scrollY: gridHeight,
+            autoWidth: true,
+            footerCallback: footerFunction,
+            language: {
+                emptyTable: "<p style=\"text-align:left;\">No record(s) found.</p>",
+                zeroRecords: "<p style=\"text-align:left;\">No matching record(s) found</p>",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                oPaginate: {
+                    sNext: '<i class="fa fa-angle-right"></i>',
+                    sPrevious: '<i class="fa fa-angle-left"></i>',
+                    sFirst: '<i class="fa fa-angle-double-left"></i>',
+                    sLast: '<i class="fa fa-angle-double-right"></i>'
+                }
+            },
+            "dom": "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-5 dataTables_info' i><'col-sm-6 ms-3 dataTables_paginate' p>>",
+            buttons: [
+                {
+                    extend: 'copyHtml5',
+                    footer: true,
+                    text: '<span><span class="fa-stack"><i class="fa fa-circle fa-stack-2x" style="color: rgb(244, 164, 37);"></i><i class="fa fa-copy fa-stack-1x" style="color: white;"></i></span></span>',
+                    titleAttr: 'Copy',
+                    title: reportTitle,
+                    filename: 'DataExport',
+                    exportOptions: {
+                        //columns: ':visible'
+                        columns: 'th:not(.notexport)' // Excluding columns while exporting
+                    }
+                },
+                {
+                    extend: 'excelHtml5',
+                    footer: true,
+                    text: '<span><span class="fa-stack"><i class="fa fa-circle fa-stack-2x" style="color: rgb(0, 179, 98);"></i><i class="fa fa-file-excel fa-stack-1x" style="color: white;"></i></span></span>',
+                    titleAttr: 'Export to excel',
+                    title: reportTitle,
+                    filename: 'DataExport', //Added By Tahir
+                    exportOptions: {
+                        //columns: ':visible'
+                        columns: 'th:not(.notexport)'
+                    }
+                },
+                {
+                    extend: 'print',
+                    footer: true,
+                    text: '<span><span class="fa-stack"><i class="fa fa-circle fa-stack-2x" style="color: rgb(0, 204, 255);"></i><i class="fa fa-print fa-stack-1x" style="color: white;"></i></span></span>',
+                    titleAttr: 'Print',
+                    title: '',
+                    messageTop: function () { return '<h4>' + reportTitle + '</h4>'; },
+                    filename: 'DataExport',
+                    exportOptions: {
+                        // columns: ':visible'
+                        columns: 'th:not(.notexport)'
+                    }
+                }
+            ],
+            select: true,
+            //drawCallback: function () {
+            //    $.get("/Tool/GetAllocationId", function (allocations) {
+            //        allocations.forEach(function (alloc) {
+            //            $(`.checkInBtn[data-ToolId='${alloc.ToolId}']`)
+            //                .attr("data-allocationid", alloc.AllocationId);
+            //        });
+            //    });
+            //}
+        });
+        table.buttons().container()
+            .appendTo('#buttons');
+
+        table.button(0).nodes().removeClass('btn btn-default buttons-copy buttons-html5');
+        table.button(0).nodes().addClass(gridButtonsClass);
+
+        table.button(1).nodes().removeClass('btn btn-default buttons-excel buttons-html5');
+        table.button(1).nodes().addClass(gridButtonsClass);
+
+        table.button(2).nodes().removeClass('btn btn-default buttons-excel buttons-html5');
+        table.button(2).nodes().addClass(gridButtonsClass);
+
+        var dsgndby = $('.modal-footer > #designedby ').html();
+
+        if (dsgndby === "") {
+            $('#designedBy').html($('.desgndBy').html());
+        }
+
+        var layoutHeader = $('nav').innerHeight();
+        var cardHeader = $('.box-header').innerHeight();
+        var tableHeader = $('.dataTables_scrollHead').innerHeight();
+        var tableFooter = 0;
+        var cardFooterH = 30;
+
+        if (isFooter === true)
+            tableFooter = $('.dataTables_scrollFoot').innerHeight();
+
+
+        var parentHeight = $('#' + lstHeight).innerHeight();
+        if (parentHeight == undefined)
+            parentHeight = window.innerHeight;
+        else
+            parentHeight = $('#' + lstHeight).innerHeight();
+
+        if (isFooter === true)
+            tableFooter = $('#' + tableId + ' > tfoot').innerHeight();
+
+        var browserHeight = parentHeight;
+        if (tableHeight === 0) {
+            if (layoutHeader === undefined)
+                gridHeight = browserHeight - (cardHeader + tableHeader + tableFooter + cardFooterH);
+            else
+                gridHeight = browserHeight - (layoutHeader + cardHeader + tableHeader + tableFooter + cardFooterH);
+        }
+        else { gridHeight = tableHeight; }
+
+        var topHeader = $('#topHeader').innerHeight();
+        if (topHeader > 0)
+            gridHeight = gridHeight - (topHeader + 1);
+
+        gridHeight = gridHeight - 6;
+
+        $('.dataTables_scrollBody').css('height', gridHeight + 'px');
+        table.columns.adjust().draw();
+
+        $('#txtFrameSearch' + tableId).on('keyup change', function () {
+            table.search(this.value).draw();
+        });
+        $('.dataTables_filter').hide();
+        table.columns.adjust().draw();
+
+
+        //return table;
+    }
+</script>

@@ -29,6 +29,8 @@ namespace PlusCP.Models
 
         public List<Hashtable> lstTool { get; set; }
         public List<Hashtable> lstGetTool { get; set; }
+        public List<Hashtable> lstGetToolRepair { get; set; }
+        public List<Hashtable> lstToolCreation { get; set; }
         public string Email { get; set; }
         public string Message { get; set; }
         public List<Hashtable> lstToolTransaction { get; private set; }
@@ -299,6 +301,141 @@ GROUP BY t.ToolId, t.ToolName, t.PartNum, t.TotalQty, t.IsConsumable;
             }
         }
 
+        public bool GetToolRepair(string status)
+        {
+            oDAL = new cDAL(cDAL.ConnectionType.INIT);
+            var userId = HttpContext.Current.Session["SigninId"].ToString();
+
+            string query = @"
+        SELECT  
+            r.ToolId,
+            t.ToolName,
+            r.SerialNumber,
+            r.ReportedByName,
+            r.ReportedDate,
+            r.Hours,
+            r.Rating,
+            r.Status
+        FROM TOOL.Repair r
+        LEFT JOIN TOOL.Tools t ON r.ToolId = t.ToolId
+         WHERE r.Status IN ('Repair', 'Broken', 'Calibration')
+    ";
+
+            // 👉 ONLY add filter if status is not empty
+            // ✔ Status agar empty string ya null ho toh filter na lagao
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query += " AND r.Status = '" + status + "'";
+            }
+
+            query += " ORDER BY r.ReportedDate DESC;";
+
+            DataTable dt = oDAL.GetData(query);
+
+            if (oDAL.HasErrors)
+            {
+                ErrorMessage = oDAL.ErrMessage;
+                return false;
+            }
+
+            if (dt.Rows.Count > 0)
+                lstGetToolRepair = cCommon.ConvertDtToHashTable(dt);
+
+            return true;
+        }
+
+
+        public bool GetToolCreationList()
+        {
+            oDAL = new cDAL(cDAL.ConnectionType.INIT);
+            var userId = HttpContext.Current.Session["SigninId"].ToString();
+            string query = string.Empty;
+            query = $@"SELECT 
+    t.ToolId,
+    t.ToolName,
+    t.PartNum,
+    t.TotalQty AS TotalQty,
+
+    -- Available = count of ToolSerials that are Available
+    ISNULL(SUM(CASE WHEN ts.Status = 'Available' THEN 1 ELSE 0 END), 0) AS AvailableQty,
+
+    -- Status at tool-level (if all units are issued, mark as Issued)
+    CASE 
+        WHEN SUM(CASE WHEN ts.Status = 'Available' THEN 1 ELSE 0 END) = 0 THEN 'Issued'
+        ELSE 'Available'
+    END AS CurrentStatus,
+
+    t.IsConsumable,
+
+    -- Can check out if at least one serial is Available
+    CASE 
+        WHEN SUM(CASE WHEN ts.Status = 'Available' THEN 1 ELSE 0 END) > 0 THEN CAST(1 AS BIT)
+        ELSE CAST(0 AS BIT)
+    END AS CanCheckOut,
+
+    -- Can check in if current user has any unreturned allocations
+    CASE 
+        WHEN EXISTS (
+            SELECT 1 
+            FROM Tool.ToolAllocation a
+            INNER JOIN Tool.ToolSerials s ON a.SerialId = s.SerialId
+            WHERE a.ToolId = t.ToolId 
+              AND a.UserId = ${userId} -- replace with logged-in userId
+              AND a.IsReturned = 0
+        ) THEN CAST(1 AS BIT)
+        ELSE CAST(0 AS BIT)
+    END AS CanCheckIn,
+
+    -- All allocations (for check-in buttons)
+    Allocations = STUFF((
+        SELECT ',' + CAST(a.AllocationId AS VARCHAR(50))
+        FROM Tool.ToolAllocation a
+        WHERE a.ToolId = t.ToolId
+          AND a.UserId = 25
+          AND a.IsReturned = 0
+        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, ''),
+
+    -- ✅ Newly added metadata columns
+    t.CreatedBy,
+CONVERT(VARCHAR(20), t.CreatedOn, 103) + ' ' + CONVERT(VARCHAR(5), t.CreatedOn, 108) AS CreatedOn,
+    t.ModifiedBy,
+  CASE 
+        WHEN t.ModifiedOn IS NULL THEN NULL 
+        ELSE CONVERT(VARCHAR(20), t.ModifiedOn, 103) + ' ' + CONVERT(VARCHAR(5), t.ModifiedOn, 108)
+    END AS ModifiedOn
+
+FROM Tool.Tools t
+LEFT JOIN Tool.ToolSerials ts ON t.ToolId = ts.ToolId
+GROUP BY 
+    t.ToolId, 
+    t.ToolName, 
+    t.PartNum, 
+    t.TotalQty, 
+    t.IsConsumable,
+    t.CreatedBy,
+ t.CreatedOn,
+    t.ModifiedBy,
+    t.ModifiedOn;
+
+
+
+  ";
+            query = query.Replace("@UserId", userId);
+            DataTable dt = oDAL.GetData(query);
+
+            if (oDAL.HasErrors)
+            {
+                ErrorMessage = oDAL.ErrMessage;
+                return false;
+            }
+            else
+            {
+                if (dt.Rows.Count > 0)
+                    lstToolCreation = cCommon.ConvertDtToHashTable(dt);
+                return true;
+            }
+        }
+
         public DataTable GetToolStats()
         {
             cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
@@ -418,6 +555,8 @@ SELECT
       ,[Username]
       ,[ExpectedReturnDate]
       ,[Notes]
+      ,[Hours]
+      ,[Rating]
   FROM [TOOL].[ToolTransactions]
   order by TranDate desc
 ";
@@ -484,5 +623,26 @@ SELECT
         public Tool Tool { get; set; }
         public ToolSerial ToolSerial { get; set; }
     }
+
+    public class CheckoutItem
+    {
+        public int toolId { get; set; }
+        public string toolName { get; set; }
+        public List<int> serialIds { get; set; }
+        public List<string> serialNumbers { get; set; }
+        public List<int> partIds { get; set; }
+        public List<string> partNumbers { get; set; }
+        public string expectedReturn { get; set; }
+        public string notes { get; set; }
+    }
+
+    public class CheckOutRequest
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public List<CheckoutItem> CheckoutItems { get; set; }
+    }
+
+
 
 }

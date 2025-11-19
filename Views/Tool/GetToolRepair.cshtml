@@ -1,0 +1,723 @@
+﻿@model PlusCP.Models.Tool
+@{
+    ViewBag.Title = "GetTool";
+    Layout = null;
+
+}
+
+<style>
+    .box-header {
+        background-color: #f8f9fc !important;
+        color: #003B59 !important;
+        border-bottom: 2px solid #f8f9fc;
+        box-shadow: 0px 5px #ededed;
+    }
+    .btn-refresh {
+        background-color: #003B59 !important; /* Distinct orange color */
+        color: white !important;
+        border-radius: 30px !important;
+        margin-left: 5px !important;
+        height: 25px !important;
+        padding: 0px 12px !important;
+        border: 2px solid #003B59 !important;
+        transition: all 0.3s ease-in-out;
+    }
+
+        .btn-refresh:hover {
+            background-color: white !important;
+            color: #003B59 !important;
+            border: 2px solid #003B59 !important;
+        }
+
+
+    .RedColor {
+        color: red;
+    }
+
+    .GreenColor {
+        color: green;
+    }
+
+    .required:after {
+        content: " *";
+        color: red;
+    }
+
+    .datepicker td, th {
+        text-align: center;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .Message {
+        height: 200px;
+        width: 500px
+    }
+
+    /*.custom-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .custom-modal-title {
+        margin: 0;
+    }
+
+    .custom-modal-header .close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        font-size: 1.5rem;
+        line-height: 1;
+    }*/
+
+    .table.dataTable {
+        font-family: "Segoe UI", "Roboto";
+        clear: both;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 16px;
+    }
+
+    .dataTables_wrapper,
+    .dataTables_length,
+    .dataTables_filter,
+    .dataTables_info,
+    .dataTables_paginate,
+    table.dataTable thead th,
+    table.dataTable tbody td {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif !important;
+    }
+
+        .dataTables_wrapper .dataTables_paginate {
+            text-align: left !important;
+            float: none !important;
+            display: flex;
+            justify-content: left;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif !important;
+        }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button {
+                font-size: 15px !important; /* Increase font size */
+                padding: 8px 12px; /* Increase button padding */
+                color: #003B59 !important;
+            }
+
+        .dataTables_wrapper .dataTables_paginate {
+            margin-left: 60px !important; /* Adjust this value as needed */
+        }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button i {
+                font-size: 15px !important; /* Increase icon size */
+                color: #003B59 !important;
+            }
+
+        .dataTables_wrapper .dataTables_info {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif !important;
+            font-size: 16px !important; /* Adjust size */
+            color: #333 !important; /* Darker text */
+            margin-left: 5px;
+        }
+    /* Change odd row background color */
+    table.dataTable tbody tr:nth-child(odd) {
+        background-color: #ECEDEF; /* Change to your desired color */
+    }
+
+    /* Change even row background color */
+    table.dataTable tbody tr:nth-child(even) {
+        background-color: #ffffff; /* Change to your desired color */
+    }
+
+    table.dataTable tbody tr.selected {
+        background-color: #D6EFE8; /* Orange color */
+        /*color: white;*/ /* Change text color if needed */
+    }
+    /* Search icon inside input */
+    .search-icon {
+        position: absolute;
+        top: 50%;
+        left: 8px;
+        transform: translateY(-50%);
+        color: darkgrey;
+        font-size: 14px;
+        pointer-events: none; /* Prevents clicking on the icon */
+    }
+
+    .search-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .txtSearch-frame {
+        margin-top: 5px;
+        height: 28px;
+        width: 150px;
+        border: none;
+        color: #003B59;
+        border: 2px solid #003B59 !important;
+        width: 200px;
+        padding-left: 30px; /* Space for the icon */
+    }
+
+    .pdf-icon {
+        width: 30px;
+        height: 30px;
+        image-rendering: crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
+    }
+
+    .pad {
+        padding-bottom: 15px;
+        padding: 2px;
+        padding-top: 10px;
+    }
+
+    .lblHeading {
+        font-size: 19px;
+        color: #003B59 !important;
+    }
+
+    .table-container {
+        height: 200px; /* Set the desired fixed height */
+        overflow-y: auto;
+    }
+
+    /*table > thead > tr > th {
+        background-color: gray !important;
+        color: white;
+    }*/
+
+    table.table thead th {
+        background-color: #003B59 !important; /* Change to your desired color */
+        color: white; /* Change to desired text color */
+        font-size: 15px;
+        font-family: 'Poppins', sans-serif;
+        height: 40px;
+    }
+
+    table.table tbody td, lbl_ {
+        /*background-color: white !important; /* Change to your desired color */
+        font-size: 15px;
+        color: #003B59 !important;
+    }
+
+    table.table tbody tr {
+        height: 50px; /* Adjust height as needed */
+    }
+
+        /* Hover effect */
+        table.table tbody tr:hover {
+            background-color: #f5f5f5 !important; /* Light gray background on hover */
+            transition: background-color 0.8s ease-in-out;
+            cursor: pointer;
+        }
+
+
+
+
+    table th {
+        /*padding: 1rem 0.5rem !important;*/
+        border: 1px solid black;
+        border-bottom: 1px solid black;
+        /*padding: 8px;*/
+        text-align: left;
+    }
+
+    table td {
+        padding: 1rem 0.5rem !important;
+        font-size: 15px !important;
+        font-weight: 500 !important;
+        vertical-align: middle;
+    }
+
+    table {
+        border-collapse: separate;
+        border-spacing: 0 10px; /* Adjust the second value to increase/decrease the vertical gap */
+        width: 100%;
+    }
+
+        table.table-bordered.dataTable tbody th, table.table-bordered.dataTable tbody td {
+            border-bottom-width: 1px;
+        }
+
+    .btn-badges {
+        color: #003B59 !important;
+        border-radius: 25px !important;
+        margin-left: 5px !important;
+        height: 25px !important;
+        padding: 2px 12px !important;
+    }
+
+        .btn-badges:hover {
+            background-color: #003B59 !important;
+            color: white !important;
+        }
+
+            .btn-badges:hover .badge_light {
+                background-color: white !important;
+                color: #003B59 !important;
+            }
+
+    .badge_light {
+        background-color: #003B59 !important;
+        color: white !important;
+    }
+
+    .btn-badges-Sent {
+        border-radius: 25px !important;
+        height: 25px !important;
+        width: 60px;
+    }
+</style>
+<div id="parent" class="container-fluid">
+    <input id="rptCode" type="hidden" value="019" />
+    <input id="rptTitle" class="lblHeading" type="hidden" value="@ViewBag.ReportTitle" />
+    <div id="dataLists" class="box panel panel-default">
+        <div class="box-header with-border">
+
+            <h5 class="box-title"><strong>@ViewBag.ReportTitle  </strong><strong id="filterString"></strong></h5>
+            <button id="GetToolRepairList" class="btn btn-badges">
+                Refresh
+            </button>
+
+            <button id="btnRepair" class="btn btn-badges">
+                Repair
+            </button>
+            <button id="btnBroken" class="btn btn-badges">
+                Broken
+            </button>
+            <button id="btnCallibration" class="btn btn-badges">
+                Callibration
+            </button>
+            <button id="btnMoveToInventory" class="btn btn-badges">
+                Move To Inventory
+            </button>
+            <div id="buttons" class="box-tools pull-right">
+
+            </div>
+        </div>
+
+        <div class="box-body" id="lstP">
+            <table id="lstGetToolRepair" class="table table-bordered table-striped text-sm table-hover" style="width:100%">
+                <thead class="sorted-asc">
+                    <tr>
+                        <th class="notexport"></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script src="~/Scripts/Message.js"></script>
+<script>
+    $("#btnMoveToInventory").prop("disabled", true);
+
+    $(document).on("change", "#chkSelectAll", function () {
+        $(".chkRepairSelect").prop("checked", $(this).is(":checked"));
+    });
+
+    // Checkbox state change
+    $(document).on("change", ".chkRepairSelect", function () {
+
+        let anyChecked = $(".chkRepairSelect:checked").length > 0;
+
+        if (anyChecked) {
+            $("#btnMoveToInventory").prop("disabled", false);
+        } else {
+            $("#btnMoveToInventory").prop("disabled", true);
+        }
+    });
+
+
+    $(document).on("click", "#btnMoveToInventory", function () {
+
+        let selected = [];
+
+        $(".chkRepairSelect:checked").each(function () {
+            selected.push({
+                ToolId: $(this).data("toolid"),
+                SerialNumber: $(this).data("serial")
+            });
+        });
+
+        if (selected.length === 0) {
+            MsgToast("Warning!", "Please select at least one tool.", "warning");
+            return;
+        }
+
+        $.ajax({
+            url: "/Tool/MoveToolToInventory",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ list: selected }),
+            success: function (res) {
+                if (res.success) {
+                    MsgToast("Success!", res.message, "success");
+
+                    // ⬇ GRID RELOAD HERE
+                    LoadData();
+
+                    // ⬇ Button disable after reload 
+                    $("#btnMoveToInventory").prop("disabled", true);
+                } else {
+                    MsgToast("Error!", res.message, "error");
+                }
+            }
+        });
+
+    });
+
+
+
+
+    ToggleDataList(false);
+
+    LoadData();
+    function LoadData(status = "") {
+        $('#tblBody').empty();
+        $('#lstData').DataTable().clear();
+        $('#lstData').DataTable().destroy();
+  
+        var isSingleRow = false;
+
+        $.ajax({
+
+            cache: false,
+            type: 'GET',
+            url: '/Tool/GetToolRepairList',
+            data: {
+                Status: status
+            },
+            datatype: JSON,
+            success: function (data) {
+                $('#filterString').append(data.filterString);
+                $('#tblBody').empty();
+                $('#lstData').DataTable().clear();
+                $('#lstData').DataTable().destroy();
+               
+                if (!isSingleRow) {
+                    var columnDef = [
+                        {
+                            "data": null,
+                            "title": "<input type='checkbox' id='chkSelectAll' />",
+                            "className": "text-center",
+                            "orderable": false,
+                            "render": function (data, type, row) {
+                                return `<input type="checkbox" class="chkRepairSelect" data-toolid="${row.ToolId}" data-serial="${row.SerialNumber}">`;
+                            }
+                        },
+                        { "data": "ToolId", "title": "ToolId", "className": "text-center", "visible": false },
+                        { "data": "ToolName", "title": "Tool Name", "className": "text-center" },
+                        {
+                            "data": "Status", "title": "Status", "className": "text-center"
+                        },
+
+                        { "data": "SerialNumber", "title": "Serial Number", "className": "text-center" },
+
+                        // Total Qty
+                        { "data": "ReportedByName", "title": "Reported By Name", "className": "text-center" },
+
+                        // Available Qty
+                        {
+                            "data": "ReportedDate", "title": "Reported Date", "className": "text-center"
+                        },
+
+                        { "data": "Hours", "title": "Hours", "className": "text-center" },
+
+                        {
+                            "data": "Rating", "title": "Rating", "className": "text-center"
+                        }
+
+                        
+
+
+                    ];
+
+
+
+                    ToggleDataList(true);
+
+                    MakeDataGridForTraining('lstGetToolRepair', data.lstGetToolRepair, 0, columnDef, 'buttons', true, true, false, false);
+
+                }
+                if (data["ErrorMessage"] != null) {
+                    $('.dataTables_empty > p').text(data["ErrorMessage"]);
+                }
+            },
+
+            onerror: function (r) { r },
+            failure: function (r) { r }
+        });
+    }
+
+    $('#GetToolRepairList').click(function () {
+        OpenPage('/Tool/GetToolRepair', 'Mohsin');
+    });
+
+    $("#btnRepair").click(function () {
+        LoadData("Repair");
+    });
+
+    $("#btnBroken").click(function () {
+        LoadData("Broken");
+    });
+
+    $("#btnCallibration").click(function () {
+        LoadData("Calibration");
+    });
+
+    function MakeDataGridForTraining(tableId, data, tableHeight, columns, buttonId, search, isScrollX, footerFunction, isFramed, detailed, reportTitleId, rowSelection, lstHeight) {
+        var isFooter = footerFunction === undefined || footerFunction === false ? false : true;
+        var isFramed = isFramed === undefined || isFramed === false ? false : true;
+        var isDetailed = detailed === undefined ? false : true;
+        var reportTitle = '';
+
+        if (reportTitleId === undefined)
+            reportTitle = $('.box-title').text();
+        else
+            reportTitle = reportTitleId;
+
+        var gridHeight = 0;
+
+        isScrollX = isScrollX === undefined ? false : true;
+        if (search === undefined) { search = true; }
+
+        var gridButtonsClass = '';
+        var gridSearchBoxClass = '';
+        if (isDetailed === true) {
+            gridButtonsClass = 'btn-header btn-box-tool';
+            gridSearchBoxClass = 'bg-white';
+            gridButtonSize = 30;
+        }
+        else {
+            gridButtonsClass = 'btn-header btn-box-tool';
+            gridSearchBoxClass = 'btn-box-tool bg-white txtSearch';
+            gridButtonSize = 30;
+        }
+
+        var boxtool;
+        if (search === true) {
+            if (isFramed) {
+                $('#trHeadSearch').empty();
+                boxtool = `
+        <div class="search-container">
+            <i class="fa fa-search search-icon"></i>
+            <input class="txtSearch-frame" id="txtFrameSearch" type="text" placeholder="Search..">
+        </div>`;
+                $('#trHeadSearch').append(boxtool);
+            } else {
+                $('#' + buttonId).empty();
+                boxtool = `
+        <div class="search-container">
+            <i class="fa fa-search search-icon"></i>
+            <input class="txtSearch-frame" id="txtFrameSearch${tableId}" type="text" placeholder="Search..">
+        </div>`;
+                $('#' + buttonId).append(boxtool);
+            }
+        }
+        else {
+            if (isFramed) {
+                $('#trHeadSearch').empty();
+                boxtool = '<input class="txtSearch-frame" id="txtFrameSearch" type="text" placeholder="Search.." style="padding-left: 10px !important;" >';
+                $('#trHeadSearch').append(boxtool);
+            }
+            else {
+                $('#' + buttonId).empty();
+
+            }
+        }
+
+        var table = $('#' + tableId).DataTable({
+            order: [],
+            createdRow: rowSelection,
+            data: data,
+            columns: columns,
+            paging: true,
+            ordering: true,
+            searching: search,
+            deferRender: true,
+            destroy: true,
+            pagingType: 'full',
+            pageLength: 20,
+            scrollCollapse: false,
+            scrollX: isScrollX,
+            colReorder: true,
+            orderClasses: false,
+            deferRender: true,
+            select: true,
+            colResize: true,
+            //scrollY: gridHeight,
+            autoWidth: true,
+            footerCallback: footerFunction,
+            language: {
+                emptyTable: "<p style=\"text-align:left;\">No record(s) found.</p>",
+                zeroRecords: "<p style=\"text-align:left;\">No matching record(s) found</p>",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                oPaginate: {
+                    sNext: '<i class="fa fa-angle-right"></i>',
+                    sPrevious: '<i class="fa fa-angle-left"></i>',
+                    sFirst: '<i class="fa fa-angle-double-left"></i>',
+                    sLast: '<i class="fa fa-angle-double-right"></i>'
+                }
+            },
+            "dom": "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-5 dataTables_info' i><'col-sm-6 ms-3 dataTables_paginate' p>>",
+            buttons: [
+                {
+                    extend: 'copyHtml5',
+                    footer: true,
+                    text: '<span><span class="fa-stack"><i class="fa fa-circle fa-stack-2x" style="color: rgb(244, 164, 37);"></i><i class="fa fa-copy fa-stack-1x" style="color: white;"></i></span></span>',
+                    titleAttr: 'Copy',
+                    title: reportTitle,
+                    filename: 'DataExport',
+                    exportOptions: {
+                        //columns: ':visible'
+                        columns: 'th:not(.notexport)' // Excluding columns while exporting
+                    }
+                },
+                {
+                    extend: 'excelHtml5',
+                    footer: true,
+                    text: '<span><span class="fa-stack"><i class="fa fa-circle fa-stack-2x" style="color: rgb(0, 179, 98);"></i><i class="fa fa-file-excel fa-stack-1x" style="color: white;"></i></span></span>',
+                    titleAttr: 'Export to excel',
+                    title: reportTitle,
+                    filename: 'DataExport', //Added By Tahir
+                    exportOptions: {
+                        //columns: ':visible'
+                        columns: 'th:not(.notexport)'
+                    }
+                },
+                {
+                    extend: 'print',
+                    footer: true,
+                    text: '<span><span class="fa-stack"><i class="fa fa-circle fa-stack-2x" style="color: rgb(0, 204, 255);"></i><i class="fa fa-print fa-stack-1x" style="color: white;"></i></span></span>',
+                    titleAttr: 'Print',
+                    title: '',
+                    messageTop: function () { return '<h4>' + reportTitle + '</h4>'; },
+                    filename: 'DataExport',
+                    exportOptions: {
+                        // columns: ':visible'
+                        columns: 'th:not(.notexport)'
+                    }
+                }
+            ],
+            select: true,
+            //drawCallback: function () {
+            //    $.get("/Tool/GetAllocationId", function (allocations) {
+            //        allocations.forEach(function (alloc) {
+            //            $(`.checkInBtn[data-ToolId='${alloc.ToolId}']`)
+            //                .attr("data-allocationid", alloc.AllocationId);
+            //        });
+            //    });
+            //}
+        });
+        table.buttons().container()
+            .appendTo('#buttons');
+
+        table.button(0).nodes().removeClass('btn btn-default buttons-copy buttons-html5');
+        table.button(0).nodes().addClass(gridButtonsClass);
+
+        table.button(1).nodes().removeClass('btn btn-default buttons-excel buttons-html5');
+        table.button(1).nodes().addClass(gridButtonsClass);
+
+        table.button(2).nodes().removeClass('btn btn-default buttons-excel buttons-html5');
+        table.button(2).nodes().addClass(gridButtonsClass);
+
+        var dsgndby = $('.modal-footer > #designedby ').html();
+
+        if (dsgndby === "") {
+            $('#designedBy').html($('.desgndBy').html());
+        }
+
+        var layoutHeader = $('nav').innerHeight();
+        var cardHeader = $('.box-header').innerHeight();
+        var tableHeader = $('.dataTables_scrollHead').innerHeight();
+        var tableFooter = 0;
+        var cardFooterH = 30;
+
+        if (isFooter === true)
+            tableFooter = $('.dataTables_scrollFoot').innerHeight();
+
+
+        var parentHeight = $('#' + lstHeight).innerHeight();
+        if (parentHeight == undefined)
+            parentHeight = window.innerHeight;
+        else
+            parentHeight = $('#' + lstHeight).innerHeight();
+
+        if (isFooter === true)
+            tableFooter = $('#' + tableId + ' > tfoot').innerHeight();
+
+        var browserHeight = parentHeight;
+        if (tableHeight === 0) {
+            if (layoutHeader === undefined)
+                gridHeight = browserHeight - (cardHeader + tableHeader + tableFooter + cardFooterH);
+            else
+                gridHeight = browserHeight - (layoutHeader + cardHeader + tableHeader + tableFooter + cardFooterH);
+        }
+        else { gridHeight = tableHeight; }
+
+        var topHeader = $('#topHeader').innerHeight();
+        if (topHeader > 0)
+            gridHeight = gridHeight - (topHeader + 1);
+
+        gridHeight = gridHeight - 6;
+
+        $('.dataTables_scrollBody').css('height', gridHeight + 'px');
+        table.columns.adjust().draw();
+
+        $('#txtFrameSearch' + tableId).on('keyup change', function () {
+            table.search(this.value).draw();
+        });
+        $('.dataTables_filter').hide();
+        table.columns.adjust().draw();
+
+
+        //return table;
+    }
+
+
+
+    function MsgToast(msg, title, type) {
+
+        toastr.options = {
+            closeButton: true,
+            debug: false,
+            newestOnTop: false,
+            progressBar: true,
+            positionClass: 'toast-top-right',
+            preventDuplicates: true,
+            onclick: null
+        };
+
+
+
+        var $toast = toastr[type](title, msg); // Wire up an event handler to a button in the toast, if it exists
+        $toastlast = $toast;
+
+        if (typeof $toast === 'undefined') {
+            return;
+        }
+
+
+    }
+</script>
+
