@@ -1550,18 +1550,18 @@ $("#btnCheckin").click(function (e) {
                     var lst = data.lstToolTransaction || [];
 
                     var column = [
-                        { "data": "ToolName", "title": "Tool Name", "className": "text-center" },
+                        { "data": "ToolName", "title": "Tool Name", "className": "text-center", "width": "100px" },
                         { "data": "ToolSerialNumber", "title": "Tool Serial No.", "className": "text-center" },
-                        { "data": "PartNo", "title": "Part No.", "className": "text-center" },
-                        { "data": "TranType", "title": "Tran. Type", "className": "text-center" },
-                        { "data": "TranQty", "title": "Tran. Qty", "className": "text-center" },
-                        { "data": "TranDate", "title": "Tran. Date", "className": "text-center" },
-                        { "data": "ExpectedReturnDate", "title": "Expected Return Date", "className": "text-center" },
-                        { "data": "Username", "title": "Username", "className": "text-center" },
-                        { "data": "Notes", "title": "Notes", "className": "text-center" },
-                        { "data": "Hours", "title": "Hours", "className": "text-center" },
+                        { "data": "PartNo", "title": "Part No.", "className": "text-center", "width": "70px" },
+                        { "data": "TranType", "title": "Tran. Type", "className": "text-center", "width": "60px" },
+                        { "data": "TranQty", "title": "Tran. Qty", "className": "text-center", "width": "60px" },
+                        { "data": "TranDate", "title": "Tran. Date", "className": "text-center", "width": "120px" },
+                        { "data": "ExpectedReturnDate", "title": "Expected Return Date", "className": "text-center", "width": "140px"},
+                        { "data": "Username", "title": "Username", "className": "text-center", "width": "130px" },
+                        { "data": "Notes", "title": "Notes", "className": "text-center", "width": "100px" },
+                        { "data": "Hours", "title": "Hours", "className": "text-center", "width": "100px" },
                         {
-                            "data": "Rating", "title": "Rating", "className": "text-center",
+                            "data": "Rating", "title": "Rating", "className": "text-center", "width": "100px",
                             "render": function (data) {
                                 let rating = parseInt(data || 0);
                                 let stars = "";
