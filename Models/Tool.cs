@@ -312,7 +312,7 @@ GROUP BY t.ToolId, t.ToolName, t.PartNum, t.TotalQty, t.IsConsumable;
             t.ToolName,
             r.SerialNumber,
             r.ReportedByName,
-            r.ReportedDate,
+           FORMAT(r.ReportedDate, 'yyyy.MM.dd HH:mm:ss') AS ReportedDate,
             r.Hours,
             r.Rating,
             r.Status
@@ -365,6 +365,10 @@ GROUP BY t.ToolId, t.ToolName, t.PartNum, t.TotalQty, t.IsConsumable;
         ELSE 'Available'
     END AS CurrentStatus,
 
+    MAX(ts.TotalHours) AS TotalHours,
+
+
+  SUM(ts.ConsumedHours) AS ConsumedHours,
     t.IsConsumable,
 
     -- Can check out if at least one serial is Available
@@ -397,11 +401,11 @@ GROUP BY t.ToolId, t.ToolName, t.PartNum, t.TotalQty, t.IsConsumable;
 
     -- ✅ Newly added metadata columns
     t.CreatedBy,
-CONVERT(VARCHAR(20), t.CreatedOn, 103) + ' ' + CONVERT(VARCHAR(5), t.CreatedOn, 108) AS CreatedOn,
+ FORMAT(t.CreatedOn, 'yyyy.MM.dd HH:mm') AS CreatedOn,
     t.ModifiedBy,
-  CASE 
+ CASE 
         WHEN t.ModifiedOn IS NULL THEN NULL 
-        ELSE CONVERT(VARCHAR(20), t.ModifiedOn, 103) + ' ' + CONVERT(VARCHAR(5), t.ModifiedOn, 108)
+        ELSE FORMAT(t.ModifiedOn, 'yyyy.MM.dd HH:mm')
     END AS ModifiedOn
 
 FROM Tool.Tools t
@@ -558,9 +562,10 @@ SELECT
       ,[Hours]
       ,[Rating]
   FROM [TOOL].[ToolTransactions]
+where ToolId = @toolId
   order by TranDate desc
 ";
-
+            query = query.Replace("@toolId", toolId);
             DataTable dt = oDAL.GetData(query);
 
             if (!oDAL.HasErrors)

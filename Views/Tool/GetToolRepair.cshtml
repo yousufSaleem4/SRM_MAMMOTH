@@ -291,7 +291,7 @@
                 Broken
             </button>
             <button id="btnCallibration" class="btn btn-badges">
-                Callibration
+                Calibration
             </button>
             <button id="btnMoveToInventory" class="btn btn-badges">
                 Move To Inventory
@@ -314,6 +314,7 @@
                         <th></th>
                         <th></th>
                         <th></th>
+
                     </tr>
                 </thead>
                 <tfoot>
@@ -331,20 +332,29 @@
     $("#btnMoveToInventory").prop("disabled", true);
 
     $(document).on("change", "#chkSelectAll", function () {
-        $(".chkRepairSelect").prop("checked", $(this).is(":checked"));
+
+        let isChecked = $(this).is(":checked");
+
+        $(".chkRepairSelect").prop("checked", isChecked);
+
+        $("#btnMoveToInventory").prop("disabled",
+            $(".chkRepairSelect:checked").length === 0
+        );
     });
 
-    // Checkbox state change
+
     $(document).on("change", ".chkRepairSelect", function () {
 
-        let anyChecked = $(".chkRepairSelect:checked").length > 0;
+        let selectedCount = $(".chkRepairSelect:checked").length;
 
-        if (anyChecked) {
+        if (selectedCount > 0) {
             $("#btnMoveToInventory").prop("disabled", false);
         } else {
             $("#btnMoveToInventory").prop("disabled", true);
         }
     });
+
+
 
 
     $(document).on("click", "#btnMoveToInventory", function () {
@@ -372,10 +382,7 @@
                 if (res.success) {
                     MsgToast("Success!", res.message, "success");
 
-                    // ⬇ GRID RELOAD HERE
                     LoadData();
-
-                    // ⬇ Button disable after reload 
                     $("#btnMoveToInventory").prop("disabled", true);
                 } else {
                     MsgToast("Error!", res.message, "error");
@@ -388,13 +395,14 @@
 
 
 
+
     ToggleDataList(false);
 
     LoadData();
     function LoadData(status = "") {
         $('#tblBody').empty();
-        $('#lstData').DataTable().clear();
-        $('#lstData').DataTable().destroy();
+        $('#lstGetToolRepair').DataTable().clear();
+        $('#lstGetToolRepair').DataTable().destroy();
   
         var isSingleRow = false;
 
@@ -410,8 +418,7 @@
             success: function (data) {
                 $('#filterString').append(data.filterString);
                 $('#tblBody').empty();
-                $('#lstData').DataTable().clear();
-                $('#lstData').DataTable().destroy();
+              
                
                 if (!isSingleRow) {
                     var columnDef = [
@@ -433,14 +440,14 @@
                         { "data": "SerialNumber", "title": "Serial Number", "className": "text-center" },
 
                         // Total Qty
-                        { "data": "ReportedByName", "title": "Reported By Name", "className": "text-center" },
+                        { "data": "ReportedByName", "title": "Consumer Name", "className": "text-center" },
 
                         // Available Qty
                         {
-                            "data": "ReportedDate", "title": "Reported Date", "className": "text-center"
+                            "data": "ReportedDate", "title": "Updated Date", "className": "text-center"
                         },
 
-                        { "data": "Hours", "title": "Hours", "className": "text-center" },
+                        { "data": "Hours", "title": "Consumed Hours", "className": "text-center" },
 
                         {
                             "data": "Rating", "title": "Rating", "className": "text-center"

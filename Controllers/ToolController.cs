@@ -196,18 +196,27 @@ namespace PlusCP.Controllers
         {
             try
             {
-                // 🔹 Fetch username from session (e.g., logged-in user)
-                string createdBy = Session["Firstname"] != null ? Session["Firstname"].ToString() : "System";
+                string createdBy = Session["Firstname"] != null
+                    ? Session["Firstname"].ToString()
+                    : "System";
 
                 oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
                 if (string.IsNullOrEmpty(model.ToolName))
                     return Json(new { success = false, message = "Tool name required." });
 
+                if (model.SerialNumbers == null || model.SerialNumbers.Count == 0)
+                    return Json(new { success = false, message = "At least one serial number required." });
+
                 // 🔹 Insert Tool
                 string sqlTool = $@"
-INSERT INTO Tool.Tools (ToolName, TotalQty, CreatedBy, CreatedOn)
-VALUES ('{model.ToolName.Replace("'", "''")}', {model.SerialNumbers.Count}, '{createdBy}', GETDATE());
+INSERT INTO Tool.Tools (ToolName,  TotalQty, CreatedBy, CreatedOn)
+VALUES (
+    '{model.ToolName.Replace("'", "''")}', 
+    {model.SerialNumbers.Count}, 
+    '{createdBy}', 
+    GETDATE()
+);
 SELECT SCOPE_IDENTITY();";
 
                 int toolId = Convert.ToInt32(oDAL.GetObject(sqlTool));
@@ -216,8 +225,16 @@ SELECT SCOPE_IDENTITY();";
                 foreach (var serial in model.SerialNumbers)
                 {
                     string sqlSerial = $@"
-INSERT INTO Tool.ToolSerials (ToolId, SerialNumber, Status, CreatedBy, CreatedOn)
-VALUES ({toolId}, '{serial.Replace("'", "''")}', 'Available', '{createdBy}', GETDATE());";
+INSERT INTO Tool.ToolSerials (ToolId, SerialNumber, Status, TotalHours, CreatedBy, CreatedOn)
+VALUES (
+    {toolId}, 
+    '{serial.Replace("'", "''")}', 
+    'Available', 
+{model.Hours},
+    '{createdBy}', 
+    GETDATE()
+);";
+
                     oDAL.Execute(sqlSerial);
                 }
 
@@ -229,10 +246,12 @@ VALUES ({toolId}, '{serial.Replace("'", "''")}', 'Available', '{createdBy}', GET
             }
         }
 
+
         [HttpPost]
         public JsonResult UpdateTool(UpdateToolModel model)
         {
-            string userName = Session["Firstname"].ToString();
+            string userName = Session["Firstname"] != null ? Session["Firstname"].ToString() : "System";
+
             try
             {
                 oDAL = new cDAL(cDAL.ConnectionType.INIT);
@@ -240,30 +259,41 @@ VALUES ({toolId}, '{serial.Replace("'", "''")}', 'Available', '{createdBy}', GET
                 if (string.IsNullOrEmpty(model.ToolName))
                     return Json(new { success = false, message = "Tool name required." });
 
-                // 🔹 Step 1: Update tool name + Modified info
+                // 🔹 Step 1: Update only ToolName + Modified Info
                 string sqlToolUpdate = $@"
 UPDATE Tool.Tools 
-SET ToolName = '{model.ToolName.Replace("'", "''")}',
+SET 
+    ToolName = '{model.ToolName.Replace("'", "''")}',
     ModifiedBy = '{userName}',
     ModifiedOn = GETDATE()
 WHERE ToolId = {model.ToolId};";
 
                 oDAL.Execute(sqlToolUpdate);
 
-                // 🔹 Step 2: Delete old serials (optional - or update existing if you prefer)
+                // 🔹 Step 2: Delete old serials
                 string sqlDeleteSerials = $"DELETE FROM Tool.ToolSerials WHERE ToolId = {model.ToolId};";
                 oDAL.Execute(sqlDeleteSerials);
 
-                // 🔹 Step 3: Insert updated serials
+                // 🔹 Step 3: Insert updated serials WITH HOURS
                 foreach (var serial in model.SerialNumbers)
                 {
                     string sqlSerialInsert = $@"
-INSERT INTO Tool.ToolSerials (ToolId, SerialNumber, Status, CreatedBy, CreatedOn)
-VALUES ({model.ToolId}, '{serial.Replace("'", "''")}', 'Available', '{userName}', GETDATE());";
+INSERT INTO Tool.ToolSerials 
+(ToolId, SerialNumber, Status, TotalHours, ConsumedHours, CreatedBy, CreatedOn)
+VALUES (
+    {model.ToolId}, 
+    '{serial.Replace("'", "''")}', 
+    'Available',
+    {model.Hours},        -- ✅ TotalHours updated here
+    0,                    -- ConsumedHours reset to zero on update
+    '{userName}',
+    GETDATE()
+);";
+
                     oDAL.Execute(sqlSerialInsert);
                 }
 
-                // 🔹 Step 4: Update TotalQty based on new serial count
+                // 🔹 Step 4: Update Total Quantity
                 string sqlUpdateQty = $@"
 UPDATE Tool.Tools 
 SET TotalQty = (SELECT COUNT(*) FROM Tool.ToolSerials WHERE ToolId = {model.ToolId})
@@ -279,11 +309,14 @@ WHERE ToolId = {model.ToolId};";
             }
         }
 
+
+
         public class UpdateToolModel
         {
             public int ToolId { get; set; }
             public string ToolName { get; set; }
             public List<string> SerialNumbers { get; set; }
+            public int Hours { get; set; }
         }
 
 
@@ -294,11 +327,26 @@ WHERE ToolId = {model.ToolId};";
             {
                 oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
-                string sqlTool = $"SELECT ToolId, ToolName FROM Tool.Tools WHERE ToolId = {id}";
+                // Tool basic info
+                string sqlTool = $@"
+            SELECT ToolId, ToolName 
+            FROM Tool.Tools 
+            WHERE ToolId = {id}";
+
                 var dtTool = oDAL.GetData(sqlTool);
                 if (dtTool.Rows.Count == 0)
                     return Json(new { success = false, message = "Tool not found." }, JsonRequestBehavior.AllowGet);
 
+                // GET HOURS FROM ToolSerials
+                string sqlHours = $@"
+            SELECT TOP 1 TotalHours 
+            FROM Tool.ToolSerials 
+            WHERE ToolId = {id}
+            ORDER BY SerialId ASC";
+
+                int totalHours = Convert.ToInt32(oDAL.GetObject(sqlHours));
+
+                // Serial numbers
                 string sqlSerials = $"SELECT SerialNumber FROM Tool.ToolSerials WHERE ToolId = {id}";
                 var dtSerials = oDAL.GetData(sqlSerials);
                 var serials = dtSerials.AsEnumerable().Select(x => x["SerialNumber"].ToString()).ToList();
@@ -307,6 +355,7 @@ WHERE ToolId = {model.ToolId};";
                 {
                     ToolId = Convert.ToInt32(dtTool.Rows[0]["ToolId"]),
                     ToolName = dtTool.Rows[0]["ToolName"].ToString(),
+                    TotalHours = totalHours,   // 🔥 Correct (coming from ToolSerials)
                     SerialNumbers = serials
                 };
 
@@ -317,6 +366,7 @@ WHERE ToolId = {model.ToolId};";
                 return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
+
 
         public class EditToolModel
         {
@@ -332,6 +382,7 @@ WHERE ToolId = {model.ToolId};";
         {
             public string ToolName { get; set; }
             public List<string> SerialNumbers { get; set; }
+            public int Hours { get; set; }
         }
 
 
@@ -727,7 +778,8 @@ WHERE PN.Status = 'Pending' AND PN.PartId NOT IN (
                     // Serial update
                     string sqlSerial = $@"
                 UPDATE TOOL.ToolSerials
-                SET Status = 'Available'
+                SET Status = 'Available',
+                ConsumedHours = 0
                 WHERE SerialNumber = '{serial}' AND ToolId = {toolId}";
                     oDAL.Execute(sqlSerial);
 

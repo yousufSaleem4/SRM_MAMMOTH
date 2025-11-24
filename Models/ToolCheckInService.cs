@@ -8,9 +8,33 @@ namespace PlusCP.Models
 {
     public static class ToolCheckInService
     {
+
+        public class SerialCheckinItem
+        {
+            public int SerialId { get; set; }
+            public string SerialNo { get; set; }
+            public bool IsRepair { get; set; }
+            public string RepairAction { get; set; }
+            public decimal? Hours { get; set; }
+            public int? Rating { get; set; }
+        }
+
+        public class CheckInModel
+        {
+            public int ToolId { get; set; }
+            public string ToolName { get; set; }
+            public List<SerialCheckinItem> SerialItems { get; set; }
+            public List<int> PartIds { get; set; }
+            public List<string> PartNo { get; set; }
+            public string Notes { get; set; }
+            public decimal? Hours { get; set; }
+            public int? Rating { get; set; }
+        }
+
         private static cDAL oDAL;
 
         public static object ProcessBatchCheckIn(List<CheckInModel> checkins)
+
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
@@ -39,28 +63,35 @@ namespace PlusCP.Models
         }
 
         private static object ProcessSingleToolCheckInWithRepair(
-            int toolId,
-            string toolName,
-            List<SerialCheckinItem> serialItems,
-            List<int> partIds,
-            List<string> partNo,
-            string notes,
-            decimal? hours,
-            int? rating
-        )
+       int toolId,
+       string toolName,
+       List<SerialCheckinItem> serialItems,
+       List<int> partIds,
+       List<string> partNo,
+       string notes,
+       decimal? hours,
+       int? rating
+   )
         {
+            oDAL = new cDAL(cDAL.ConnectionType.INIT);
+
             var checkedInSerials = new List<int>();
             var checkedInSerialNos = new List<string>();
             var checkedInParts = new List<int>();
 
-            // yahaan store karenge last user (transaction me use karne ke liye)
             int lastUserId = 0;
             string lastUserName = "Unknown";
+
+            // ===========================
+            // 1 — GET TOOL TOTAL HOURS
+            // ===========================
+            string sqlTool = $@"SELECT ISNULL(TotalHours,0) FROM Tool.Tools WHERE ToolId = {toolId}";
+            int totalHours = Convert.ToInt32(oDAL.GetObject(sqlTool));
 
             var serials = serialItems ?? new List<SerialCheckinItem>();
 
             // ===========================
-            //  SERIAL CHECK-IN
+            // 2 — SERIAL CHECK-IN
             // ===========================
             foreach (var s in serials)
             {
@@ -80,7 +111,6 @@ WHERE a.SerialId = {s.SerialId} AND a.IsReturned = 0";
                 int allocUserId = Convert.ToInt32(dtAlloc.Rows[0]["UserId"]);
                 string allocUserName = dtAlloc.Rows[0]["UserName"]?.ToString() ?? "Unknown";
 
-                // store for transaction log
                 lastUserId = allocUserId;
                 lastUserName = allocUserName;
 
@@ -95,17 +125,71 @@ SET ReturnDate = GETDATE(),
     ConditionOnReturn = '{(notes ?? "").Replace("'", "''")}'
 WHERE AllocationId = '{allocationId}'");
 
-                // repair selected?
-                if (s.IsRepair || !string.IsNullOrEmpty(s.RepairAction))
+                // ===========================
+                // 3 — GET EXISTING CONSUMED HOURS
+                // ===========================
+                string sqlConsumed = $@"SELECT ISNULL(ConsumedHours,0) FROM Tool.ToolSerials WHERE SerialId = {s.SerialId}";
+                int consumedSoFar = Convert.ToInt32(oDAL.GetObject(sqlConsumed));
+
+                int currentHours = Convert.ToInt32(s.Hours ?? 0);
+                int newConsumed = consumedSoFar + currentHours;
+
+                // update consumed hours
+                oDAL.Execute($@"
+UPDATE Tool.ToolSerials
+SET ConsumedHours = {newConsumed}
+WHERE SerialId = {s.SerialId}");
+
+                // ===========================
+                // 4 — AUTO / MANUAL REPAIR CHECK
+                // ===========================
+                bool autoRepair = newConsumed >= totalHours;     // hours exceed?
+                bool manualRepair = !string.IsNullOrEmpty(s.RepairAction); // user selected something
+
+                // If hours exceed → ALWAYS repair entry create hogi
+                // If manual action selected → ALSO repair entry create hogi
+                bool finalRepair = autoRepair || manualRepair;
+
+                // default
+                string repairStatus = "Repair";
+
+
+                // ------ MANUAL REPAIR ACTION ------
+                if (manualRepair)
                 {
-                    string repairStatus = "Repair";
-                    string rs = s.RepairAction?.ToLower() ?? "";
+                    string rs = s.RepairAction.ToLower();
 
-                    if (rs == "repair") repairStatus = "Repair";
-                    else if (rs == "broken") repairStatus = "Broken";
-                    else if (rs == "calibration" || rs == "callibration") repairStatus = "Calibration";
+                    if (rs == "repair")
+                        repairStatus = "Repair";
 
-                    // INSERT into Repair table
+                    else if (rs == "broken")
+                        repairStatus = "Broken";
+
+                    else if (rs == "calibration" || rs == "Calibration")
+                        repairStatus = "Calibration";
+                }
+
+
+                // ------ AUTO CALIBRATION (Hours exceed) ------
+                else if (autoRepair)
+                {
+                    repairStatus = "Calibration";  // auto calibration
+                }
+
+
+                // ------ NOTHING SELECTED + HOURS NOT EXCEED ------
+                else
+                {
+                    finalRepair = false;   // no repair entry
+                }
+
+
+
+                // ===========================
+                // 5 — INSERT REPAIR RECORD  (NOW ALWAYS FOR AUTO CALIBRATION)
+                // ===========================
+                if (finalRepair)
+                {
                     string sqlRepair = $@"
 INSERT INTO Tool.Repair
 (RepairId, ToolId, SerialId, SerialNumber, ReportedByUserId, ReportedByName, ReportedDate, Hours, Rating, Status)
@@ -123,20 +207,24 @@ VALUES (
 )";
                     oDAL.Execute(sqlRepair);
 
-                    // maintenance
-                    oDAL.Execute($"UPDATE Tool.ToolSerials SET Status = 'Maintenance' WHERE SerialId = {s.SerialId}");
+                    // ToolSerial status update — SAME AS REPAIR STATUS
+                    oDAL.Execute($@"UPDATE Tool.ToolSerials 
+                    SET Status = '{repairStatus}' 
+                    WHERE SerialId = {s.SerialId}");
                 }
                 else
                 {
-                    // normal free
+                    // Normal available
                     oDAL.Execute($"UPDATE Tool.ToolSerials SET Status = 'Available' WHERE SerialId = {s.SerialId}");
                 }
             }
+        
+    
 
-            // ===========================
-            //  PART CHECK-IN
-            // ===========================
-            if (partIds != null && partIds.Any())
+                // ===========================
+                // 6 — PART CHECK-IN
+                // ===========================
+                if (partIds != null && partIds.Any())
             {
                 foreach (var partId in partIds)
                 {
@@ -157,7 +245,7 @@ UPDATE Tool.PartAllocation
 SET ReturnDate = GETDATE(), IsReturned = 1
 WHERE AllocationId = '{allocationId}'");
 
-                    // mark part completed
+                    // complete part
                     oDAL.Execute($@"
 UPDATE Tool.PartNo
 SET Status = 'Completed',
@@ -168,7 +256,7 @@ WHERE PartId = {partId}");
             }
 
             // ===========================
-            //  TRANSACTION LOG
+            // 7 — TRANSACTION LOG
             // ===========================
             if (checkedInSerials.Any() || checkedInParts.Any())
             {
@@ -204,29 +292,5 @@ VALUES (
             };
         }
 
-        // ===========================
-        // MODELS
-        // ===========================
-        public class SerialCheckinItem
-        {
-            public int SerialId { get; set; }
-            public string SerialNo { get; set; }
-            public bool IsRepair { get; set; }
-            public string RepairAction { get; set; }
-            public decimal? Hours { get; set; }
-            public int? Rating { get; set; }
-        }
-
-        public class CheckInModel
-        {
-            public int ToolId { get; set; }
-            public string ToolName { get; set; }
-            public List<SerialCheckinItem> SerialItems { get; set; }
-            public List<int> PartIds { get; set; }
-            public List<string> PartNo { get; set; }
-            public string Notes { get; set; }
-            public decimal? Hours { get; set; }
-            public int? Rating { get; set; }
-        }
     }
 }
