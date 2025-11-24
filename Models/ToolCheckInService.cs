@@ -190,6 +190,7 @@ WHERE SerialId = {s.SerialId}");
                 // ===========================
                 if (finalRepair)
                 {
+                    // REPAIR TABLE INSERT
                     string sqlRepair = $@"
 INSERT INTO Tool.Repair
 (RepairId, ToolId, SerialId, SerialNumber, ReportedByUserId, ReportedByName, ReportedDate, Hours, Rating, Status)
@@ -207,40 +208,37 @@ VALUES (
 )";
                     oDAL.Execute(sqlRepair);
 
-                    // ToolSerial status update — SAME AS REPAIR STATUS
+                    // Update Serial Status
                     oDAL.Execute($@"UPDATE Tool.ToolSerials 
                     SET Status = '{repairStatus}' 
                     WHERE SerialId = {s.SerialId}");
 
-                    // ===============================
-                    // 8 — Repair / Broken / Calibration TRANSACTION LOG
-                    // ===============================
-                    string sqlRepairTrans = $@"
-INSERT INTO Tool.ToolTransactions
-(
-    ToolId, ToolName, ToolSerialId, ToolSerialNumber,
-    TranType, TranQty, UserId, Username, 
-    TranDate, Notes, Hours, Rating
-)
-VALUES
-(
-    {toolId},
-    '{toolName.Replace("'", "''")}',
-    '{s.SerialId}',
-    '{s.SerialNo.Replace("'", "''")}',
-    '{repairStatus}',        -- IN/OUT ki jagah yahan Repair/Broken/Calibration ayega
-    1,
-    {allocUserId},
-    '{allocUserName.Replace("'", "''")}',
-    GETDATE(),
-    '{(notes ?? "").Replace("'", "''")}',
-    {(s.Hours ?? 0)},
-    {(s.Rating ?? 0)}
-)";
+                    // ⭐ Only 1 transaction for Repair/Broken/Calibration
+                    string sqlRepairTrans =
+  "INSERT INTO Tool.ToolTransactions " +
+  "(ToolId, ToolName, ToolSerialId, ToolSerialNumber, TranType, TranQty, UserId, Username, TranDate, Notes, Hours, Rating) " +
+  "VALUES (" +
+  toolId + "," +
+  "'" + toolName.Replace("'", "''") + "'," +
+  "'" + s.SerialId + "'," +
+  "'" + s.SerialNo.Replace("'", "''") + "'," +
+  "'" + repairStatus + "'," +
+  "1," +
+  allocUserId + "," +
+  "'" + allocUserName.Replace("'", "''") + "'," +
+  "GETDATE()," +
+  "'" + (notes ?? "").Replace("'", "''") + "'," +
+  (s.Hours ?? 0) + "," +
+  (s.Rating ?? 0) +
+  ")";
+
                     oDAL.Execute(sqlRepairTrans);
-
-
                 }
+
+
+
+
+
                 else
                 {
                     // Normal available
