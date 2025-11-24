@@ -445,29 +445,37 @@ WHERE ToolId = {model.ToolId};";
                         if (status != "Available")
                             continue;
 
+                        // Get SerialNumber
+                        string sqlGetSerial = $"SELECT SerialNumber FROM Tool.ToolSerials WHERE SerialId = {serialId}";
+                        string serialNumber = oDAL.GetObject(sqlGetSerial)?.ToString() ?? "";
+
                         // Allocation
                         string sqlAlloc = $@"
 INSERT INTO Tool.ToolAllocation 
 (AllocationId, SerialId, ToolId, UserId, CheckoutDate, ExpectedReturnDate, IsReturned, ConditionOnReturn)
 VALUES (NEWID(), {serialId}, {toolId}, {userId}, GETDATE(),
 {(string.IsNullOrEmpty(expectedReturn) ? "NULL" : $"'{expectedReturn}'")}, 0, '{notes.Replace("'", "''")}')";
+
                         oDAL.Execute(sqlAlloc);
 
                         // Update status
                         oDAL.Execute($"UPDATE Tool.ToolSerials SET Status = 'CheckedOut' WHERE SerialId = {serialId}");
 
-                        // 🟩 SERIAL TRANSACTION LOG - 1 row per serial
+                        // SERIAL TRANSACTION LOG
                         string sqlSerTrans = $@"
 INSERT INTO Tool.ToolTransactions
-(ToolId, ToolName, ToolSerialId, TranType, TranQty, ExpectedReturnDate, UserId, Username, TranDate, Notes)
+(ToolId, ToolName, ToolSerialId, ToolSerialNumber, TranType, TranQty, ExpectedReturnDate, UserId, Username, TranDate, Notes)
 VALUES
 ({toolId}, '{toolName.Replace("'", "''")}', 
- '{serialId}', 
+ '{serialId}',
+ '{serialNumber.Replace("'", "''")}',
  'OUT', 1,
  {(string.IsNullOrEmpty(expectedReturn) ? "NULL" : $"'{expectedReturn}'")},
- '{userId}', '{userName.Replace("'", "''")}', GETDATE(), '{notes.Replace("'", "''")}')";
+ '{userId}', '{userName.Replace("'", "''")}', GETDATE(), '{notes.Replace("'", "''")}'
+)";
                         oDAL.Execute(sqlSerTrans);
                     }
+
 
                     // ========================================================
                     // 🔹 PART CHECKOUT

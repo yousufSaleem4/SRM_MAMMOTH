@@ -444,14 +444,49 @@
 
                         // Available Qty
                         {
-                            "data": "ReportedDate", "title": "Updated Date", "className": "text-center"
+                            "data": "ReportedDate", "title": "Updated Date", "className": "text-center",
+                            "render": function (data) {
+                                if (!data) return "";
+
+                                // Already formatted? (backend)
+                                if (data.includes(".")) {
+                                    // remove seconds if present
+                                    let parts = data.split(":");
+                                    return parts.length >= 2
+                                        ? parts[0] + ":" + parts[1]    // keep only HH:mm
+                                        : data;
+                                }
+
+                                let dateObj = new Date(data);
+
+                                let yyyy = dateObj.getFullYear();
+                                let MM = String(dateObj.getMonth() + 1).padStart(2, '0');
+                                let dd = String(dateObj.getDate()).padStart(2, '0');
+                                let hh = String(dateObj.getHours()).padStart(2, '0');
+                                let mm = String(dateObj.getMinutes()).padStart(2, '0');
+
+                                return `${yyyy}.${MM}.${dd} ${hh}:${mm}`;
+                            }
                         },
 
                         { "data": "Hours", "title": "Consumed Hours", "className": "text-center" },
 
                         {
-                            "data": "Rating", "title": "Rating", "className": "text-center"
+                            "data": "Rating",
+                            "title": "Rating",
+                            "className": "text-center",
+                            "render": function (data) {
+                                let rating = parseInt(data || 0);
+                                let stars = "";
+
+                                for (let i = 0; i < rating; i++) {
+                                    stars += "⭐";
+                                }
+
+                                return stars || "-";
+                            }
                         }
+
 
                         
 

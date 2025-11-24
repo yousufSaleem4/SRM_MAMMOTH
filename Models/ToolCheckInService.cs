@@ -211,6 +211,35 @@ VALUES (
                     oDAL.Execute($@"UPDATE Tool.ToolSerials 
                     SET Status = '{repairStatus}' 
                     WHERE SerialId = {s.SerialId}");
+
+                    // ===============================
+                    // 8 — Repair / Broken / Calibration TRANSACTION LOG
+                    // ===============================
+                    string sqlRepairTrans = $@"
+INSERT INTO Tool.ToolTransactions
+(
+    ToolId, ToolName, ToolSerialId, ToolSerialNumber,
+    TranType, TranQty, UserId, Username, 
+    TranDate, Notes, Hours, Rating
+)
+VALUES
+(
+    {toolId},
+    '{toolName.Replace("'", "''")}',
+    '{s.SerialId}',
+    '{s.SerialNo.Replace("'", "''")}',
+    '{repairStatus}',        -- IN/OUT ki jagah yahan Repair/Broken/Calibration ayega
+    1,
+    {allocUserId},
+    '{allocUserName.Replace("'", "''")}',
+    GETDATE(),
+    '{(notes ?? "").Replace("'", "''")}',
+    {(s.Hours ?? 0)},
+    {(s.Rating ?? 0)}
+)";
+                    oDAL.Execute(sqlRepairTrans);
+
+
                 }
                 else
                 {

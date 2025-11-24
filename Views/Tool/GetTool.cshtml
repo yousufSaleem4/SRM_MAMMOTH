@@ -823,11 +823,11 @@
 
                 <!-- Filters -->
                 <div class="row mb-3 filter-row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <input type="text" id="txtTransSerial" class="form-control" placeholder="Filter by Serial...">
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-1">
                         <select id="ddlTransType" class="form-control">
                             <option value="">All</option>
                             <option value="IN">IN</option>
@@ -1560,7 +1560,19 @@ $("#btnCheckin").click(function (e) {
                         { "data": "Username", "title": "Username", "className": "text-center" },
                         { "data": "Notes", "title": "Notes", "className": "text-center" },
                         { "data": "Hours", "title": "Hours", "className": "text-center" },
-                        { "data": "Rating", "title": "Rating", "className": "text-center" }
+                        {
+                            "data": "Rating", "title": "Rating", "className": "text-center",
+                            "render": function (data) {
+                                let rating = parseInt(data || 0);
+                                let stars = "";
+
+                                for (let i = 0; i < rating; i++) {
+                                    stars += "⭐";
+                                }
+
+                                return stars || "-";
+                            }
+                        }
                     ];
 
                     if ($.fn.DataTable.isDataTable('#transactionGrid')) {
