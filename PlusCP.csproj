@@ -14,7 +14,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PlusCP</RootNamespace>
     <AssemblyName>PlusCP</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
@@ -211,6 +211,7 @@
     <Compile Include="Classess\cAuth.cs" />
     <Compile Include="Classess\ExternalDAL.cs" />
     <Compile Include="Classess\NewPOCommon.cs" />
+    <Compile Include="Controllers\BigTVToolController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\LateChartController.cs" />
@@ -277,6 +278,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\BigTVTool.cs" />
     <Compile Include="Models\ChangePassword.cs" />
     <Compile Include="Models\DashboardModel.cs" />
     <Compile Include="Models\Home.cs" />
@@ -291,6 +293,7 @@
     <Compile Include="Models\ToolCheckInService.cs" />
     <Compile Include="Models\UserRoleX.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="System\Web\Http.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assemblies\Antlr3.Runtime.dll" />
@@ -498,6 +501,10 @@
     <Content Include="Views\Tool\Index.cshtml" />
     <Content Include="Views\Dashboard\ToolCribIndex.cshtml" />
     <Content Include="Views\Tool\GetTool.cshtml" />
+    <Content Include="Views\BigTVTool\Index.cshtml" />
+    <Content Include="Views\Shared\_LayoutDashboard.cshtml" />
+    <Content Include="Views\Tool\GetToolCreation.cshtml" />
+    <Content Include="Views\Tool\GetToolRepair.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />

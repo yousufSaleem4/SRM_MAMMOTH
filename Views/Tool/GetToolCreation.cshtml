@@ -736,21 +736,32 @@
 
 <script>
     // 🔹 Add new serial input row dynamically
-    $(document).on('click', '.btn-add-serial', function () {
+  
+
+    // Bind once
+    // Prevent double/multiple event binding
+    $(document).off("click", ".btn-add-serial");
+
+    // Bind once
+    $(document).on("click", ".btn-add-serial", function () {
         let newRow = `
-    <div class="input-group mb-2 serial-row">
-        <input type="text" class="form-control serial-input" placeholder="Enter serial number" />
-        <div class="input-group-append">
-            <button type="button" class="btn btn-danger btn-remove-serial"><i class="fa fa-minus"></i></button>
-        </div>
-    </div>`;
+        <div class="input-group mb-2 serial-row">
+            <input type="text" class="form-control serial-input" placeholder="Enter serial number" />
+            <div class="input-group-append">
+                <button type="button" class="btn btn-danger btn-remove-serial"><i class="fa fa-minus"></i></button>
+            </div>
+        </div>`;
         $("#serialContainer").append(newRow);
     });
 
+
+
     // 🔹 Remove serial row
-    $(document).on('click', '.btn-remove-serial', function () {
-        $(this).closest('.serial-row').remove();
+    $(document).off("click", ".btn-remove-serial");
+    $(document).on("click", ".btn-remove-serial", function () {
+        $(this).closest('.serial-row, .serial-edit-row').remove();
     });
+
 
     // 🔹 Save Tool
     $("#btnSaveTool").click(function () {
