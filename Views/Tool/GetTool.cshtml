@@ -838,7 +838,7 @@
 
                 <div class="col-md-12 table-container" style="height:420px; overflow-y:auto;">
                     <div class="table-wrapper" style="max-height: 70vh; overflow-y: hidden;">
-                        <table id="transactionGrid" class="table table-bordered table-striped text-sm table-hover" style="width:100%">
+                        <table id="transactionGrid" class="table table-bordered table-striped text-sm table-hover" >
                             <thead class="sorted-asc">
                                 <tr>
                                     <th></th>
@@ -1003,7 +1003,7 @@ function loadSerialDropdown(toolId) {
         .done(function (data) {
             $dropdown.empty();
             if (data && data.length) {
-                data.forEach(item => $dropdown.append(`<option value="${item.SerialId}">${item.SerialNumber}</option>`));
+                data.forEach(item => $dropdown.append(`<option value="${item.SerialId}">${item.SerialNumber.toString()}</option>`));
             } else {
                 $dropdown.append('<option disabled>No serials available</option>');
             }
@@ -1059,9 +1059,9 @@ $(document).on("click", "#btnCheckout", function (e) {debugger
 
     let checkoutItems = [];
 
-    let userId = Number($("#loadUsersDropdown").val());
+    let userId = $("#loadUsersDropdown").val();            // already present
+    let userName = $("#loadUsersDropdown option:selected").text();  // ⭐ NEW LINE
 
-    let userName = $("#loadUsersDropdown option:selected").text();
 
 
 
@@ -1228,7 +1228,7 @@ function populateCheckinGrid(toolIds, toolNames) {
             let partNo = partNos[index] || "<span class='text-muted'>N/A</span>";
 
             let row = `
-                <tr class="serial-row" data-toolid="${toolId}" data-serialid="${item.SerialId}" data-serialno="${item.SerialNumber}">
+                <tr class="serial-row" data-toolid="${toolId}"   data-toolname="${toolName}"  data-serialid="${item.SerialId}" data-serialno="${item.SerialNumber}">
                     ${index === 0 ? `<td rowspan="${uniqueSerials.length}" style="vertical-align:middle; font-weight:600;">${toolName}</td>` : ""}
 
     <td>${item.AllocatedUser || "<span class='text-muted'>N/A</span>"}</td>
@@ -1312,14 +1312,6 @@ function loadAllocatedParts(toolId) {
 $("#btnCheckin").click(function (e) {
     e.preventDefault();
 
-    //let email = $("#checkInEmail").val();
-    //let password = $("#checkInPassword").val();
-
-    //if (!email || !password) {
-    //    MsgToast("Warning!", "Please enter your email and password.", "warning");
-    //    return;
-    //}
-
     let checkinList = [];
 
     $("#toolCheckinGridBody tr.serial-row").each(function () {
@@ -1327,26 +1319,17 @@ $("#btnCheckin").click(function (e) {
         let row = $(this);
         let toolId = row.data("toolid");
 
-        // ✅ ToolName detect correctly (first rowspan OR above rows)
-        let toolName = row.find("td[rowspan]").text().trim();
-        if (!toolName) {
-            toolName = row.prevAll("tr").find("td[rowspan]").first().text().trim();
-        }
+        // 🔹 Correct toolName fetch
+        let toolName = row.data("toolname");
 
-        // ✅ Hours
+
         let hours = row.find(".hoursField").val() || 0;
-
-        // ✅ Rating
         let rating = parseInt(row.find(".star-rating").attr("data-value")) || 0;
-
-        // ✅ Notes
         let notes = row.find(".noteField").val() || "";
 
-        // ✅ Serial details
         let isChecked = row.find(".serialCheckinCheckbox").is(":checked");
         let repairAction = row.find(".repairAction").val() || "";
         let isRepair = repairAction !== "";
-
 
         let serialItems = [];
         if (isChecked) {
@@ -1373,14 +1356,16 @@ $("#btnCheckin").click(function (e) {
 
     });
 
-    // ✅ Send Ajax
+    // ⭐⭐ YAHAN ADD KARO ⭐⭐
+    console.log("CHECK-IN PAYLOAD (FINAL):", JSON.stringify(checkinList, null, 4));
+
+
+    // SEND AJAX
     $.ajax({
         url: '@Url.Action("CheckIn", "Tool")',
         type: 'POST',
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({
-            //email: email,
-            //password: password,
             checkins: checkinList
         }),
         success: function (response) {
@@ -1397,6 +1382,7 @@ $("#btnCheckin").click(function (e) {
         }
     });
 });
+
 
 
     // ✅ Modal band ho — sab saaf ho jaye
@@ -1531,12 +1517,13 @@ $("#btnCheckin").click(function (e) {
     });
 
 
-
-    function TransactionDtl(toolId) {
+    function TransactionDtl(toolId) {debugger
 
         $('#TransactionModal').modal('show');
 
-        // Wait until modal is fully visible
+        // Remove duplicate event handler before adding new
+        $('#TransactionModal').off('shown.bs.modal');
+
         $('#TransactionModal').on('shown.bs.modal', function () {
 
             $.ajax({
@@ -1550,68 +1537,52 @@ $("#btnCheckin").click(function (e) {
                     var lst = data.lstToolTransaction || [];
 
                     var column = [
-                        { "data": "ToolName", "title": "Tool Name", "className": "text-center", "width": "100px" },
-                        { "data": "ToolSerialNumber", "title": "Tool Serial No.", "className": "text-center" },
-                        { "data": "PartNo", "title": "Part No.", "className": "text-center", "width": "70px" },
-                        { "data": "TranType", "title": "Tran. Type", "className": "text-center", "width": "60px" },
-                        { "data": "TranQty", "title": "Tran. Qty", "className": "text-center", "width": "60px" },
-                        { "data": "TranDate", "title": "Tran. Date", "className": "text-center", "width": "120px" },
-                        { "data": "ExpectedReturnDate", "title": "Expected Return Date", "className": "text-center", "width": "140px"},
-                        { "data": "Username", "title": "Username", "className": "text-center", "width": "130px" },
-                        { "data": "Notes", "title": "Notes", "className": "text-center", "width": "100px" },
-                        { "data": "Hours", "title": "Hours", "className": "text-center", "width": "100px" },
+                        { data: "ToolName", title: "Tool Name", className: "text-center" },
+                        { data: "ToolSerialNumber", title: "Tool Serial No.", className: "text-center" },
+                        { data: "PartNo", title: "Part No.", className: "text-center" },
+                        { data: "TranType", title: "Tran. Type", className: "text-center" },
+                        { data: "TranQty", title: "Tran Qty", className: "text-center" },
+                        { data: "TranDate", title: "Tran. Date", className: "text-center" },
+                        { data: "ExpectedReturnDate", title: "Expected Return Date", className: "text-center" },
+                        { data: "Username", title: "Username", className: "text-center" },
+                        { data: "Notes", title: "Notes", className: "text-center" },
+                        { data: "Hours", title: "Hours", className: "text-center" },
                         {
-                            "data": "Rating", "title": "Rating", "className": "text-center", "width": "100px",
-                            "render": function (data) {
+                            data: "Rating", title: "Rating", className: "text-center",
+                            render: function (data) {
                                 let rating = parseInt(data || 0);
-                                let stars = "";
-
-                                for (let i = 0; i < rating; i++) {
-                                    stars += "⭐";
-                                }
-
-                                return stars || "-";
+                                return rating ? "⭐".repeat(rating) : "-";
                             }
                         }
                     ];
 
+                    // Destroy old grid each time
                     if ($.fn.DataTable.isDataTable('#transactionGrid')) {
-                        $('#transactionGrid').DataTable().clear();
-                        $('#transactionGrid').DataTable().destroy();
+                        $('#transactionGrid').DataTable().clear().destroy();
                     }
 
+                    // Create new grid
                     $('#transactionGrid').DataTable({
                         data: lst,
                         columns: column,
                         paging: false,
                         searching: true,
-                        ordering: true,
-                        scrollY: "50vh",     // ← Must have for sticky header
+                        scrollY: "50vh",
                         scrollCollapse: true,
                         scrollX: true,
                         autoWidth: false
                     });
 
-
-
-                    // Hide built-in search box
                     $('#transactionGrid_filter').hide();
-
-                    // FILTER: Serial
+                    // Filters
                     $("#txtTransSerial").off("keyup").on("keyup", function () {
-                        $('#transactionGrid').DataTable()
-                            .column(1)
-                            .search(this.value)
-                            .draw();
+                        $('#transactionGrid').DataTable().column(1).search(this.value).draw();
                     });
 
-                    // FILTER: Tran Type
                     $("#ddlTransType").off("change").on("change", function () {
-                        $('#transactionGrid').DataTable()
-                            .column(3)
-                            .search(this.value)
-                            .draw();
+                        $('#transactionGrid').DataTable().column(3).search(this.value).draw();
                     });
+
                 }
             });
 

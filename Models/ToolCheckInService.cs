@@ -63,15 +63,15 @@ namespace PlusCP.Models
         }
 
         private static object ProcessSingleToolCheckInWithRepair(
-       int toolId,
-       string toolName,
-       List<SerialCheckinItem> serialItems,
-       List<int> partIds,
-       List<string> partNo,
-       string notes,
-       decimal? hours,
-       int? rating
-   )
+      int toolId,
+      string toolName,
+      List<SerialCheckinItem> serialItems,
+      List<int> partIds,
+      List<string> partNo,
+      string notes,
+      decimal? hours,
+      int? rating
+  )
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
@@ -82,27 +82,25 @@ namespace PlusCP.Models
             int lastUserId = 0;
             string lastUserName = "Unknown";
 
-            // ===========================
             // 1 — GET TOOL TOTAL HOURS
-            // ===========================
-            string sqlTool = $@"SELECT ISNULL(TotalHours,0) FROM Tool.Tools WHERE ToolId = {toolId}";
+            string sqlTool = @"SELECT ISNULL(TotalHours,0) FROM Tool.Tools WHERE ToolId = " + toolId;
             int totalHours = Convert.ToInt32(oDAL.GetObject(sqlTool));
 
             var serials = serialItems ?? new List<SerialCheckinItem>();
 
-            // ===========================
-            // 2 — SERIAL CHECK-IN
-            // ===========================
+            // =====================================
+            // 2 — SERIAL CHECK-IN (one by one)
+            // =====================================
             foreach (var s in serials)
             {
-                string sqlAlloc = $@"
+                string sqlAlloc = @"
 SELECT TOP 1 
     a.AllocationId,
     a.UserId,
     sf.Name AS UserName
 FROM Tool.ToolAllocation a
 LEFT JOIN TOOL.SysUserFile sf ON sf.ID = a.UserId
-WHERE a.SerialId = {s.SerialId} AND a.IsReturned = 0";
+WHERE a.SerialId = " + s.SerialId + " AND a.IsReturned = 0";
 
                 var dtAlloc = oDAL.GetData(sqlAlloc);
                 if (dtAlloc.Rows.Count == 0) continue;
@@ -117,148 +115,146 @@ WHERE a.SerialId = {s.SerialId} AND a.IsReturned = 0";
                 checkedInSerials.Add(s.SerialId);
                 checkedInSerialNos.Add(s.SerialNo);
 
-                // close allocation
-                oDAL.Execute($@"
+                // CLOSE ALLOCATION
+                oDAL.Execute(@"
 UPDATE Tool.ToolAllocation
-SET ReturnDate = GETDATE(),
-    IsReturned = 1,
-    ConditionOnReturn = '{(notes ?? "").Replace("'", "''")}'
-WHERE AllocationId = '{allocationId}'");
+SET ReturnDate = GETDATE(), IsReturned = 1,
+    ConditionOnReturn = '" + (notes ?? "").Replace("'", "''") + @"'
+WHERE AllocationId = '" + allocationId + "'");
 
-                // ===========================
-                // 3 — GET EXISTING CONSUMED HOURS
-                // ===========================
-                string sqlConsumed = $@"SELECT ISNULL(ConsumedHours,0) FROM Tool.ToolSerials WHERE SerialId = {s.SerialId}";
+                // =============================================
+                // Get previous consumed hours
+                // =============================================
+                string sqlConsumed = @"SELECT ISNULL(ConsumedHours,0) FROM Tool.ToolSerials WHERE SerialId = " + s.SerialId;
                 int consumedSoFar = Convert.ToInt32(oDAL.GetObject(sqlConsumed));
 
                 int currentHours = Convert.ToInt32(s.Hours ?? 0);
                 int newConsumed = consumedSoFar + currentHours;
 
-                // update consumed hours
-                oDAL.Execute($@"
-UPDATE Tool.ToolSerials
-SET ConsumedHours = {newConsumed}
-WHERE SerialId = {s.SerialId}");
+                // Update consumed hours
+                oDAL.Execute(
+                    @"UPDATE Tool.ToolSerials SET ConsumedHours = " + newConsumed +
+                    " WHERE SerialId = " + s.SerialId);
 
-                // ===========================
-                // 4 — AUTO / MANUAL REPAIR CHECK
-                // ===========================
-                bool autoRepair = newConsumed >= totalHours;     // hours exceed?
-                bool manualRepair = !string.IsNullOrEmpty(s.RepairAction); // user selected something
+                // =============================================
+                // 4 — FINAL REPAIR DECISION
+                // =============================================
+                bool manualRepair = !string.IsNullOrEmpty(s.RepairAction);
+                bool hoursExceeded = newConsumed >= totalHours;
 
-                // If hours exceed → ALWAYS repair entry create hogi
-                // If manual action selected → ALSO repair entry create hogi
-                bool finalRepair = autoRepair || manualRepair;
+                bool finalRepair = false;
+                string repairStatus = "Available";
 
-                // default
-                string repairStatus = "Repair";
-
-
-                // ------ MANUAL REPAIR ACTION ------
+                // Manual selection
                 if (manualRepair)
                 {
                     string rs = s.RepairAction.ToLower();
 
-                    if (rs == "repair")
-                        repairStatus = "Repair";
+                    if (rs == "repair") repairStatus = "Repair";
+                    else if (rs == "broken") repairStatus = "Broken";
+                    else if (rs == "calibration") repairStatus = "Calibration";
 
-                    else if (rs == "broken")
-                        repairStatus = "Broken";
-
-                    else if (rs == "calibration" || rs == "Calibration")
-                        repairStatus = "Calibration";
+                    finalRepair = true;
                 }
-
-
-                // ------ AUTO CALIBRATION (Hours exceed) ------
-                else if (autoRepair)
+                // Auto calibration ONLY when hours exceed
+                else if (hoursExceeded)
                 {
-                    repairStatus = "Calibration";  // auto calibration
+                    repairStatus = "Calibration";
+                    finalRepair = true;
                 }
-
-
-                // ------ NOTHING SELECTED + HOURS NOT EXCEED ------
+                // Nothing selected → no repair
                 else
                 {
-                    finalRepair = false;   // no repair entry
+                    finalRepair = false;
+                    repairStatus = "Available";
                 }
 
+                // =============================================
+                // 5 — ALWAYS INSERT IN TRANSACTION FIRST
+                // =============================================
+                string sqlInTrans =
+                    "INSERT INTO Tool.ToolTransactions " +
+                    "(ToolId, ToolName, ToolSerialId, ToolSerialNumber, TranType, TranQty, UserId, Username, TranDate, Notes, Hours, Rating) " +
+                    "VALUES (" +
+                    toolId + "," +
+                    "'" + toolName.Replace("'", "''") + "'," +
+                    "'" + s.SerialId + "'," +
+                    "'" + s.SerialNo.Replace("'", "''") + "'," +
+                    "'IN'," +
+                    "1," +
+                    allocUserId + "," +
+                    "'" + allocUserName.Replace("'", "''") + "'," +
+                    "GETDATE()," +
+                    "'" + (notes ?? "").Replace("'", "''") + "'," +
+                    (s.Hours ?? 0) + "," +
+                    (s.Rating ?? 0) +
+                    ")";
+                oDAL.Execute(sqlInTrans);
 
-
-                // ===========================
-                // 5 — INSERT REPAIR RECORD  (NOW ALWAYS FOR AUTO CALIBRATION)
-                // ===========================
+                // =============================================
+                // 6 — IF REPAIR/BROKEN/CALIBRATION → create repair + transaction
+                // =============================================
                 if (finalRepair)
                 {
-                    // REPAIR TABLE INSERT
-                    string sqlRepair = $@"
-INSERT INTO Tool.Repair
-(RepairId, ToolId, SerialId, SerialNumber, ReportedByUserId, ReportedByName, ReportedDate, Hours, Rating, Status)
-VALUES (
-    NEWID(),
-    {toolId},
-    {s.SerialId},
-    '{s.SerialNo.Replace("'", "''")}',
-    {allocUserId},
-    '{allocUserName.Replace("'", "''")}',
-    GETDATE(),
-    {(s.Hours ?? 0)},
-    {(s.Rating ?? 0)},
-    '{repairStatus}'
-)";
+                    // Insert into Repair table
+                    string sqlRepair =
+                        "INSERT INTO Tool.Repair " +
+                        "(RepairId, ToolId, SerialId, SerialNumber, ReportedByUserId, ReportedByName, ReportedDate, Hours, Rating, Status) " +
+                        "VALUES (" +
+                        "NEWID()," +
+                        toolId + "," +
+                        s.SerialId + "," +
+                        "'" + s.SerialNo.Replace("'", "''") + "'," +
+                        allocUserId + "," +
+                        "'" + allocUserName.Replace("'", "''") + "'," +
+                        "GETDATE()," +
+                        (s.Hours ?? 0) + "," +
+                        (s.Rating ?? 0) + "," +
+                        "'" + repairStatus + "'" +
+                        ")";
                     oDAL.Execute(sqlRepair);
 
-                    // Update Serial Status
-                    oDAL.Execute($@"UPDATE Tool.ToolSerials 
-                    SET Status = '{repairStatus}' 
-                    WHERE SerialId = {s.SerialId}");
+                    // Update serial status
+                    oDAL.Execute("UPDATE Tool.ToolSerials SET Status = '" + repairStatus + "' WHERE SerialId = " + s.SerialId);
 
-                    // ⭐ Only 1 transaction for Repair/Broken/Calibration
+                    // Insert repair transaction
                     string sqlRepairTrans =
-  "INSERT INTO Tool.ToolTransactions " +
-  "(ToolId, ToolName, ToolSerialId, ToolSerialNumber, TranType, TranQty, UserId, Username, TranDate, Notes, Hours, Rating) " +
-  "VALUES (" +
-  toolId + "," +
-  "'" + toolName.Replace("'", "''") + "'," +
-  "'" + s.SerialId + "'," +
-  "'" + s.SerialNo.Replace("'", "''") + "'," +
-  "'" + repairStatus + "'," +
-  "1," +
-  allocUserId + "," +
-  "'" + allocUserName.Replace("'", "''") + "'," +
-  "GETDATE()," +
-  "'" + (notes ?? "").Replace("'", "''") + "'," +
-  (s.Hours ?? 0) + "," +
-  (s.Rating ?? 0) +
-  ")";
-
+                        "INSERT INTO Tool.ToolTransactions " +
+                        "(ToolId, ToolName, ToolSerialId, ToolSerialNumber, TranType, TranQty, UserId, Username, TranDate, Notes, Hours, Rating) " +
+                        "VALUES (" +
+                        toolId + "," +
+                        "'" + toolName.Replace("'", "''") + "'," +
+                        "'" + s.SerialId + "'," +
+                        "'" + s.SerialNo.Replace("'", "''") + "'," +
+                        "'" + repairStatus + "'," +
+                        "1," +
+                        allocUserId + "," +
+                        "'" + allocUserName.Replace("'", "''") + "'," +
+                        "GETDATE()," +
+                        "'" + (notes ?? "").Replace("'", "''") + "'," +
+                        (s.Hours ?? 0) + "," +
+                        (s.Rating ?? 0) +
+                        ")";
                     oDAL.Execute(sqlRepairTrans);
                 }
-
-
-
-
-
                 else
                 {
-                    // Normal available
-                    oDAL.Execute($"UPDATE Tool.ToolSerials SET Status = 'Available' WHERE SerialId = {s.SerialId}");
+                    // No repair → Available
+                    oDAL.Execute("UPDATE Tool.ToolSerials SET Status = 'Available' WHERE SerialId = " + s.SerialId);
                 }
             }
-        
-    
 
-                // ===========================
-                // 6 — PART CHECK-IN
-                // ===========================
-                if (partIds != null && partIds.Any())
+            // ================================================
+            // 7 — PART CHECK-IN (same as before)
+            // ================================================
+            if (partIds != null && partIds.Any())
             {
                 foreach (var partId in partIds)
                 {
-                    string sqlPart = $@"
+                    string sqlPart = @"
 SELECT TOP 1 AllocationId
 FROM Tool.PartAllocation
-WHERE PartId = {partId} AND IsReturned = 0";
+WHERE PartId = " + partId + " AND IsReturned = 0";
 
                     var dt = oDAL.GetData(sqlPart);
                     if (dt.Rows.Count == 0) continue;
@@ -266,48 +262,12 @@ WHERE PartId = {partId} AND IsReturned = 0";
                     Guid allocationId = Guid.Parse(dt.Rows[0]["AllocationId"].ToString());
                     checkedInParts.Add(partId);
 
-                    // close allocation
-                    oDAL.Execute($@"
-UPDATE Tool.PartAllocation
-SET ReturnDate = GETDATE(), IsReturned = 1
-WHERE AllocationId = '{allocationId}'");
+                    oDAL.Execute("UPDATE Tool.PartAllocation SET ReturnDate = GETDATE(), IsReturned = 1 WHERE AllocationId = '" + allocationId + "'");
 
-                    // complete part
-                    oDAL.Execute($@"
-UPDATE Tool.PartNo
-SET Status = 'Completed',
-    ModifiedBy = '{lastUserName.Replace("'", "''")}',
-    ModifiedOn = GETDATE()
-WHERE PartId = {partId}");
+                    oDAL.Execute(
+                        "UPDATE Tool.PartNo SET Status = 'Completed', ModifiedBy = '" +
+                        lastUserName.Replace("'", "''") + "', ModifiedOn = GETDATE() WHERE PartId = " + partId);
                 }
-            }
-
-            // ===========================
-            // 7 — TRANSACTION LOG
-            // ===========================
-            if (checkedInSerials.Any() || checkedInParts.Any())
-            {
-                string sqlTran = $@"
-INSERT INTO Tool.ToolTransactions 
-(ToolId, ToolName, ToolSerialId, ToolSerialNumber, PartId, PartNo, TranType, TranQty,
- UserId, Username, TranDate, Notes, Hours, Rating)
-VALUES (
-    {toolId},
-    '{toolName.Replace("'", "''")}',
-    '{string.Join(",", checkedInSerials)}',
-    '{string.Join(",", checkedInSerialNos)}',
-    '{string.Join(",", checkedInParts)}',
-    '{string.Join(",", (partNo ?? new List<string>()).Select(x => x.Replace("'", "''")))}',
-    'IN',
-    {(checkedInSerials.Count + checkedInParts.Count)},
-    {lastUserId},
-    '{lastUserName.Replace("'", "''")}',
-    GETDATE(),
-    '{(notes ?? "").Replace("'", "''")}',
-    {(hours ?? 0)},
-    {(rating ?? 0)}
-)";
-                oDAL.Execute(sqlTran);
             }
 
             return new
@@ -318,6 +278,7 @@ VALUES (
                 partsChecked = checkedInParts.Count
             };
         }
+
 
     }
 }

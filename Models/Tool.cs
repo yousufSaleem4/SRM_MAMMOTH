@@ -307,22 +307,21 @@ GROUP BY t.ToolId, t.ToolName, t.PartNum, t.TotalQty, t.IsConsumable;
             var userId = HttpContext.Current.Session["SigninId"].ToString();
 
             string query = @"
-        SELECT  
-            r.ToolId,
-            t.ToolName,
-            r.SerialNumber,
-            r.ReportedByName,
-           FORMAT(r.ReportedDate, 'yyyy.MM.dd HH:mm:ss') AS ReportedDate,
-            r.Hours,
-            r.Rating,
-            r.Status
-        FROM TOOL.Repair r
-        LEFT JOIN TOOL.Tools t ON r.ToolId = t.ToolId
-         WHERE r.Status IN ('Repair', 'Broken', 'Calibration')
+    SELECT  
+        r.ToolId,
+        t.ToolName,
+        r.SerialNumber,
+        r.ReportedByName,
+        FORMAT(r.ReportedDate, 'yyyy.MM.dd HH:mm:ss') AS ReportedDate,
+        r.Hours,
+        r.Rating,
+        r.Status
+    FROM TOOL.Repair r
+    LEFT JOIN TOOL.Tools t ON r.ToolId = t.ToolId
+    WHERE r.Status IN ('Repair', 'Broken', 'Calibration')
     ";
 
-            // 👉 ONLY add filter if status is not empty
-            // ✔ Status agar empty string ya null ho toh filter na lagao
+            // Filter only if status provided
             if (!string.IsNullOrWhiteSpace(status))
             {
                 query += " AND r.Status = '" + status + "'";
@@ -338,11 +337,28 @@ GROUP BY t.ToolId, t.ToolName, t.PartNum, t.TotalQty, t.IsConsumable;
                 return false;
             }
 
-            if (dt.Rows.Count > 0)
-                lstGetToolRepair = cCommon.ConvertDtToHashTable(dt);
+            // 🔥 FIX: Build list manually to avoid decimal issue
+            lstGetToolRepair = new List<Hashtable>();
+
+            foreach (DataRow dr in dt.Rows)
+            {
+                Hashtable row = new Hashtable();
+
+                row["ToolId"] = dr["ToolId"].ToString();
+                row["ToolName"] = dr["ToolName"].ToString();
+                row["SerialNumber"] = dr["SerialNumber"].ToString();   // ⭐ FORCE STRING (IMPORTANT)
+                row["ReportedByName"] = dr["ReportedByName"].ToString();
+                row["ReportedDate"] = dr["ReportedDate"].ToString();
+                row["Hours"] = dr["Hours"]?.ToString();
+                row["Rating"] = dr["Rating"]?.ToString();
+                row["Status"] = dr["Status"].ToString();
+
+                lstGetToolRepair.Add(row);
+            }
 
             return true;
         }
+
 
 
         public bool GetToolCreationList()

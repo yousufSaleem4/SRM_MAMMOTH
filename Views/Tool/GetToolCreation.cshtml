@@ -959,11 +959,12 @@
                     // Current Status
                     { "data": "CurrentStatus", "title": "Current Status", "className": "text-center" },
                     { "data": "TotalHours", "title": "Total Hours", "className": "text-center" },
-                    { "data": "ConsumedHours", "title": "Consumed Hours", "className": "text-center" },
+                    { "data": "ConsumedHours", "title": "Consumed Hours", "className": "text-center", "visible": false },
                     { "data": "CreatedBy", "title": "Created By", "className": "text-center" },
                     {
                         "data": "CreatedOn",
                         "title": "Created On",
+                        
                         "className": "text-center",
                         "render": function (data) {
                             if (!data) return "";
@@ -995,6 +996,7 @@
                     {
                         "data": null,
                         "title": "Actions",
+                        "width": "20px" ,
                         "className": "text-center",
                         "render": function (data, type, row) {
                             return `

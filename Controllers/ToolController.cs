@@ -422,9 +422,16 @@ WHERE ToolId = {model.ToolId};";
                 foreach (var item in req.CheckoutItems)
                 {
                     // ❗ UserId string hai → yeh correct condition hai
-                    if (!int.TryParse(item.UserId, out int userId))
+                    int userId;
+                    if (!int.TryParse(item.UserId, out userId))
                         continue;
-                    string userName = item.UserName ?? "";
+
+                    // ★ Username must never be empty — always take frontend dropdown text
+                    string userName = string.IsNullOrWhiteSpace(item.UserName)
+                        ? "Unknown User"
+                        : item.UserName.Trim();
+
+
                     int toolId = item.ToolId;
                     string toolName = item.ToolName ?? "";
 
@@ -660,6 +667,7 @@ LEFT JOIN TOOL.SysUserFile u ON TA.UserId = u.ID
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
+        [HttpGet]
         public JsonResult GetToolTransaction(string toolId)
         {
             string menuTitle = string.Empty;
@@ -736,18 +744,30 @@ LEFT JOIN TOOL.SysUserFile u ON TA.UserId = u.ID
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
-            string sql = $@"
+            string sql = @"
         SELECT SerialId,
-        SerialNumber
+               SerialNumber
         FROM Tool.ToolSerials ts
-INNER JOIN TOOL.Tools t ON t.ToolId = ts.ToolId
-        WHERE ts.ToolId = {toolId} AND ts.Status = 'Available'
+        INNER JOIN TOOL.Tools t ON t.ToolId = ts.ToolId
+        WHERE ts.ToolId = " + toolId + @" AND ts.Status = 'Available'
         ORDER BY SerialNumber";
 
-            var dt = oDAL.GetData(sql);
-            var serials = cCommon.ConvertDtToHashTable(dt);
-            return Json(serials, JsonRequestBehavior.AllowGet);
+            DataTable dt = oDAL.GetData(sql);
+
+            List<object> list = new List<object>();
+
+            foreach (DataRow dr in dt.Rows)
+            {
+                list.Add(new
+                {
+                    SerialId = Convert.ToInt32(dr["SerialId"]),
+                    SerialNumber = dr["SerialNumber"].ToString()   // ✔ FORCE STRING (IMPORTANT)
+                });
+            }
+
+            return Json(list, JsonRequestBehavior.AllowGet);
         }
+
         public JsonResult GetPartNo(int toolId)
         {
             oDAL = new cDAL(cDAL.ConnectionType.INIT);
