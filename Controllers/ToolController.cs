@@ -782,6 +782,7 @@ WHERE PN.Status = 'Pending' AND PN.PartId NOT IN (
 
             return Json(lstPartNo, JsonRequestBehavior.AllowGet);
         }
+
         [HttpPost]
         public JsonResult MoveToolToInventory(ToolMoveWrapper req)
         {
@@ -789,25 +790,92 @@ WHERE PN.Status = 'Pending' AND PN.PartId NOT IN (
             {
                 oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
+                // ==========================================
+                // REMOVE DUPLICATES (ToolId + SerialNumber)
+                // ==========================================
+                List<ToolMoveRequest> safeList = new List<ToolMoveRequest>();
+                HashSet<string> uniqueKeys = new HashSet<string>();
+
                 foreach (var item in req.list)
                 {
-                    int toolId = item.ToolId;
-                    string serial = item.SerialNumber.Replace("'", "''");
+                    string key = item.ToolId + "_" + item.SerialNumber;
 
-                    // Serial update
-                    string sqlSerial = $@"
-                UPDATE TOOL.ToolSerials
-                SET Status = 'Available',
-                ConsumedHours = 0
-                WHERE SerialNumber = '{serial}' AND ToolId = {toolId}";
+                    if (!uniqueKeys.Contains(key))
+                    {
+                        uniqueKeys.Add(key);
+                        safeList.Add(item);
+                    }
+                }
+
+                // ==========================================
+                // GET SESSION USER
+                // ==========================================
+                int userId = 0;
+                string username = "System";
+
+                if (HttpContext.Session["SigninId"] != null)
+                    int.TryParse(HttpContext.Session["SigninId"].ToString(), out userId);
+
+                if (HttpContext.Session["Username"] != null)
+                    username = HttpContext.Session["Username"].ToString();
+
+                // ==========================================
+                // PROCESS UNIQUE SERIALS ONLY
+                // ==========================================
+                foreach (var item in safeList)
+                {
+                    int toolId = item.ToolId;
+                    string serialNumber = item.SerialNumber.Replace("'", "''");
+
+                    // 1) Fetch tool + serial info
+                    string sqlFetch =
+                        "SELECT ts.SerialId, t.ToolName " +
+                        "FROM Tool.ToolSerials ts " +
+                        "INNER JOIN Tool.Tools t ON t.ToolId = ts.ToolId " +
+                        "WHERE ts.SerialNumber = '" + serialNumber + "' " +
+                        "AND ts.ToolId = " + toolId;
+
+                    DataTable dt = oDAL.GetData(sqlFetch);
+                    if (dt.Rows.Count == 0)
+                        continue;
+
+                    int serialId = Convert.ToInt32(dt.Rows[0]["SerialId"]);
+                    string toolName = dt.Rows[0]["ToolName"].ToString();
+
+                    // 2) Update Serial → Inventory
+                    string sqlSerial =
+                        "UPDATE TOOL.ToolSerials " +
+                        "SET Status = 'Available', ConsumedHours = 0 " +
+                        "WHERE SerialNumber = '" + serialNumber + "' " +
+                        "AND ToolId = " + toolId;
+
                     oDAL.Execute(sqlSerial);
 
-                    // Repair update
-                    string sqlRepair = $@"
-                UPDATE TOOL.Repair
-                SET Status = 'Inventory'
-                WHERE SerialNumber = '{serial}' AND ToolId = {toolId}";
+                    // 3) Update Repair → Inventory
+                    string sqlRepair =
+                        "UPDATE TOOL.Repair " +
+                        "SET Status = 'Inventory' " +
+                        "WHERE SerialNumber = '" + serialNumber + "' " +
+                        "AND ToolId = " + toolId;
+
                     oDAL.Execute(sqlRepair);
+
+                    // 4) Insert Inventory Transaction (ONLY ONCE)
+                    string sqlTrans =
+                        "INSERT INTO Tool.ToolTransactions " +
+                        "(ToolId, ToolName, ToolSerialId, ToolSerialNumber, TranType, TranQty, " +
+                        " UserId, Username, TranDate, Notes) " +
+                        "VALUES (" +
+                        toolId + ", " +
+                        "'" + toolName.Replace("'", "''") + "', " +
+                        serialId + ", " +
+                        "'" + serialNumber + "', " +
+                        "'Inventory', 1, " +
+                        userId + ", " +
+                        "'" + username.Replace("'", "''") + "', " +
+                        "GETDATE(), 'Moved to Inventory')";
+
+                    oDAL.Execute(sqlTrans);
                 }
 
                 return Json(new { success = true, message = "Tool(s) moved to Inventory." });
@@ -817,6 +885,7 @@ WHERE PN.Status = 'Pending' AND PN.PartId NOT IN (
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
 
         public class ToolMoveWrapper
         {
