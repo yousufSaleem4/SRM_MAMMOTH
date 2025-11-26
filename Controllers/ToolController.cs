@@ -801,22 +801,70 @@ WHERE PN.Status = 'Pending' AND PN.PartId NOT IN (
                 foreach (var item in req.list)
                 {
                     int toolId = item.ToolId;
-                    string serial = item.SerialNumber.Replace("'", "''");
+                    string serialNumber = item.SerialNumber.Replace("'", "''");
 
-                    // Serial update
+                    // ==============================
+                    // 1) GET TOOL + SERIAL INFO
+                    // ==============================
+                    string sqlFetch = $@"
+                SELECT 
+                    ts.SerialId,
+                    t.ToolName,
+                    a.UserId,
+                    sf.Name AS Username
+                FROM Tool.ToolSerials ts
+                INNER JOIN Tool.Tools t ON t.ToolId = ts.ToolId
+                LEFT JOIN Tool.ToolAllocation a ON a.SerialId = ts.SerialId AND a.IsReturned = 0
+                LEFT JOIN Tool.SysUserFile sf ON sf.ID = a.UserId
+                WHERE ts.SerialNumber = '{serialNumber}' AND ts.ToolId = {toolId}";
+
+                    DataTable dt = oDAL.GetData(sqlFetch);
+
+                    if (dt.Rows.Count == 0)
+                        continue;
+
+                    int serialId = Convert.ToInt32(dt.Rows[0]["SerialId"]);
+                    string toolName = dt.Rows[0]["ToolName"].ToString();
+                    int userId = dt.Rows[0]["UserId"] == DBNull.Value ? 0 : Convert.ToInt32(dt.Rows[0]["UserId"]);
+                    string username = dt.Rows[0]["Username"]?.ToString() ?? "System";
+
+                    // ==============================
+                    // 2) SERIAL Update
+                    // ==============================
                     string sqlSerial = $@"
                 UPDATE TOOL.ToolSerials
-                SET Status = 'Available',
-                ConsumedHours = 0
-                WHERE SerialNumber = '{serial}' AND ToolId = {toolId}";
+                SET Status = 'Available', ConsumedHours = 0
+                WHERE SerialNumber = '{serialNumber}' AND ToolId = {toolId}";
                     oDAL.Execute(sqlSerial);
 
-                    // Repair update
+                    // ==============================
+                    // 3) REPAIR Update
+                    // ==============================
                     string sqlRepair = $@"
                 UPDATE TOOL.Repair
                 SET Status = 'Inventory'
-                WHERE SerialNumber = '{serial}' AND ToolId = {toolId}";
+                WHERE SerialNumber = '{serialNumber}' AND ToolId = {toolId}";
                     oDAL.Execute(sqlRepair);
+
+                    // ==============================
+                    // 4) INSERT Transaction
+                    // ==============================
+                    string sqlTrans = $@"
+                INSERT INTO Tool.ToolTransactions
+                (ToolId, ToolName, ToolSerialId, ToolSerialNumber, TranType, TranQty,
+                 UserId, Username, TranDate, Notes)
+                VALUES
+                ({toolId},
+                '{toolName.Replace("'", "''")}',
+                '{serialId}',
+                '{serialNumber}',
+                'Inventory',
+                1,
+                {userId},
+                '{username.Replace("'", "''")}',
+                GETDATE(),
+                'Moved to Inventory')";
+                    oDAL.Execute(sqlTrans);
                 }
 
                 return Json(new { success = true, message = "Tool(s) moved to Inventory." });
@@ -826,6 +874,8 @@ WHERE PN.Status = 'Pending' AND PN.PartId NOT IN (
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+
 
         public class ToolMoveWrapper
         {
