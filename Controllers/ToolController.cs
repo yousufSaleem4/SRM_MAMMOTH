@@ -765,12 +765,7 @@ LEFT JOIN TOOL.SysUserFile u ON TA.UserId = u.ID
 
             string sql = $@"
          SELECT PN.PartId, PN.PartNo
-FROM TOOL.PartNo PN
-WHERE PN.Status = 'Pending' AND PN.PartId NOT IN (
-    SELECT PartId
-    FROM Tool.PartAllocation
-    WHERE IsReturned = 0
-);";
+FROM TOOL.PartNo PN";
 
             var dt = oDAL.GetData(sql);
 
