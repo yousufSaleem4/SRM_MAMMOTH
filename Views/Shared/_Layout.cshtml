@@ -156,7 +156,7 @@
         .stroke {
             width: 100%;
             margin: 0 auto;
-            background: #D6EFE8;
+            background: #FFF9E9 0%;
             padding: 10px 0;
             box-shadow: 0px 0px 0px #dedede;
             font-family: 'Roboto', sans-serif;
@@ -301,7 +301,7 @@
     </style>
 </head>
 
-<body class="hold-transition skin-blue layout-top-nav" onresize="resize_grid_height()" style=" background: linear-gradient(to top, white, #D6EFE8);" onload="get_initial_attributes()">
+<body class="hold-transition skin-blue layout-top-nav" onresize="resize_grid_height()" style=" background: linear-gradient( 180deg, #FFF9E9 0%,  #FFFDF7 60%,  #F5F7FA 100%  );" onload="get_initial_attributes()">
     <div class="wrapper">
         <header class="main-header">
             <nav class="navbar navbar-static-top">
@@ -362,6 +362,7 @@
                             }
                             else if (ViewBag.UserType == "Tool Crib")
                             {
+                                <li class="list"><a onclick="Navigate('DashboardDesign','/Dashboard/DashboardDesign', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-home green"></i>New Design</a></li>
                                 <li class="list"><a onclick="Navigate('Index','/Dashboard/ToolCribIndex', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-home green"></i>Home</a></li>
                                 @*<li class="list"><a onclick="Navigate('GetTool','/Tool/GetTool', 'Tool', 'Tool', '', '')"><i class="fa fa-toolbox green"></i>Tool Management</a></li>*@
                                 <li class="list dropdown">
@@ -392,7 +393,7 @@
                                         <i class="fa fa-tv green"></i> Big TV Dashboard
                                     </a>
                                 </li>
-
+                              
 
 
                             }
@@ -449,6 +450,7 @@
                                                     Tools
                                                 </a>
                                             </div>
+
                                         }
 
                                         <div>
@@ -566,7 +568,7 @@
                 </div>
             </nav>
         </header>
-        <div class="content-wrapper" style="background: linear-gradient(to top, white, #D6EFE8);">
+        <div class="content-wrapper" style=" background: linear-gradient( 180deg, #FFF9E9 0%, /* top – light yellow */ #FFFDF7 60%, /* middle – warm neutral */ #F5F7FA 100% /* bottom – very light grey */ );">
             <div id="renderBody" class="container-fluid">
                 @RenderBody()
             </div>

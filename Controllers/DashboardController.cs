@@ -45,6 +45,12 @@ namespace PlusCP.Controllers
             }
             return View();
         }
+
+        public ActionResult DashboardDesign()
+        {
+           
+            return View();
+        }
         public void LoadBuyerInfo()
         {
             cLog oLog;
