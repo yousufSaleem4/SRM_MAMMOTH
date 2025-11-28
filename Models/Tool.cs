@@ -461,32 +461,37 @@ GROUP BY
             cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
             string sql = @"
-SELECT 
-    -- Total tools count
-    (SELECT COUNT(*) FROM [TOOL].[ToolSerials] t) AS TotalTools,
+SELECT
+    -- Total Users
+    (SELECT COUNT(UserID) FROM [TOOL].[SysUserFile]) AS TotalUsers,
 
-    -- Available tools (TotalQty - User ke active checkouts)
+    -- Total Tools
+    (SELECT COUNT(*) FROM [TOOL].[ToolSerials]) AS TotalTools,
+
+    -- Available Tools
     (SELECT 
          SUM(t.TotalQty) - ISNULL(SUM(chk.CheckedOutQty), 0)
      FROM [TOOL].[Tools] t
      OUTER APPLY (
          SELECT COUNT(*) AS CheckedOutQty
          FROM [TOOL].[ToolAllocation] a
-         WHERE a.ToolId = t.ToolId
-           
-           AND a.IsReturned = 0
+         WHERE a.ToolId = t.ToolId AND a.IsReturned = 0
      ) chk
     ) AS Available,
 
-    -- Checked out count (transactions OUT by user)
-    (SELECT COUNT(*) 
-     FROM [TOOL].[ToolAllocation]
-     WHERE isreturned = 0
-) AS CheckedOut;
+    -- Checked Out Tools
+    (SELECT COUNT(*) FROM [TOOL].[ToolAllocation] WHERE IsReturned = 0) AS CheckedOut,
+
+    -- Checked In Tools
+    (SELECT COUNT(*) FROM TOOL.ToolTransactions WHERE TranType = 'IN') AS CheckedIn,
+
+    -- Maintenance Tools
+    (SELECT COUNT(*) FROM TOOL.Repair WHERE Status IN ('Repair','Broken','Calibration')) AS MaintenanceTools
 ";
 
             return oDAL.GetData(sql);
         }
+
 
         public DataTable GetCheckedOutWeeklyStats()
         {
@@ -521,6 +526,25 @@ ORDER BY YearNumber, WeekNumber; ";
           AND t.UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
           GROUP BY t.ToolId, tm.ToolName
         ORDER BY UsageCount DESC;
+    ";
+
+            return oDAL.GetData(sql);
+        }
+
+        public DataTable GetMaintenanceActivityStats()
+        {
+            cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
+
+            string sql = @"
+        SELECT 
+            DATENAME(MONTH, ReportedDate) AS MonthName,
+            MONTH(ReportedDate) AS MonthNumber,
+            COUNT(*) AS TotalJobs
+        FROM TOOL.Repair
+        WHERE Status IN ('Repair', 'Broken', 'Calibration')
+          AND YEAR(ReportedDate) = YEAR(GETDATE())
+        GROUP BY DATENAME(MONTH, ReportedDate), MONTH(ReportedDate)
+        ORDER BY MonthNumber;
     ";
 
             return oDAL.GetData(sql);

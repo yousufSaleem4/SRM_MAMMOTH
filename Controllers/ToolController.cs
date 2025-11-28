@@ -682,28 +682,30 @@ LEFT JOIN TOOL.SysUserFile u ON TA.UserId = u.ID
 
             return jsonResult;
         }
-
-        [HttpGet]
         public JsonResult GetWidgetCounts()
         {
             DataTable dt = oTool.GetToolStats();
 
             if (dt.Rows.Count > 0)
             {
+                var r = dt.Rows[0];
+
                 var result = new
                 {
-                    TotalTools = Convert.ToInt32(dt.Rows[0]["TotalTools"]),
-                    Available = Convert.ToInt32(dt.Rows[0]["Available"]),
-                    CheckedOut = Convert.ToInt32(dt.Rows[0]["CheckedOut"]),
+                    TotalUsers = Convert.ToInt32(r["TotalUsers"]),
+                    TotalTools = Convert.ToInt32(r["TotalTools"]),
+                    Available = Convert.ToInt32(r["Available"]),
+                    CheckedOut = Convert.ToInt32(r["CheckedOut"]),
+                    CheckedIn = Convert.ToInt32(r["CheckedIn"]),
+                    MaintenanceTools = Convert.ToInt32(r["MaintenanceTools"])
                 };
 
                 return Json(result, JsonRequestBehavior.AllowGet);
             }
-            else
-            {
-                return Json(new { TotalTools = 0, Available = 0, CheckedOut = 0, CheckedIn = 0 }, JsonRequestBehavior.AllowGet);
-            }
-        }//Created by Mohsin
+
+            return Json(new { }, JsonRequestBehavior.AllowGet);
+        }
+
         public JsonResult GetCheckedOutWeekly()
         {
             DataTable dt = oTool.GetCheckedOutWeeklyStats(); // 👈 aapko new method banani hogi SQL ke liye
@@ -729,6 +731,22 @@ LEFT JOIN TOOL.SysUserFile u ON TA.UserId = u.ID
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }//Created by Mohsin
+
+        public JsonResult GetMaintenanceActivity()
+        {
+            DataTable dt = oTool.GetMaintenanceActivityStats();
+
+            var result = dt.AsEnumerable().Select(r => new
+            {
+                MonthName = r["MonthName"].ToString(),
+                MonthNumber = Convert.ToInt32(r["MonthNumber"]),
+                TotalJobs = Convert.ToInt32(r["TotalJobs"])
+            }).ToList();
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+
 
         [HttpGet]
         public JsonResult GetAvailableSerials(int toolId)

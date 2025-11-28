@@ -1,15 +1,5 @@
 ﻿@model PlusCP.Models.DashboardModel
 @{
-    ViewBag.Title = "Tool Crib Dashboard Index";
-    Layout = null;
-}
-
-@{
-    ViewBag.Title = "Tool Crib Dashboard";
-    Layout = null;   // change/remove if you use a shared layout
-}
-
-@{
     ViewBag.Title = "Tool Crib Dashboard";
     Layout = null;   // change/remove if you use a shared layout
 }
@@ -22,6 +12,7 @@
 
     <!-- Bootstrap 3.3.7 CSS -->
     <link rel="stylesheet"
+
           href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
 
     <!-- Chart.js -->
@@ -39,27 +30,27 @@
             margin-bottom: 0;
         }
 
-        .navbar-dashboard .navbar-brand {
-            font-weight: 600;
-            font-size: 20px;
-        }
+            .navbar-dashboard .navbar-brand {
+                font-weight: 600;
+                font-size: 20px;
+            }
 
-        .navbar-dashboard .navbar-nav > li > a {
-            color: #111;
-            font-weight: 500;
-            padding-top: 18px;
-            padding-bottom: 18px;
-        }
+            .navbar-dashboard .navbar-nav > li > a {
+                color: #111;
+                font-weight: 500;
+                padding-top: 18px;
+                padding-bottom: 18px;
+            }
 
-        .navbar-dashboard .navbar-nav > li > a:hover,
-        .navbar-dashboard .navbar-nav > li > a:focus {
-            background-color: transparent;
-            color: #f4b400;
-        }
+                .navbar-dashboard .navbar-nav > li > a:hover,
+                .navbar-dashboard .navbar-nav > li > a:focus {
+                    background-color: transparent;
+                    color: #f4b400;
+                }
 
-        .navbar-dashboard .navbar-right > li > a {
-            font-weight: 600;
-        }
+            .navbar-dashboard .navbar-right > li > a {
+                font-weight: 600;
+            }
 
         .dashboard-wrapper {
             padding: 25px 40px; /* left & right space */
@@ -80,22 +71,22 @@
             overflow: hidden;
         }
 
-        .stat-card:before {
-            content: "";
-            position: absolute;
-            right: -40px;
-            top: -40px;
-            width: 120px;
-            height: 120px;
-            background-color: rgba(244, 180, 0, 0.14);
-            border-radius: 50%;
-        }
+            .stat-card:before {
+                content: "";
+                position: absolute;
+                right: -40px;
+                top: -40px;
+                width: 120px;
+                height: 120px;
+                background-color: rgba(244, 180, 0, 0.14);
+                border-radius: 50%;
+            }
 
-        .stat-card .icon {
-            font-size: 26px;
-            color: #f4b400;
-            margin-bottom: 8px;
-        }
+            .stat-card .icon {
+                font-size: 26px;
+                color: #f4b400;
+                margin-bottom: 8px;
+            }
 
         .stat-card-title {
             font-size: 13px;
@@ -121,12 +112,12 @@
             box-shadow: 0 4px 10px rgba(0,0,0,.04);
         }
 
-        .panel-dashboard h4 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 16px;
-            font-weight: 600;
-        }
+            .panel-dashboard h4 {
+                margin-top: 0;
+                margin-bottom: 15px;
+                font-size: 16px;
+                font-weight: 600;
+            }
 
         /* all charts */
         canvas {
@@ -150,13 +141,11 @@
 </head>
 <body>
 
-
-
     <!-- DASHBOARD -->
     <div class="dashboard-wrapper">
         <div class="container-fluid">
 
-            <!-- COUNTERS (now 6 cards including Maintenance Tools) -->
+            <!-- COUNTERS (6 cards) -->
             <div class="row stat-row">
                 <div class="col-sm-6 col-md-2">
                     <div class="stat-card">
@@ -164,7 +153,7 @@
                             <span class="glyphicon glyphicon-user"></span>
                         </div>
                         <p class="stat-card-title">Total Users</p>
-                        <p class="stat-card-value">25</p>
+                        <p class="stat-card-value" id="totalUsers">0</p>
                     </div>
                 </div>
 
@@ -174,7 +163,7 @@
                             <span class="glyphicon glyphicon-briefcase"></span>
                         </div>
                         <p class="stat-card-title">Total Tools</p>
-                        <p class="stat-card-value">210</p>
+                        <p class="stat-card-value" id="totalTools">0</p>
                     </div>
                 </div>
 
@@ -184,7 +173,7 @@
                             <span class="glyphicon glyphicon-ok-circle"></span>
                         </div>
                         <p class="stat-card-title">Available</p>
-                        <p class="stat-card-value">135</p>
+                        <p class="stat-card-value" id="availableTools">0</p>
                     </div>
                 </div>
 
@@ -194,7 +183,7 @@
                             <span class="glyphicon glyphicon-export"></span>
                         </div>
                         <p class="stat-card-title">Checked Out</p>
-                        <p class="stat-card-value">55</p>
+                        <p class="stat-card-value" id="checkedOutTools">0</p>
                     </div>
                 </div>
 
@@ -204,7 +193,7 @@
                             <span class="glyphicon glyphicon-import"></span>
                         </div>
                         <p class="stat-card-title">Checked In</p>
-                        <p class="stat-card-value">20</p>
+                        <p class="stat-card-value" id="checkedInTools">0</p>
                     </div>
                 </div>
 
@@ -215,7 +204,7 @@
                             <span class="glyphicon glyphicon-wrench"></span>
                         </div>
                         <p class="stat-card-title">Maintenance Tools</p>
-                        <p class="stat-card-value">15</p>
+                        <p class="stat-card-value" id="maintenanceTools">0</p>
                     </div>
                 </div>
             </div>
@@ -233,7 +222,7 @@
 
                 <div class="col-md-6">
                     <div class="panel-dashboard">
-                        <h4>Top 5 Most Used Tools</h4>
+                        <h4>Top Most Used Tools</h4>
                         <canvas id="topToolsChart"></canvas>
                     </div>
                 </div>
@@ -260,137 +249,246 @@
     </div>
 
     <!-- jQuery + Bootstrap JS -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    @*<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>*@
 
-    <!-- Chart.js DATA -->
     <script>
         var primaryYellow = '#f4b400';
         var lightYellow = 'rgba(244,180,0,0.20)';
 
-        // ***** TOOLS DISTRIBUTION - CLEAN DONUT LOOK *****
-        var ctxDist = document.getElementById('toolsDistributionChart').getContext('2d');
-        new Chart(ctxDist, {
-            type: 'doughnut',
-            data: {
-                labels: ['Checked Out', 'Available'],
-                datasets: [{
-                    data: [55, 135],
-                    backgroundColor: [primaryYellow, '#f0f0f0'],
-                    borderColor: ['#ffffff', '#ffffff'],
-                    borderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutoutPercentage: 72,      // thin, elegant ring
-                rotation: -Math.PI / 2,    // start at top
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        fontSize: 12,
-                        fontColor: '#555',
-                        boxWidth: 14,
-                        padding: 16
-                    }
-                },
-                tooltips: {
-                    callbacks: {
-                        label: function (item, data) {
-                            var label = data.labels[item.index] || '';
-                            var value = data.datasets[0].data[item.index] || 0;
-                            var total = data.datasets[0].data.reduce(function (acc, v) { return acc + v; }, 0);
-                            var pct = ((value / total) * 100).toFixed(1);
-                            return label + ': ' + value + ' (' + pct + '%)';
+        $(function () {
+
+            // ===========================
+            // 1) WIDGET COUNTS + DONUT
+            // ===========================
+            $.ajax({
+                url: '@Url.Action("GetWidgetCounts", "Tool")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+
+                    // Safe fallback (agar property missing ho to 0)
+                    var totalUsers = data.TotalUsers || 0;
+                    var totalTools = data.TotalTools || 0;
+                    var available = data.Available || 0;
+                    var checkedOut = data.CheckedOut || 0;
+                    var checkedIn = data.CheckedIn || 0;
+                    var maintenance = data.MaintenanceTools || 0;
+
+                    // Top cards update
+                    $('#totalUsers').text(totalUsers);
+                    $('#totalTools').text(totalTools);
+                    $('#availableTools').text(available);
+                    $('#checkedOutTools').text(checkedOut);
+                    $('#checkedInTools').text(checkedIn);
+                    $('#maintenanceTools').text(maintenance);
+
+                    // Donut chart: Checked Out vs Available
+                    var ctxDist = document.getElementById('toolsDistributionChart').getContext('2d');
+
+                    new Chart(ctxDist, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Checked Out', 'Available'],
+                            datasets: [{
+                                data: [checkedOut, available],
+                                backgroundColor: [primaryYellow, '#f0f0f0'],
+                                borderColor: ['#ffffff', '#ffffff'],
+                                borderWidth: 3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutoutPercentage: 72,      // thin, elegant ring
+                            rotation: -Math.PI / 2,    // start at top
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    fontSize: 12,
+                                    fontColor: '#555',
+                                    boxWidth: 14,
+                                    padding: 16
+                                }
+                            },
+                            tooltips: {
+                                callbacks: {
+                                    label: function (item, chartData) {
+                                        var label = chartData.labels[item.index] || '';
+                                        var value = chartData.datasets[0].data[item.index] || 0;
+                                        var total = chartData.datasets[0].data.reduce(function (acc, v) { return acc + v; }, 0);
+                                        if (total === 0) {
+                                            return label + ': ' + value;
+                                        }
+                                        var pct = ((value / total) * 100).toFixed(1);
+                                        return label + ': ' + value + ' (' + pct + '%)';
+                                    }
+                                }
+                            },
+                            layout: {
+                                padding: {
+                                    top: 5,
+                                    bottom: 0
+                                }
+                            }
                         }
-                    }
+                    });
                 },
-                layout: {
-                    padding: {
-                        top: 5,
-                        bottom: 0
-                    }
+                error: function () {
+                    console.log("Error loading widget counts.");
                 }
-            }
-        });
+            });
 
-        // Top 5 Most Used Tools
-        var ctxTop = document.getElementById('topToolsChart').getContext('2d');
-        new Chart(ctxTop, {
-            type: 'line',
-            data: {
-                labels: ['Impact Wrench', 'Torque Wrench', 'Drill', 'Caliper', 'Grinder'],
-                datasets: [{
-                    label: 'Uses (month)',
-                    data: [40, 32, 28, 21, 18],
-                    borderColor: primaryYellow,
-                    backgroundColor: lightYellow,
-                    borderWidth: 2,
-                    pointRadius: 4,
-                    pointBackgroundColor: primaryYellow,
-                    lineTension: 0.25
-                }]
-            },
-            options: {
-                legend: { display: false },
-                scales: {
-                    yAxes: [{
-                        ticks: { beginAtZero: true }
-                    }]
-                }
-            }
-        });
+            // ===========================
+            // 2) TOP USED TOOLS (LINE)
+            // ===========================
+            $.ajax({
+                url: '@Url.Action("GetTopUsedTool", "Tool")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    var labels = [];
+                    var values = [];
 
-        // Checked Out Tools - Weekly
-        var ctxWeekly = document.getElementById('weeklyCheckoutChart').getContext('2d');
-        new Chart(ctxWeekly, {
-            type: 'line',
-            data: {
-                labels: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8'],
-                datasets: [{
-                    label: 'Checked Out',
-                    data: [10, 14, 19, 22, 26, 28, 30, 33],
-                    borderColor: primaryYellow,
-                    backgroundColor: lightYellow,
-                    borderWidth: 2,
-                    pointRadius: 3,
-                    pointBackgroundColor: primaryYellow,
-                    lineTension: 0.25
-                }]
-            },
-            options: {
-                legend: { display: false },
-                scales: {
-                    yAxes: [{
-                        ticks: { beginAtZero: true }
-                    }]
-                }
-            }
-        });
+                    $.each(data, function (i, item) {
+                        labels.push(item.ToolName);
+                        values.push(item.UsageCount);
+                    });
 
-        // Maintenance Activity
-        var ctxMaint = document.getElementById('maintenanceChart').getContext('2d');
-        new Chart(ctxMaint, {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Maintenance Jobs',
-                    data: [5, 8, 6, 10, 12, 9],
-                    backgroundColor: primaryYellow,
-                    hoverBackgroundColor: '#ffca28'
-                }]
-            },
-            options: {
-                legend: { display: false },
-                scales: {
-                    yAxes: [{
-                        ticks: { beginAtZero: true, stepSize: 2 }
-                    }]
+                    var ctxTop = document.getElementById('topToolsChart').getContext('2d');
+
+                    new Chart(ctxTop, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Uses (period)',
+                                data: values,
+                                borderColor: primaryYellow,
+                                backgroundColor: lightYellow,
+                                borderWidth: 2,
+                                pointRadius: 4,
+                                pointBackgroundColor: primaryYellow,
+                                lineTension: 0.25
+                            }]
+                        },
+                        options: {
+                            legend: { display: false },
+                            scales: {
+                                yAxes: [{
+                                    ticks: { beginAtZero: true }
+                                }]
+                            }
+                        }
+                    });
+                },
+                error: function () {
+                    console.log("Error loading Top Used Tools.");
                 }
-            }
+            });
+
+            // =================================
+            // 3) CHECKED OUT WEEKLY (LINE)
+            // =================================
+            $.ajax({
+                url: '@Url.Action("GetCheckedOutWeekly", "Tool")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    var labels = [];
+                    var values = [];
+
+                    $.each(data, function (i, item) {
+                        // Example label: "2025 - W12"
+                        labels.push(item.YearNumber + ' - W' + item.WeekNumber);
+                        values.push(item.CheckedOutCount);
+                    });
+
+                    var ctxWeekly = document.getElementById('weeklyCheckoutChart').getContext('2d');
+
+                    new Chart(ctxWeekly, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Checked Out',
+                                data: values,
+                                borderColor: primaryYellow,
+                                backgroundColor: lightYellow,
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                pointBackgroundColor: primaryYellow,
+                                lineTension: 0.25
+                            }]
+                        },
+                        options: {
+                            legend: { display: false },
+                            scales: {
+                                yAxes: [{
+                                    ticks: { beginAtZero: true }
+                                }]
+                            }
+                        }
+                    });
+                },
+                error: function () {
+                    console.log("Error loading weekly checkout stats.");
+                }
+            });
+
+            // ===========================
+            //   MAINTENANCE ACTIVITY
+            // ===========================
+            $.ajax({
+                url: '/Tool/GetMaintenanceActivity',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+
+                    var labels = data.map(x => x.MonthName);
+                    var values = data.map(x => x.TotalJobs);
+
+                    var ctxMaint = document.getElementById('maintenanceChart').getContext('2d');
+
+                    new Chart(ctxMaint, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Maintenance Jobs',
+                                data: values,
+                                backgroundColor: primaryYellow,
+                                hoverBackgroundColor: '#ffca28'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            legend: { display: false },
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true,
+                                        stepSize: 2
+                                    },
+                                    gridLines: { display: false }
+                                }],
+                                xAxes: [{
+                                    gridLines: { display: false }
+                                }]
+                            }
+                        }
+                    });
+
+                },
+                error: function () {
+                    console.log("Error loading Maintenance Activity stats.");
+                }
+            });
+
+
         });
     </script>
+
 </body>
 </html>
