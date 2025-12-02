@@ -476,7 +476,24 @@
                             }
                         },
 
-                        { "data": "Hours", "title": "Consumed Hours", "className": "text-center" },
+                        {
+                            "data": "Hours",
+                            "title": "Consumed Hours",
+                            "className": "text-center",
+                            "render": function (data) {
+                                if (!data) return "0";
+
+                                let num = parseFloat(data);
+
+                                // agar decimal .0 ho to remove kar do
+                                if (Number.isInteger(num)) {
+                                    return num.toString();
+                                }
+
+                                // otherwise trimmed decimal (no trailing zeros)
+                                return num.toString().replace(/\.0+$/, "").replace(/(\.\d*[1-9])0+$/, "$1");
+                            }
+                        },
 
                         {
                             "data": "Rating",

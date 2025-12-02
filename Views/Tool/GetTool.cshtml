@@ -640,6 +640,111 @@
         transform: translate(-50%, -50%);
         z-index: 99999;
     }
+
+
+    /* --- Modern Multiselect Button --- */
+    .ms-btn {
+        background-color: #ffffff !important;
+        color: #003B59 !important;
+        border: 1px solid #003B59 !important;
+        padding: 6px 10px !important;
+        border-radius: 6px !important;
+        width: 100% !important;
+        text-align: left !important;
+        height: 36px !important;
+        font-size: 13px !important;
+    }
+
+        .ms-btn:hover,
+        .ms-btn:focus {
+            background-color: #e7f3ff !important;
+            border-color: #007bff !important;
+            color: #003B59 !important;
+            box-shadow: none !important;
+        }
+
+    /* --- Dropdown Menu --- */
+    .multiselect-container {
+        border-radius: 8px !important;
+        border: 1px solid #b8c9d6 !important;
+        padding: 6px !important;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.15) !important;
+        max-height: 240px !important;
+        overflow-y: auto !important;
+        width: 100% !important;
+    }
+
+        /* --- Menu Items --- */
+        .multiselect-container li a {
+            padding: 6px 10px !important;
+            font-size: 13px !important;
+            border-radius: 6px !important;
+        }
+
+        .multiselect-container li:hover a {
+            background-color: #f1f8ff !important;
+            color: #003B59 !important;
+        }
+
+        /* Checkboxes */
+        .multiselect-container input[type="checkbox"] {
+            accent-color: #003B59 !important;
+        }
+
+        /* Search box inside dropdown */
+        .multiselect-container .multiselect-search {
+            border-radius: 6px !important;
+            border: 1px solid #b8c9d6 !important;
+            margin-bottom: 6px !important;
+        }
+
+
+    /* Modern label */
+    .form-group label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #003B59;
+        margin-bottom: 6px;
+    }
+
+    /* Stylish dropdown */
+    .modern-select {
+        appearance: none !important;
+        background-color: #fff;
+        padding: 8px 14px;
+        height: 38px;
+        border-radius: 8px;
+        border: 1px solid #b8c9d6;
+        font-size: 14px;
+        color: #003B59;
+        transition: .2s;
+        width: 100%;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml;utf8,<svg fill='%23003B59' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+    }
+
+        /* Hover/Focus */
+        .modern-select:hover {
+            border-color: #007bff;
+        }
+
+        .modern-select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0,123,255,.3);
+        }
+
+        /* Disabled state */
+        .modern-select:disabled {
+            background-color: #f1f1f1;
+            cursor: not-allowed;
+        }
+
+
+
+
 </style>
 
 <div id="parent" class="container-fluid">
@@ -707,7 +812,8 @@
 
                     <div class="form-group col-md-4">
                         <label>Select User:</label>
-                        <select id="loadUsersDropdown" class="form-control" required>
+                        <select id="loadUsersDropdown" class="modern-select" required>
+
                             <option value="">-- Select User --</option>
                         </select>
                     </div>
@@ -783,7 +889,7 @@
                         </div>
                     </div>-->
                     <!-- GRID -->
-                    <table class="table table-bordered table-sm w-100" id="toolCheckinGrid" style="overflow-x:auto;">
+                    <table class="table table-bordered table-sm w-100" id="toolCheckinGrid" style="overflow-x:auto; width:100% !important" >
                         <thead class="thead-light">
                             <tr>
                                 <th style="width:15%;">Tool Name</th>
@@ -791,9 +897,9 @@
 
                                 <th style="width:15%;">Serial No</th>
                                 <th style="width:10%;">Part No</th>
-                                <th style="width: 15%;">Action</th>
+                                <th style="width: 8%;">Action</th>
                                 <th style="width:23%;">Notes</th>
-                                <th style="width:17%;">Hours</th> <!-- ✅ New -->
+                                <th style="width:6%;">Hours</th> <!-- ✅ New -->
                                 <th style="width:20%;">Rating</th> <!-- ✅ New -->
                             </tr>
                         </thead>
@@ -983,7 +1089,21 @@
     <td style="width:20%;"><select class="form-control serialDropdown" data-toolid="${id}" multiple="multiple" style="width:100%;"></select></td>
     <td style="width:15%;"><select class="form-control partDropdown" data-toolid="${id}" multiple="multiple" style="width:100%;"></select></td>
     <td style="width:15%;"><input type="date" class="form-control expectedDate" value="${defaultDate}" style="width:100%;" /></td>
-    <td><input type="text" class="form-control noteField" placeholder="Enter note" /></td>
+    <td>
+    <input type="text" 
+           class="noteField"
+           placeholder="Enter note..."
+           style="
+               width:100%;
+               padding:8px 12px;
+               border:1px solid #b8c9d6;
+               border-radius:8px;
+               font-size:14px;
+               color:#003B59;
+               transition:0.25s;
+           "
+    />
+</td>
 </tr>`;
             $tbody.append(row);
 
@@ -1017,7 +1137,19 @@ function loadSerialDropdown(toolId) {
             }
             // init multiselect
             if ($dropdown.data('multiselect')) $dropdown.multiselect('destroy');
-            $dropdown.multiselect({ includeSelectAllOption: true, enableFiltering: true, maxHeight: 200, buttonWidth: '100%', nonSelectedText: 'Select Serial', numberDisplayed: 1, templates: { ul: '<ul class="multiselect-container dropdown-menu" style="z-index: 2000; position: absolute;"></ul>' } });
+            $dropdown.multiselect({
+                includeSelectAllOption: true,
+                enableFiltering: true,
+                enableCaseInsensitiveFiltering: true,
+                maxHeight: 200,
+                buttonWidth: '100%',
+                nonSelectedText: 'Select Serial',
+                numberDisplayed: 1,
+                buttonClass: 'ms-btn', // ⭐ NEW MODERN BUTTON
+                templates: {
+                    ul: '<ul class="multiselect-container dropdown-menu"></ul>'
+                }
+            });
         })
         .fail(function () {
             $dropdown.html('<option disabled>Error loading</option>');
@@ -1046,15 +1178,17 @@ function loadPartDropdown(toolId) {
             $dropdown.multiselect({
                 includeSelectAllOption: true,
                 enableFiltering: true,
+                enableCaseInsensitiveFiltering: true,
                 maxHeight: 200,
                 buttonWidth: "100%",
                 nonSelectedText: "Select Part",
                 numberDisplayed: 1,
-                dropdownParent: $("body"),
+                buttonClass: 'ms-btn',  // ⭐ NEW MODERN BUTTON
                 templates: {
-                    ul: '<ul class="multiselect-container dropdown-menu" style="z-index: 2000; position: absolute;"></ul>'
+                    ul: '<ul class="multiselect-container dropdown-menu"></ul>'
                 }
             });
+
         })
         .fail(function () {
             $dropdown.html('<option disabled>Error loading</option>');
@@ -1243,16 +1377,44 @@ function populateCheckinGrid(toolIds, toolNames) {
                     <td><input type="checkbox" class="serialCheckinCheckbox mr-1" /> ${item.SerialNumber}</td>
                     <td>${partNo}</td>
 
-                    <td>
-                        <select class="form-control form-control-sm repairAction" disabled>
-                            <option value="">--Select--</option>
-                            <option value="Repair">Repair</option>
-                            <option value="Broken">Broken</option>
-                            <option value="Calibration">Calibration</option>
-                        </select>
-                    </td>
+                 <td>
+    <select class="repairAction" disabled
+        style="
+            padding: 4px 8px;
+            min-width: auto;
+            width: auto;                 /* ⭐ Auto-fit width */
+            display: inline-block;       /* ⭐ Fit content */
+            border: 1px solid #b8c9d6;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #003B59;
+            background-color: #f9fbfd;
+            text-align-last: center;
+            text-align: center;
+            background-image: url('data:image/svg+xml;utf8,<svg fill=\"%23003B59\" height=\"12\" viewBox=\"0 0 24 24\" width=\"12\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M7 10l5 5 5-5z\"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 6px center;
+            padding-right: 20px;
+        ">
+        <option value="">-- Select --</option>
+        <option value="Repair">Repair</option>
+        <option value="Broken">Broken</option>
+        <option value="Calibration">Calibration</option>
+    </select>
+</td>
 
-                    <td><input type="text" class="form-control form-control-sm noteField" placeholder="Enter note or condition" /></td>
+
+
+
+                    <td><input type="text" class="form-control form-control-sm noteField" placeholder="Enter note or condition"   style="
+     width:100%;
+     padding:8px 12px;
+     border:1px solid #b8c9d6;
+     border-radius:8px;
+     font-size:14px;
+     color:#003B59;
+     transition:0.25s;
+ "/></td>
 
                     <td><input type="number" class="form-control form-control-sm hoursField" placeholder="0" min="0" /></td>
 
