@@ -504,7 +504,6 @@ SELECT
     COUNT(*) AS CheckedOutCount
 FROM [TOOL].[ToolTransactions]
 WHERE TranType = 'OUT'
- AND UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
         GROUP BY DATEPART(YEAR, TranDate), DATEPART(WEEK, TranDate)
 ORDER BY YearNumber, WeekNumber; ";
 
@@ -523,7 +522,6 @@ ORDER BY YearNumber, WeekNumber; ";
         FROM TOOL.[ToolTransactions] t
         INNER JOIN TOOL.[Tools] tm ON t.ToolId = tm.ToolId
         WHERE t.TranType = 'OUT'
-          AND t.UserId = " + HttpContext.Current.Session["SigninId"].ToString() + @"
           GROUP BY t.ToolId, tm.ToolName
         ORDER BY UsageCount DESC;
     ";
