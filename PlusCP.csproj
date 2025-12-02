@@ -505,6 +505,7 @@
     <Content Include="Views\Shared\_LayoutDashboard.cshtml" />
     <Content Include="Views\Tool\GetToolCreation.cshtml" />
     <Content Include="Views\Tool\GetToolRepair.cshtml" />
+    <Content Include="Views\Dashboard\DashboardDesign.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />

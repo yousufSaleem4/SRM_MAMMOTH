@@ -357,7 +357,7 @@
 
 
 
-    $(document).on("click", "#btnMoveToInventory", function () {
+    $(document).off("click", "#btnMoveToInventory").on("click", "#btnMoveToInventory", function () {
 
         let selected = [];
 
@@ -373,6 +373,9 @@
             return;
         }
 
+        // Prevent double-click
+        $("#btnMoveToInventory").prop("disabled", true);
+
         $.ajax({
             url: "/Tool/MoveToolToInventory",
             type: "POST",
@@ -383,14 +386,17 @@
                     MsgToast("Success!", res.message, "success");
 
                     LoadData();
-                    $("#btnMoveToInventory").prop("disabled", true);
                 } else {
                     MsgToast("Error!", res.message, "error");
                 }
+            },
+            complete: function () {
+                $("#btnMoveToInventory").prop("disabled", false);
             }
         });
 
     });
+
 
 
 
