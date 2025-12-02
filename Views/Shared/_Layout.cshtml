@@ -365,29 +365,27 @@
                                 @*<li class="list"><a onclick="Navigate('DashboardDesign','/Dashboard/DashboardDesign', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-home green"></i>New Design</a></li>*@
                                 <li class="list"><a onclick="Navigate('Index','/Dashboard/ToolCribIndex', 'Dashboard', 'Dashboard', '', '')"><i class="fa fa-home green"></i>Home</a></li>
                                 @*<li class="list"><a onclick="Navigate('GetTool','/Tool/GetTool', 'Tool', 'Tool', '', '')"><i class="fa fa-toolbox green"></i>Tool Management</a></li>*@
-                                <li class="list dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                        <i class="fa fa-toolbox green"></i> Tool Crib <span class="caret"></span>
-                                    </a>
 
-                                    <ul class="dropdown-menu">
+                                   
+
+                                  
                                         <li>
                                             <a onclick="Navigate('GetTool','/Tool/GetTool', 'Tool', 'Tool', '', '')">
-                                                <i class="fa fa-toolbox green"></i>Managemenet
+                                                <i class="fa fa-toolbox green"></i>Tool Managemenet
                                             </a>
                                         </li>
                                         <li>
                                             <a onclick="Navigate('Index','/Tool/GetToolCreation', 'Tool', 'Tool', '', '')">
-                                                <i class="fa fa-plus"></i>Tool Creation
+                                                <i class="fa fa-plus"></i> Tool Creation
                                             </a>
                                         </li>
                                         <li>
                                             <a onclick="Navigate('Index','/Tool/GetToolRepair', 'ToolRepair', 'ToolRepair', '', '')">
-                                                <i class="fa fa-wrench"></i>Repair
+                                                <i class="fa fa-wrench"></i> Tool Maintainance
                                             </a>
                                         </li>
-                                    </ul>
-                                </li>
+                                   
+                                
                                 <li>
                                     <a href="/BigTVTool/Index" target="_blank">
                                         <i class="fa fa-tv green"></i> Big TV Dashboard
@@ -413,7 +411,7 @@
                                     <span class=""><i class="fa fa-user green"></i> Hi @ViewBag.UserName</span>&nbsp;
                                     <i class="caret"></i>
                                 </a>
-                                <ul class="dropdown-menu" style="text-align: left; background: linear-gradient(to top, white, #D6EFE8);">
+                                <ul class="dropdown-menu" style="text-align: left; background: linear-gradient(to top, white, #FFF9E9);">
                                     <li class="user-footer" style="text-align:left">
                                         @if (ViewBag.isAdmin == "True")
                                         {
