@@ -267,7 +267,9 @@
     }
     /* Ensure dynamic checkboxes are styled */
     /* All checkboxes in DataTable including header */
-    table.dataTable .toolCheckbox {
+    /* checkbox style – rows + header (chkSelectAll) */
+    table.dataTable .toolCheckbox,
+    table.dataTable #chkSelectAll {
         -webkit-appearance: none;
         appearance: none;
         width: 20px;
@@ -278,19 +280,21 @@
         position: relative;
         outline: none;
         transition: all 0.2s ease-in-out;
-        background-color: #FFF; /* Default background */
+        background-color: #FFF;
     }
 
-        /* Checked state */
-        table.dataTable .toolCheckbox:checked {
+        /* checked state */
+        table.dataTable .toolCheckbox:checked,
+        table.dataTable #chkSelectAll:checked {
             background-color: #FFC000 !important;
             border-color: #FFC000 !important;
         }
 
-            /* Tick mark */
-            table.dataTable .toolCheckbox:checked::after {
+            /* tick mark */
+            table.dataTable .toolCheckbox:checked::after,
+            table.dataTable #chkSelectAll:checked::after {
                 content: '✔';
-                color: #003B59; /* Dark tick visible */
+                color: #003B59;
                 font-size: 14px;
                 font-weight: bold;
                 position: absolute;
@@ -299,10 +303,12 @@
                 z-index: 3;
             }
 
-        /* Hover effect */
-        table.dataTable .toolCheckbox:hover {
+        /* hover effect */
+        table.dataTable .toolCheckbox:hover,
+        table.dataTable #chkSelectAll:hover {
             box-shadow: 0 0 4px rgba(255,192,0,0.7);
         }
+
 
     /* Highlight selected row */
     table.dataTable tbody > tr.selected > * {
@@ -611,7 +617,7 @@
                     var columnDef = [
                         {
                             "data": null,
-                            "title": "<input type='checkbox' class='toolCheckbox' id='chkSelectAll' />",
+                            "title": "<input type='checkbox' id='chkSelectAll' />",
                             "className": "text-center",
                              "width": "30px",
                             "orderable": false,
