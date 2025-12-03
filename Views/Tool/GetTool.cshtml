@@ -11,330 +11,330 @@
 <style>
 
 
-    /* ================================
-   SMOOTH MODAL ANIMATION
-=================================== */
-    .modal.fade .modal-dialog {
-        -webkit-transform: translateY(-20px);
-        transform: translateY(-20px);
-        opacity: 0;
-        transition: all 0.35s ease-in-out;
-    }
-
-    .modal.in .modal-dialog {
-        -webkit-transform: translateY(0);
-        transform: translateY(0);
-        opacity: 1;
-    }
-
-    /* ================================
-   MODAL LOOK & FEEL
-=================================== */
-    .custom-modal .modal-content {
-        border-radius: 10px;
-        border: none;
-        padding-bottom: 5px;
-        background: #ffffff;
-        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
-        transition: all .3s ease;
-    }
-
-    /* Header */
-    .ModalHeaderColor {
-        background: #FFF9E9;
-        color: #333;
-        border-top-left-radius: 10px;
-        border-top-right-radius: 10px;
-        padding: 10px 15px;
-        border-bottom: 1px solid #e1c16a;
-    }
-
-    .ModalLabelColor {
-        font-weight: 600;
-        font-size: 16px;
-    }
-
-    /* Body */
-    #checkOutForm {
-        padding: 10px;
-    }
-
-    .custom-modal .modal-body {
-        padding: 15px;
-        background: #fffef7;
-    }
-
-    /* Dropdown */
-    #loadUsersDropdown {
-        border-radius: 6px;
-        border: 1px solid #e4d9b7;
-        box-shadow: none;
-        transition: all .25s ease;
-    }
-
-        #loadUsersDropdown:focus {
-            border-color: #f3b633;
-            box-shadow: 0 0 6px rgba(243,182,51,0.4);
+        /* ================================
+       SMOOTH MODAL ANIMATION
+    =================================== */
+        .modal.fade .modal-dialog {
+            -webkit-transform: translateY(-20px);
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all 0.35s ease-in-out;
         }
 
-    /* TABLE INSIDE MODAL */
-    #toolCheckoutGrid {
-        background: white;
-        border-radius: 6px;
-        overflow: hidden;
-    }
+        .modal.in .modal-dialog {
+            -webkit-transform: translateY(0);
+            transform: translateY(0);
+            opacity: 1;
+        }
 
-        #toolCheckoutGrid thead {
-            background: #f9d76a;
+        /* ================================
+       MODAL LOOK & FEEL
+    =================================== */
+        .custom-modal .modal-content {
+            border-radius: 10px;
+            border: none;
+            padding-bottom: 5px;
+            background: #ffffff;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+            transition: all .3s ease;
+        }
+
+        /* Header */
+        .ModalHeaderColor {
+            background: #FFF9E9;
             color: #333;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            padding: 10px 15px;
+            border-bottom: 1px solid #e1c16a;
         }
 
-        #toolCheckoutGrid tbody tr {
+        .ModalLabelColor {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        /* Body */
+        #checkOutForm {
+            padding: 10px;
+        }
+
+        .custom-modal .modal-body {
+            padding: 15px;
+            background: #fffef7;
+        }
+
+        /* Dropdown */
+        #loadUsersDropdown {
+            border-radius: 6px;
+            border: 1px solid #e4d9b7;
+            box-shadow: none;
+            transition: all .25s ease;
+        }
+
+            #loadUsersDropdown:focus {
+                border-color: #f3b633;
+                box-shadow: 0 0 6px rgba(243,182,51,0.4);
+            }
+
+        /* TABLE INSIDE MODAL */
+        #toolCheckoutGrid {
+            background: white;
+            border-radius: 6px;
+           /* overflow: hidden;*/
+        }
+
+            #toolCheckoutGrid thead {
+                background: #f9d76a;
+                color: #333;
+            }
+
+            #toolCheckoutGrid tbody tr {
+                transition: background-color .25s ease;
+            }
+
+                #toolCheckoutGrid tbody tr:hover {
+                    background: #fff4c4 !important;
+                }
+
+        /* Footer buttons */
+        .custom-modal .modal-footer {
+            background: #fffdf5;
+            border-top: 1px solid #f1e5c7;
+        }
+
+        .custom-modal .btn-secondary {
+            border-radius: 6px;
+        }
+
+        .custom-modal .btn-danger {
+            background: #d9534f;
+            border-radius: 6px;
+            transition: all .2s ease;
+        }
+
+            .custom-modal .btn-danger:hover {
+                background: #c9302c;
+                transform: translateY(-1px);
+            }
+
+
+
+
+
+
+
+
+        /* Add User Modal */
+
+        /* Refresh Button */
+        /*.btn-refresh {
+            background-color: #003B59 !important;*/ /* Distinct orange color */
+            /*color: white !important;
+            border-radius: 30px !important;
+            margin-left: 5px !important;
+            height: 25px !important;
+            padding: 0px 12px !important;
+            border: 2px solid #003B59 !important;
+            transition: all 0.3s ease-in-out;
+        }
+
+            .btn-refresh:hover {
+                background-color: white !important;
+                color: #f4b400 !important;
+                border: 2px solid #003B59 !important;
+            }*/
+
+
+        .RedColor {
+            color: red;
+        }
+
+        .GreenColor {
+            color: green;
+        }
+
+        .required:after {
+            content: " *";
+            color: red;
+        }
+
+        .datepicker td, th {
+            text-align: center;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        .Message {
+            height: 200px;
+            width: 500px
+        }
+
+        /*.custom-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .custom-modal-title {
+            margin: 0;
+        }
+
+        .custom-modal-header .close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            font-size: 1.5rem;
+            line-height: 1;
+        }*/
+
+        .table.dataTable {
+            font-family: "Segoe UI", "Roboto";
+            clear: both;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 16px;
+        }
+
+        .dataTables_wrapper,
+        .dataTables_length,
+        .dataTables_filter,
+        .dataTables_info,
+        .dataTables_paginate,
+        table.dataTable thead th,
+        table.dataTable tbody td {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif !important;
+        }
+
+
+        /* ============================
+       TOOL CRIB DATATABLE THEME
+       (ROW-ONLY HOVER / SMOOTH LOOK)
+       ============================ */
+
+        /* Overall table look */
+        table.dataTable {
+            border-collapse: separate;
+            border-spacing: 0 4px; /* little gap between rows */
+            background: transparent;
+            font-size: 13px;
+        }
+
+            /* Header */
+            table.dataTable thead th {
+                background: linear-gradient(to bottom, #f9d76a, #f3b633);
+                color: #333;
+                font-weight: 600;
+                text-align: left;
+                border: none !important;
+                padding: 10px 14px;
+                text-transform: none;
+                white-space: nowrap;
+            }
+
+            /* Body rows – base style (NO cell hover) */
+            table.dataTable tbody tr {
+                background: #fffdf5;
+                box-shadow: 0 0 0 rgba(0,0,0,0);
+                transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.18s ease;
+            }
+
+                /* soft zebra */
+                table.dataTable tbody tr:nth-child(even) {
+                    background: #fff8ea;
+                }
+
+            /* cells inside row */
+            table.dataTable tbody td {
+                border-top: 1px solid #f1e0b8 !important;
+                border-bottom: 1px solid #f1e0b8 !important;
+                padding: 8px 14px;
+                vertical-align: middle;
+            }
+
+            /* rounded row corners using first/last cell */
+            table.dataTable tbody tr td:first-child {
+                border-left: 1px solid #f1e0b8 !important;
+                border-radius: 6px 0 0 6px;
+            }
+
+            table.dataTable tbody tr td:last-child {
+                border-right: 1px solid #f1e0b8 !important;
+                border-radius: 0 6px 6px 0;
+            }
+
+            /* ROW HOVER ONLY – smooth, subtle lift */
+            table.dataTable tbody tr:hover {
+                background-color: #ffeebe !important;
+                transform: translateY(-1px);
+                box-shadow: 0 3px 12px rgba(0,0,0,0.10);
+            }
+
+            /* Selected row (if you use row selection) */
+            table.dataTable tbody tr.selected,
+            table.dataTable tbody tr.selected:hover {
+                background-color: #FFF9E9 !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+
+            /* “View” link look */
+            table.dataTable tbody a {
+                color: #0b63b9;
+                font-weight: 600;
+            }
+
+                table.dataTable tbody a:hover {
+                    color: #004c8a;
+                    text-decoration: underline;
+                }
+
+        /* Pagination + search (optional but makes it cleaner) */
+        .dataTables_paginate .pagination > li > a {
+            border-radius: 50% !important;
+            border: none !important;
+            background: #f5f5f5;
+            margin: 2px;
+            padding: 5px 9px;
+            transition: background-color 0.2s ease;
+        }
+
+        .dataTables_paginate .pagination > li.active > a {
+            background: #f3b633 !important;
+            color: #fff !important;
+        }
+
+        .dataTables_paginate .pagination > li > a:hover {
+            background: #ffe3a3 !important;
+        }
+
+        .dataTables_filter input {
+            border-radius: 16px;
+            padding: 5px 10px;
+            border: 1px solid #d5d5d5;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+            .dataTables_filter input:focus {
+                border-color: #f3b633;
+                box-shadow: 0 0 4px rgba(243,182,51,0.6);
+            }
+
+        /* ================================
+       🔥 FIRST COLUMN COLOR CHANGE ONLY
+       ================================ */
+        table.dataTable tbody tr:hover td:first-child {
+            background: #ffd46b !important; /* yellow highlight */
             transition: background-color .25s ease;
         }
 
-            #toolCheckoutGrid tbody tr:hover {
-                background: #fff4c4 !important;
-            }
-
-    /* Footer buttons */
-    .custom-modal .modal-footer {
-        background: #fffdf5;
-        border-top: 1px solid #f1e5c7;
-    }
-
-    .custom-modal .btn-secondary {
-        border-radius: 6px;
-    }
-
-    .custom-modal .btn-danger {
-        background: #d9534f;
-        border-radius: 6px;
-        transition: all .2s ease;
-    }
-
-        .custom-modal .btn-danger:hover {
-            background: #c9302c;
-            transform: translateY(-1px);
-        }
 
 
 
 
 
-
-
-
-    /* Add User Modal */
-
-    /* Refresh Button */
-    .btn-refresh {
-        background-color: #003B59 !important; /* Distinct orange color */
-        color: white !important;
-        border-radius: 30px !important;
-        margin-left: 5px !important;
-        height: 25px !important;
-        padding: 0px 12px !important;
-        border: 2px solid #003B59 !important;
-        transition: all 0.3s ease-in-out;
-    }
-
-        .btn-refresh:hover {
-            background-color: white !important;
-            color: #f4b400 !important;
-            border: 2px solid #003B59 !important;
-        }
-
-
-    .RedColor {
-        color: red;
-    }
-
-    .GreenColor {
-        color: green;
-    }
-
-    .required:after {
-        content: " *";
-        color: red;
-    }
-
-    .datepicker td, th {
-        text-align: center;
-        padding: 8px 12px;
-        font-size: 14px;
-    }
-
-    .Message {
-        height: 200px;
-        width: 500px
-    }
-
-    /*.custom-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        border-bottom: 1px solid #ccc;
-    }
-
-    .custom-modal-title {
-        margin: 0;
-    }
-
-    .custom-modal-header .close {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0.5rem;
-        font-size: 1.5rem;
-        line-height: 1;
-    }*/
-
-    .table.dataTable {
-        font-family: "Segoe UI", "Roboto";
-        clear: both;
-        border-collapse: separate;
-        border-spacing: 0;
-        font-size: 16px;
-    }
-    
-    .dataTables_wrapper,
-    .dataTables_length,
-    .dataTables_filter,
-    .dataTables_info,
-    .dataTables_paginate,
-    table.dataTable thead th,
-    table.dataTable tbody td {
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif !important;
-    }
-
-
-    /* ============================
-   TOOL CRIB DATATABLE THEME
-   (ROW-ONLY HOVER / SMOOTH LOOK)
-   ============================ */
-
-    /* Overall table look */
-    table.dataTable {
-        border-collapse: separate;
-        border-spacing: 0 4px; /* little gap between rows */
-        background: transparent;
-        font-size: 13px;
-    }
-
-        /* Header */
-        table.dataTable thead th {
-            background: linear-gradient(to bottom, #f9d76a, #f3b633);
-            color: #333;
-            font-weight: 600;
-            text-align: left;
-            border: none !important;
-            padding: 10px 14px;
-            text-transform: none;
-            white-space: nowrap;
-        }
-
-        /* Body rows – base style (NO cell hover) */
-        table.dataTable tbody tr {
-            background: #fffdf5;
-            box-shadow: 0 0 0 rgba(0,0,0,0);
-            transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.18s ease;
-        }
-
-            /* soft zebra */
-            table.dataTable tbody tr:nth-child(even) {
-                background: #fff8ea;
-            }
-
-        /* cells inside row */
-        table.dataTable tbody td {
-            border-top: 1px solid #f1e0b8 !important;
-            border-bottom: 1px solid #f1e0b8 !important;
-            padding: 8px 14px;
-            vertical-align: middle;
-        }
-
-        /* rounded row corners using first/last cell */
-        table.dataTable tbody tr td:first-child {
-            border-left: 1px solid #f1e0b8 !important;
-            border-radius: 6px 0 0 6px;
-        }
-
-        table.dataTable tbody tr td:last-child {
-            border-right: 1px solid #f1e0b8 !important;
-            border-radius: 0 6px 6px 0;
-        }
-
-        /* ROW HOVER ONLY – smooth, subtle lift */
-        table.dataTable tbody tr:hover {
-            background-color: #ffeebe !important;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 12px rgba(0,0,0,0.10);
-        }
-
-        /* Selected row (if you use row selection) */
-        table.dataTable tbody tr.selected,
-        table.dataTable tbody tr.selected:hover {
-            background-color: #FFF9E9 !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        /* “View” link look */
-        table.dataTable tbody a {
-            color: #0b63b9;
-            font-weight: 600;
-        }
-
-            table.dataTable tbody a:hover {
-                color: #004c8a;
-                text-decoration: underline;
-            }
-
-    /* Pagination + search (optional but makes it cleaner) */
-    .dataTables_paginate .pagination > li > a {
-        border-radius: 50% !important;
-        border: none !important;
-        background: #f5f5f5;
-        margin: 2px;
-        padding: 5px 9px;
-        transition: background-color 0.2s ease;
-    }
-
-    .dataTables_paginate .pagination > li.active > a {
-        background: #f3b633 !important;
-        color: #fff !important;
-    }
-
-    .dataTables_paginate .pagination > li > a:hover {
-        background: #ffe3a3 !important;
-    }
-
-    .dataTables_filter input {
-        border-radius: 16px;
-        padding: 5px 10px;
-        border: 1px solid #d5d5d5;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-        .dataTables_filter input:focus {
-            border-color: #f3b633;
-            box-shadow: 0 0 4px rgba(243,182,51,0.6);
-        }
-
-    /* ================================
-   🔥 FIRST COLUMN COLOR CHANGE ONLY
-   ================================ */
-    table.dataTable tbody tr:hover td:first-child {
-        background: #ffd46b !important; /* yellow highlight */
-        transition: background-color .25s ease;
-    }
-
-
-
-
-
-   
 
 
 
@@ -368,641 +368,559 @@
             color: #333 !important; /* Darker text */
             margin-left: 5px;
         }
-    /* Change odd row background color */
-    table.dataTable tbody tr:nth-child(odd) {
-        background-color: #FFF9E9; /* Change to your desired color */
-    }
+        /* Change odd row background color */
+        table.dataTable tbody tr:nth-child(odd) {
+            background-color: #FFF9E9; /* Change to your desired color */
+        }
 
-    /* Change even row background color */
-    table.dataTable tbody tr:nth-child(even) {
-        background: #fcfcfc;
-    }
+        /* Change even row background color */
+        table.dataTable tbody tr:nth-child(even) {
+            background: #fcfcfc;
+        }
 
-    table.dataTable tbody tr.selected {
-        background: #fff7e6;
-        color: inherit !important;
-    }
-    /* Ensure dynamic checkboxes are styled */
-    /* All checkboxes in DataTable including header */
-    table.dataTable .toolCheckbox {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 20px;
-        height: 20px;
-        border: 2px solid #FFC000; /* Amber Gold */
-        border-radius: 4px;
-        cursor: pointer;
-        position: relative;
-        outline: none;
-        transition: all 0.2s ease-in-out;
-        background-color: #FFF; /* Default background */
-    }
-
-    }
-    /* Search icon inside input */
-    .search-icon {
-        position: absolute;
-        top: 50%;
-        left: 8px;
-        transform: translateY(-50%);
-        color: darkgrey;
-        font-size: 14px;
-        pointer-events: none; /* Prevents clicking on the icon */
-    }
-
-    .search-container {
-        position: relative;
-        display: inline-block;
-    }
-
-    .txtSearch-frame {
-        margin-top: 5px;
-        height: 28px;
-        width: 150px;
-        border: none;
-        color: #003B59;
-        border: 2px solid #003B59 !important;
-        width: 200px;
-        padding-left: 30px; /* Space for the icon */
-    }
-
-    .pdf-icon {
-        width: 30px;
-        height: 30px;
-        image-rendering: crisp-edges;
-        image-rendering: -webkit-optimize-contrast;
-    }
-
-    .pad {
-        padding-bottom: 15px;
-        padding: 2px;
-        padding-top: 10px;
-    }
-
-    .lblHeading {
-        font-size: 19px;
-        color: #003B59 !important;
-    }
-
-    .table-container {
-       /* height: 200px;  Set the desired fixed height */
-        overflow-y: auto;
-    }
-
-    /*table > thead > tr > th {
-        background-color: gray !important;
-        color: white;
-    }*/
-
-    table.table thead th {
-        background-color: #E8B923 !important; /* Change to your desired color */
-        color: #003B59; /* Change to desired text color */
-        font-size: 15px;
-        font-family: 'Poppins', sans-serif;
-        height: 40px;
-    }
-
-    table.table tbody td, lbl_ {
-        /*background-color: white !important; /* Change to your desired color */
-        font-size: 15px;
-        color: #003B59 !important;
-    }
-
-    table.table tbody tr {
-        height: 50px; /* Adjust height as needed */
-    }
-
-        /* Hover effect */
-        table.table tbody tr:hover {
-            background-color: #f5f5f5 !important; /* Light gray background on hover */
-            transition: background-color 0.8s ease-in-out;
+        table.dataTable tbody tr.selected {
+            background: #fff7e6;
+            color: inherit !important;
+        }
+        /* Ensure dynamic checkboxes are styled */
+        /* All checkboxes in DataTable including header */
+        table.dataTable .toolCheckbox {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #FFC000; /* Amber Gold */
+            border-radius: 4px;
             cursor: pointer;
+            position: relative;
+            outline: none;
+            transition: all 0.2s ease-in-out;
+            background-color: #FFF; /* Default background */
         }
 
-
-
-
-    table th {
-        /*padding: 1rem 0.5rem !important;*/
-        border: 1px solid black;
-        border-bottom: 1px solid black;
-        /*padding: 8px;*/
-        text-align: left;
-    }
-
-    table td {
-        padding: 1rem 0.5rem !important;
-        font-size: 15px !important;
-        font-weight: 500 !important;
-        vertical-align: middle;
-    }
-
-    table {
-        border-collapse: separate;
-        border-spacing: 0 10px; /* Adjust the second value to increase/decrease the vertical gap */
-        width: 100%;
-    }
-
-        table.table-bordered.dataTable tbody th, table.table-bordered.dataTable tbody td {
-            border-bottom-width: 1px;
-        }
-
-
-
-
-    .sticky-header th {
-        position: sticky;
-        top: 0;
-        background-color: #f2f2f2;
-    }
-
-
-
-    .t-head {
-        color: #023160;
-    }
-
-    /* Modal Styling */
-    .modal-dialog {
-        margin: 30px auto;
-    }
-
-        .modal-dialog.centered {
-            display: flex;
-            min-height: calc(100vh - 60px);
-            align-content: stretch;
-            flex-wrap: wrap;
-            align-items: stretch;
-            flex-direction: column;
-            justify-content: center;
-            width: 32%;
-            overflow: auto;
-        }
-
-    .box-header {
-        background-color: #FFF9E9 !important;
-        color: #003B59 !important;
-        border-bottom: 2px solid #f8f9fc;
-        box-shadow: 0px 5px #ededed;
-    }
-
-
-    .btn-box-tool {
-        color: #003B59 !important;
-    }
-
-
-    /*/Badges/*/
-
-    .btn-badges {
-        color: #003B59 !important;
-        border-radius: 50px !important;
-        margin-left: 5px !important;
-        height: 25px !important;
-        padding: 2px 12px !important;
-    }
-
-        .btn-badges:hover {
-            background-color: #f4b400 !important;
-            color: white !important;
-        }
-
-            .btn-badges:hover .badge_light {
-                background-color: white !important;
-                color: #003B59 !important;
+            /* Checked state */
+            table.dataTable .toolCheckbox:checked {
+                background-color: #FFC000 !important;
+                border-color: #FFC000 !important;
             }
 
-    .badge_light {
-        background-color: #003B59 !important;
-        color: white !important;
-    }
+                /* Tick mark */
+                table.dataTable .toolCheckbox:checked::after {
+                    content: '✔';
+                    color: #003B59; /* Dark tick visible */
+                    font-size: 14px;
+                    font-weight: bold;
+                    position: absolute;
+                    top: 0;
+                    left: 2px;
+                    z-index: 3;
+                }
 
-    .btn-badges-Sent {
-        border-radius: 25px !important;
-        height: 25px !important;
-        width: 60px;
-    }
+            /* Hover effect */
+            table.dataTable .toolCheckbox:hover {
+                box-shadow: 0 0 4px rgba(255,192,0,0.7);
+            }
 
-    .selected {
-        background-color: deepskyblue !important;
-        color: black;
-    }
+        /* Highlight selected row */
+        table.dataTable tbody > tr.selected > * {
+            background-color: #FFF9E9 !important; /* Row highlight */
+            color: #000 !important;
+            position: relative;
+            z-index: 1;
+        }
 
-    
 
-    .ModalLabelColor {
-        color: #003B59;
-        text-align: center;
-        font-weight: bold;
-    }
 
-    textarea {
-        resize: none;
-    }
 
-    .password-wrapper {
-        position: relative;
-    }
 
-        .password-wrapper .toggle-password {
+
+        /* Search icon inside input */
+        .search-icon {
             position: absolute;
-            right: 10px;
             top: 50%;
+            left: 8px;
             transform: translateY(-50%);
-            cursor: pointer;
-            color: #777;
-            z-index: 2;
+            color: darkgrey;
+            font-size: 14px;
+            pointer-events: none; /* Prevents clicking on the icon */
+        }
+
+        .search-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .txtSearch-frame {
+            margin-top: 5px;
+            height: 28px;
+            width: 150px;
             border: none;
-            background: none;
+            color: #003B59;
+            border: 2px solid #003B59 !important;
+            width: 200px;
+            padding-left: 30px; /* Space for the icon */
         }
 
-        .password-wrapper input {
-            padding-right: 35px; /* Leave space for the icon */
+        .pdf-icon {
+            width: 30px;
+            height: 30px;
+            image-rendering: crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
         }
 
-
-    .dots-text {
-        font-size: 22px;
-        font-weight: bold;
-        cursor: pointer;
-        padding: 4px 8px;
-        color: #333;
-        user-select: none;
-        transition: color 0.2s ease;
-    }
-
-        .dots-text:hover {
-            color: #007bff;
+        .pad {
+            padding-bottom: 15px;
+            padding: 2px;
+            padding-top: 10px;
         }
 
-    .dropdown-custom {
-        position: relative;
-        display: inline-block;
-    }
-
-    .dropdown-content {
-        display: none;
-        position: absolute;
-        right: 0;
-        top: calc(100% + 6px);
-        background: #fff;
-        min-width: 160px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        border-radius: 8px;
-        z-index: 2147483647;
-    }
-
-    .dropdown-custom.show .dropdown-content {
-        display: block;
-    }
-
-    .dropdown-content a {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 14px;
-        color: #333;
-        text-decoration: none;
-        font-size: 14px;
-        transition: background 0.2s ease;
-    }
-
-        .dropdown-content a:hover {
-            background: #f0f0f0;
+        .lblHeading {
+            font-size: 19px;
+            color: #003B59 !important;
         }
 
-        .dropdown-content a .icon {
-            font-size: 16px;
-            width: 20px;
-            text-align: center;
+        .table-container {
+            /* height: 200px;  Set the desired fixed height */
+            overflow-y: auto;
         }
 
+        /*table > thead > tr > th {
+            background-color: gray !important;
+            color: white;
+        }*/
 
-    #checkOutModal .modal-body {
-        max-height: 70vh; /* modal body ki height screen ka 70% */
-        overflow-y: auto; /* vertical scroll enable */
-        overflow-x: hidden; /* horizontal scroll band */
-    }
-
-    /* Modal ko full width tak expand karne ke liye */
-    .modal-dialog.custom-modal {
-        max-width: 90% !important;
-        width: 90% !important;
-    }
-
-    toolCheckinGridBody
-    /* Notes column thoda aur wide aur textarea responsive */
-    #toolCheckoutGrid th:last-child,
-    #toolCheckoutGrid td:last-child {
-        width: 35% !important;
-    }
-
-    /* ✅ Table full width + scroll */
-    #toolCheckinGrid {
-        width: 100%;
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-
-        /* ✅ Header row fixed height */
-        #toolCheckinGrid thead th {
-            white-space: nowrap;
-            text-align: center;
-            vertical-align: middle;
-            font-weight: bold;
+        table.table thead th {
+            background-color: #E8B923 !important; /* Change to your desired color */
+            color: #003B59; /* Change to desired text color */
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
             height: 40px;
         }
 
-    /* ✅ Body row height set */
-    #toolCheckinGridBody td {
-        white-space: nowrap;
-        vertical-align: middle !important;
-        padding: 5px 8px !important;
-    }
-
-
-
-
-    #toolCheckoutGrid textarea {
-        width: 100%;
-        resize: vertical;
-    }
-
-    /* Optional: thoda spacing aur modal scroll control */
-    .modal-body {
-        max-height: 80vh;
-        min-height: 70vh;
-        overflow-y: auto;
-        overflow-x: auto;
-    }
-
-    .multiselect-container {
-        position: absolute !important;
-        z-index: 2000 !important;
-    }
-
-    #toolCheckinGrid select.form-control {
-        min-width: 150px;
-        max-width: 250px;
-    }
-
-    #toolCheckinGrid td {
-        vertical-align: middle;
-    }
-
-
-    /* Compact repair cell */
-    .repair-item {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        margin-bottom: 4px;
-    }
-
-        .repair-item label {
-            font-size: 12px;
-            margin-bottom: 0;
-            color: #444;
-        }
-
-    .repairAction {
-        height: 28px !important;
-        font-size: 12px !important;
-        padding: 2px 6px;
-        border-radius: 4px;
-    }
-
-    /* Serial text small and neat */
-    .serial-item {
-        font-size: 13px;
-        color: #333;
-    }
-
-    /* Part dropdown always visible */
-    .partDropdown {
-        height: 32px !important;
-        font-size: 13px !important;
-        border-radius: 4px;
-    }
-
-    .star-rating span {
-        font-size: 18px;
-        cursor: pointer;
-        color: #ccc; /* default grey */
-        margin-right: 2px;
-    }
-
-        .star-rating span.selected-star {
-            color: gold !important;
-        }
-
-        .star-rating span:hover {
-            color: gold;
-        }
-
-        .star-rating span:focus,
-        .star-rating span:active {
-            outline: none;
-            box-shadow: none;
-        }
-
-    /* Filter Row Styling */
-    .filter-row {
-        margin-bottom: 12px !important;
-        display: flex;
-        gap: 15px;
-        align-items: center;
-    }
-
-    /* Filter Input */
-    #txtTransSerial {
-        height: 34px;
-        border: 1px solid #003B59;
-        border-radius: 6px;
-        padding-left: 12px;
-        font-size: 14px;
-        color: #003B59;
-    }
-
-    /* Filter Dropdown */
-    #ddlTransType {
-        height: 34px;
-        border: 1px solid #003B59;
-        border-radius: 6px;
-        padding-left: 8px;
-        font-size: 14px;
-        color: #003B59;
-        background-color: #fff;
-    }
-
-        /* Hover effect */
-        #txtTransSerial:hover,
-        #ddlTransType:hover {
-            border-color: #005c85;
-        }
-
-        /* Focus outline remove */
-        #txtTransSerial:focus,
-        #ddlTransType:focus {
-            box-shadow: 0 0 4px rgba(0, 91, 133, 0.4);
-            border-color: #005c85;
-        }
-
-
-    #transactionTable {
-        margin-top: 25px !important;
-    }
-
-
-
-
-
-
-    /* Table scroll fix */
-    .transaction-table-wrapper {
-        max-height: 800pxmodal-body overflow-y: hidden;
-        overflow-x: auto;
-        padding-right: 10px;
-    }
-
-    #transactionGrid thead th {
-        position: sticky;
-        top: 0;
-        background-color: #003B59 !important;
-        color: #fff !important;
-        z-index: 20;
-    }
-
-
-
-
-    #TransactionModal .modal-dialog {
-        max-width: 95% !important;
-        width: 95% !important;
-    }
-
-
-    #TransactionModal .modal-content {
-        height: 90vh;
-    }
-
-
-
-    /* Center loading spinner inside modal */
-    #modalLoaderInside {
-        display: none;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 99999;
-    }
-
-
-    /* --- Modern Multiselect Button --- */
-    .ms-btn {
-        background-color: #ffffff !important;
-        color: #003B59 !important;
-        border: 1px solid #003B59 !important;
-        padding: 6px 10px !important;
-        border-radius: 6px !important;
-        width: 100% !important;
-        text-align: left !important;
-        height: 36px !important;
-        font-size: 13px !important;
-    }
-
-        .ms-btn:hover,
-        .ms-btn:focus {
-            background-color: #e7f3ff !important;
-            border-color: #007bff !important;
+        table.table tbody td, lbl_ {
+            /*background-color: white !important; /* Change to your desired color */
+            font-size: 15px;
             color: #003B59 !important;
-            box-shadow: none !important;
         }
 
-    /* --- Dropdown Menu --- */
-    .multiselect-container {
-        border-radius: 8px !important;
-        border: 1px solid #b8c9d6 !important;
-        padding: 6px !important;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.15) !important;
-        max-height: 240px !important;
-        overflow-y: auto !important;
-        width: 100% !important;
-    }
+        table.table tbody tr {
+            height: 50px; /* Adjust height as needed */
+        }
 
-        /* --- Menu Items --- */
-        .multiselect-container li a {
-            padding: 6px 10px !important;
+            /* Hover effect */
+            table.table tbody tr:hover {
+                background-color: #f5f5f5 !important; /* Light gray background on hover */
+                transition: background-color 0.8s ease-in-out;
+                cursor: pointer;
+            }
+
+
+
+
+        table th {
+            /*padding: 1rem 0.5rem !important;*/
+            border: 1px solid black;
+            border-bottom: 1px solid black;
+            /*padding: 8px;*/
+            text-align: left;
+        }
+
+        table td {
+            padding: 1rem 0.5rem !important;
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            vertical-align: middle;
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 0 10px; /* Adjust the second value to increase/decrease the vertical gap */
+            width: 100%;
+        }
+
+            table.table-bordered.dataTable tbody th, table.table-bordered.dataTable tbody td {
+                border-bottom-width: 1px;
+            }
+
+
+
+
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            background-color: #f2f2f2;
+        }
+
+
+
+        .t-head {
+            color: #023160;
+        }
+
+        /* Modal Styling */
+        .modal-dialog {
+            margin: 30px auto;
+        }
+
+            .modal-dialog.centered {
+                display: flex;
+                min-height: calc(100vh - 60px);
+                align-content: stretch;
+                flex-wrap: wrap;
+                align-items: stretch;
+                flex-direction: column;
+                justify-content: center;
+                width: 32%;
+                overflow: auto;
+            }
+
+        .box-header {
+            background-color: #FFF9E9 !important;
+            color: #003B59 !important;
+            border-bottom: 2px solid #f8f9fc;
+            box-shadow: 0px 5px #ededed;
+        }
+
+
+        .btn-box-tool {
+            color: #003B59 !important;
+        }
+
+
+        /*/Badges/*/
+
+        .btn-badges {
+            color: #003B59 !important;
+            border-radius: 50px !important;
+            margin-left: 5px !important;
+            height: 25px !important;
+            padding: 2px 12px !important;
+        }
+
+            .btn-badges:hover {
+                background-color: #f4b400 !important;
+                color: white !important;
+            }
+
+                .btn-badges:hover .badge_light {
+                    background-color: white !important;
+                    color: #003B59 !important;
+                }
+
+        .badge_light {
+            background-color: #003B59 !important;
+            color: white !important;
+        }
+
+        .btn-badges-Sent {
+            border-radius: 25px !important;
+            height: 25px !important;
+            width: 60px;
+        }
+
+        .selected {
+            background-color: deepskyblue !important;
+            color: black;
+        }
+
+
+
+        .ModalLabelColor {
+            color: #003B59;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+            .password-wrapper .toggle-password {
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                cursor: pointer;
+                color: #777;
+                z-index: 2;
+                border: none;
+                background: none;
+            }
+
+            .password-wrapper input {
+                padding-right: 35px; /* Leave space for the icon */
+            }
+
+
+        .dots-text {
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 4px 8px;
+            color: #333;
+            user-select: none;
+            transition: color 0.2s ease;
+        }
+
+            .dots-text:hover {
+                color: #007bff;
+            }
+
+        .dropdown-custom {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 6px);
+            background: #fff;
+            min-width: 160px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            z-index: 2147483647;
+        }
+
+        .dropdown-custom.show .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+
+            .dropdown-content a:hover {
+                background: #f0f0f0;
+            }
+
+            .dropdown-content a .icon {
+                font-size: 16px;
+                width: 20px;
+                text-align: center;
+            }
+
+
+        #checkOutModal .modal-body {
+            max-height: 70vh; /* modal body ki height screen ka 70% */
+            overflow-y: auto; /* vertical scroll enable */
+            overflow-x: hidden; /* horizontal scroll band */
+        }
+
+        /* Modal ko full width tak expand karne ke liye */
+        .modal-dialog.custom-modal {
+            max-width: 90% !important;
+            width: 90% !important;
+        }
+
+        toolCheckinGridBody
+        /* Notes column thoda aur wide aur textarea responsive */
+        #toolCheckoutGrid th:last-child,
+        #toolCheckoutGrid td:last-child {
+            width: 35% !important;
+        }
+
+        /* ✅ Table full width + scroll */
+        #toolCheckinGrid {
+            width: 100%;
+            /*display: block;*/
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+            /* ✅ Header row fixed height */
+            #toolCheckinGrid thead th {
+                white-space: nowrap;
+                text-align: center;
+                vertical-align: middle;
+                font-weight: bold;
+                height: 40px;
+            }
+
+        /* ✅ Body row height set */
+        #toolCheckinGridBody td {
+            white-space: nowrap;
+            vertical-align: middle !important;
+            padding: 5px 8px !important;
+        }
+
+
+
+
+        #toolCheckoutGrid textarea {
+            width: 100%;
+            resize: vertical;
+        }
+
+        /* Optional: thoda spacing aur modal scroll control */
+        .modal-body {
+            max-height: 80vh;
+            min-height: 70vh;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        .multiselect-container {
+            position: absolute !important;
+            z-index: 2000 !important;
+        }
+
+        #toolCheckinGrid select.form-control {
+            min-width: 150px;
+            max-width: 250px;
+        }
+
+        #toolCheckinGrid td {
+            vertical-align: middle;
+        }
+
+
+        /* Compact repair cell */
+        .repair-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+            .repair-item label {
+                font-size: 12px;
+                margin-bottom: 0;
+                color: #444;
+            }
+
+        .repairAction {
+            height: 28px !important;
+            font-size: 12px !important;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Serial text small and neat */
+        .serial-item {
+            font-size: 13px;
+            color: #333;
+        }
+
+        /* Part dropdown always visible */
+        .partDropdown {
+            height: 32px !important;
             font-size: 13px !important;
-            border-radius: 6px !important;
+            border-radius: 4px;
         }
 
-        .multiselect-container li:hover a {
-            background-color: #f1f8ff !important;
-            color: #003B59 !important;
+        .star-rating span {
+            font-size: 18px;
+            cursor: pointer;
+            color: #ccc; /* default grey */
+            margin-right: 2px;
         }
 
-        /* Checkboxes */
-        .multiselect-container input[type="checkbox"] {
-            accent-color: #003B59 !important;
+            .star-rating span.selected-star {
+                color: gold !important;
+            }
+
+            .star-rating span:hover {
+                color: gold;
+            }
+
+            .star-rating span:focus,
+            .star-rating span:active {
+                outline: none;
+                box-shadow: none;
+            }
+
+        /* Filter Row Styling */
+        .filter-row {
+            margin-bottom: 12px !important;
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
 
-        /* Search box inside dropdown */
-        .multiselect-container .multiselect-search {
-            border-radius: 6px !important;
-            border: 1px solid #b8c9d6 !important;
-            margin-bottom: 6px !important;
+        /* Filter Input */
+        #txtTransSerial {
+            height: 34px;
+            border: 1px solid #003B59;
+            border-radius: 6px;
+            padding-left: 12px;
+            font-size: 14px;
+            color: #003B59;
         }
 
-
-    /* Modern label */
-    .form-group label {
-        font-size: 14px;
-        font-weight: 600;
-        color: #003B59;
-        margin-bottom: 6px;
-    }
-
-    /* Stylish dropdown */
-    .modern-select {
-        appearance: none !important;
-        background-color: #fff;
-        padding: 8px 14px;
-        height: 38px;
-        border-radius: 8px;
-        border: 1px solid #b8c9d6;
-        font-size: 14px;
-        color: #003B59;
-        transition: .2s;
-        width: 100%;
-        cursor: pointer;
-        background-image: url("data:image/svg+xml;utf8,<svg fill='%23003B59' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-        background-repeat: no-repeat;
-        background-position: right 10px center;
-    }
-
-        /* Hover/Focus */
-        .modern-select:hover {
-            border-color: #007bff;
+        /* Filter Dropdown */
+        #ddlTransType {
+            height: 34px;
+            border: 1px solid #003B59;
+            border-radius: 6px;
+            padding-left: 8px;
+            font-size: 14px;
+            color: #003B59;
+            background-color: #fff;
         }
 
-        .modern-select:focus {
-            border-color: #007bff;
-            outline: none;
-            box-shadow: 0 0 5px rgba(0,123,255,.3);
-        }
+            /* Hover effect */
+            #txtTransSerial:hover,
+            #ddlTransType:hover {
+                border-color: #005c85;
+            }
 
-        /* Disabled state */
-        .modern-select:disabled {
-            background-color: #f1f1f1;
-            cursor: not-allowed;
+            /* Focus outline remove */
+            #txtTransSerial:focus,
+            #ddlTransType:focus {
+                box-shadow: 0 0 4px rgba(0, 91, 133, 0.4);
+                border-color: #005c85;
+            }
+
+
+        #transactionTable {
+            margin-top: 25px !important;
         }
 
 
 
 
+
+
+        /* Table scroll fix */
+        .transaction-table-wrapper {
+            max-height: 800pxmodal-body overflow-y: hidden;
+            overflow-x: auto;
+            padding-right: 10px;
+        }
+
+        #transactionGrid thead th {
+            position: sticky;
+            top: 0;
+            background-color: #003B59 !important;
+            color: #fff !important;
+            z-index: 20;
+        }
+
+
+
+
+        #TransactionModal .modal-dialog {
+            max-width: 95% !important;
+            width: 95% !important;
+        }
+
+
+        #TransactionModal .modal-content {
+            height: 90vh;
+        }
 </style>
 
 <div id="parent" class="container-fluid">
@@ -1109,7 +1027,7 @@
     </div>
 </div>
 <div id="modalLoaderInside">
-    <div class="spinner-border text-danger" role="status" style="width: 3rem; height: 3rem;"></div>
+    <div class="spinner-border text-danger" role="status" ></div>
 </div>
 
 
