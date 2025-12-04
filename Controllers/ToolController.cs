@@ -736,15 +736,35 @@ LEFT JOIN TOOL.SysUserFile u ON TA.UserId = u.ID
         {
             DataTable dt = oTool.GetMaintenanceActivityStats();
 
-            var result = dt.AsEnumerable().Select(r => new
-            {
-                MonthName = r["MonthName"].ToString(),
-                MonthNumber = Convert.ToInt32(r["MonthNumber"]),
-                TotalJobs = Convert.ToInt32(r["TotalJobs"])
-            }).ToList();
+            int repair = 0, broken = 0, calibration = 0;
 
-            return Json(result, JsonRequestBehavior.AllowGet);
+            foreach (DataRow r in dt.Rows)
+            {
+                string status = r["Status"].ToString().Trim().ToLower();
+                int count = Convert.ToInt32(r["CountValue"]);
+
+                if (status == "repair")
+                    repair = count;
+
+                if (status == "broken")
+                    broken = count;
+
+                if (status == "calibration")
+                    calibration = count;
+            }
+
+            int totalRepairs = repair + broken + calibration;
+
+            return Json(new
+            {
+                Repair = repair,
+                Broken = broken,
+                Calibration = calibration,
+                TotalRepairs = totalRepairs
+            }, JsonRequestBehavior.AllowGet);
         }
+
+
 
 
 

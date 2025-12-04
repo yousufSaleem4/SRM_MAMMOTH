@@ -231,15 +231,48 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="panel-dashboard">
-                        <h4>Checked Out Tools - Weekly</h4>
+                        <h4>Weekly Tool Check-Out Trend</h4>
+
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+
+                            <!-- LEFT BLOCK -->
+                            <div>
+                                <p style="font-size:16px; margin:0; color:#444;">Tools Checked Out</p>
+                                <p style="margin:0; font-size:14px; color:#666;">This Week:</p>
+                                <p id="weeklyTotal" style="font-size:32px; font-weight:700; margin:0; color:#1A8F2F;"></p>
+                            </div>
+
+                            <!-- RIGHT BLOCK -->
+                            <div style="text-align:right;">
+                                <p style="font-size:16px; margin:0; color:#444;">% Change From</p>
+                                <p style="margin:0; font-size:14px; color:#666;">Last Week</p>
+                                <p id="weeklyChange" style="font-size:28px; font-weight:600; margin:0; color:#1A8F2F;"></p>
+                            </div>
+
+                        </div>
+
                         <canvas id="weeklyCheckoutChart"></canvas>
+
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <div class="panel-dashboard">
-                        <h4>Maintenance Activity</h4>
+                        <h4>Maintenance Issues by Category</h4>
+
+                        <div style="display:flex; justify-content:space-between; padding:5px 20px;">
+                            <div>
+                                <p style="margin:0; font-size:18px;">Total Repairs </p>
+                                <p style="margin: 0; font-size: 17px;">This Month:</p>
+                                <h2 id="totalRepairs" style="margin:0; font-weight:bold;">0</h2>
+                            </div>
+
+                           
+                        </div>
+
+
                         <canvas id="maintenanceChart"></canvas>
+
                     </div>
                 </div>
             </div>
@@ -394,15 +427,27 @@
                 type: 'GET',
                 dataType: 'json',
                 success: function (data) {
-                    var labels = [];
-                    var values = [];
+
+                    let labels = [];
+                    let values = [];
 
                     $.each(data, function (i, item) {
-                        // Example label: "2025 - W12"
-                        labels.push(item.YearNumber + ' - W' + item.WeekNumber);
+                        labels.push("W" + item.WeekNumber);
                         values.push(item.CheckedOutCount);
                     });
 
+                    // --- Calculation for UI ---
+                    let thisWeek = values.length > 0 ? values[values.length - 1] : 0;
+                    let lastWeek = values.length > 1 ? values[values.length - 2] : 0;
+
+                    let percent = 0;
+                    if (lastWeek > 0)
+                        percent = (((thisWeek - lastWeek) / lastWeek) * 100).toFixed(1);
+
+                    $('#weeklyTotal').text(thisWeek);
+                    $('#weeklyChange').text((percent >= 0 ? "+" : "") + percent + "%");
+
+                    // --- Chart ---
                     var ctxWeekly = document.getElementById('weeklyCheckoutChart').getContext('2d');
 
                     new Chart(ctxWeekly, {
@@ -413,11 +458,11 @@
                                 label: 'Checked Out',
                                 data: values,
                                 borderColor: primaryYellow,
-                                backgroundColor: lightYellow,
-                                borderWidth: 2,
-                                pointRadius: 3,
+                                borderWidth: 3,
+                                pointRadius: 4,
                                 pointBackgroundColor: primaryYellow,
-                                lineTension: 0.25
+                                lineTension: 0.2,
+                                fill: false   // ⭐ area removed
                             }]
                         },
                         options: {
@@ -429,6 +474,7 @@
                             }
                         }
                     });
+
                 },
                 error: function () {
                     console.log("Error loading weekly checkout stats.");
@@ -444,8 +490,16 @@
                 dataType: 'json',
                 success: function (data) {
 
-                    var labels = data.map(x => x.MonthName);
-                    var values = data.map(x => x.TotalJobs);
+                    $("#totalRepairs").text(data.TotalRepairs);
+
+                    var labels = ["Repair", "Broken", "Calibration"];
+                    var values = [data.Repair, data.Broken, data.Calibration];
+
+                    var colors = [
+                        "#f4b400",
+                        "#f4b400",
+                        "#f4b400"
+                    ];
 
                     var ctxMaint = document.getElementById('maintenanceChart').getContext('2d');
 
@@ -454,10 +508,9 @@
                         data: {
                             labels: labels,
                             datasets: [{
-                                label: 'Maintenance Jobs',
                                 data: values,
-                                backgroundColor: primaryYellow,
-                                hoverBackgroundColor: '#ffca28'
+                                backgroundColor: colors,
+                                borderWidth: 0
                             }]
                         },
                         options: {
@@ -466,24 +519,14 @@
                             legend: { display: false },
                             scales: {
                                 yAxes: [{
-                                    ticks: {
-                                        beginAtZero: true,
-                                        stepSize: 2
-                                    },
-                                    gridLines: { display: false }
-                                }],
-                                xAxes: [{
-                                    gridLines: { display: false }
+                                    ticks: { beginAtZero: true }
                                 }]
                             }
                         }
                     });
-
-                },
-                error: function () {
-                    console.log("Error loading Maintenance Activity stats.");
                 }
             });
+
 
 
         });

@@ -534,15 +534,19 @@ ORDER BY YearNumber, WeekNumber; ";
             cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
             string sql = @"
-        SELECT 
-            DATENAME(MONTH, ReportedDate) AS MonthName,
-            MONTH(ReportedDate) AS MonthNumber,
-            COUNT(*) AS TotalJobs
-        FROM TOOL.Repair
-        WHERE Status IN ('Repair', 'Broken', 'Calibration')
-          AND YEAR(ReportedDate) = YEAR(GETDATE())
-        GROUP BY DATENAME(MONTH, ReportedDate), MONTH(ReportedDate)
-        ORDER BY MonthNumber;
+   SELECT 
+    Status,
+    COUNT(*) AS CountValue
+FROM TOOL.Repair
+WHERE MONTH(ReportedDate) = MONTH(GETDATE())
+  AND YEAR(ReportedDate) = YEAR(GETDATE())
+  AND Status IN ('Repair', 'Broken', 'Calibration')
+GROUP BY Status
+ORDER BY Status;
+
+
+
+
     ";
 
             return oDAL.GetData(sql);
