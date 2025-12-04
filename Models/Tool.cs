@@ -529,7 +529,7 @@ ORDER BY YearNumber, WeekNumber; ";
             return oDAL.GetData(sql);
         }
 
-        public DataTable GetMaintenanceActivityStats()
+        public DataTable GetMaintenanceActivityStats() 
         {
             cDAL oDAL = new cDAL(cDAL.ConnectionType.INIT);
 
